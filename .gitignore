@@ -1,0 +1,8 @@
+# artifacts live outside the repo; guard against accidental copies
+cache/
+runs/
+tmp/
+hidden_states/
+*.jsonl
+__pycache__/
+.ipynb_checkpoints/

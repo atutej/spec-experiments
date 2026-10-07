@@ -1,0 +1,6 @@
+# Repos of the marin_speculator workspace, cloned as siblings of spec-experiments.
+# setup/setup.sh clones missing ones; it never touches a repo with local changes.
+# Add a line when the project gains a repo dependency.
+#
+# dir           url                                          ref                        upstream (optional)
+speculators     git@github.com:atutej/speculators.git        nemotron-terminal-preset   https://github.com/marin-community/speculators

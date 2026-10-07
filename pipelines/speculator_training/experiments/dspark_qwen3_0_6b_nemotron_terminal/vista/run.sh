@@ -14,6 +14,8 @@
 # Runs as-is on an idev node (the GPU stages need a gb node). run.sbatch and submit_chain.sh wrap it for Slurm.
 # Small test of everything on idev:  REGEN_LIMIT=300 MAX_STEPS=10 WORK_DIR=$PROJECT_ROOT/runs/vista_test bash vista/run.sh
 set -euo pipefail
+# Never die silently under `set -e` (a batch job's log would stay empty): say which command failed.
+set -E; trap 'echo "run.sh: command failed (exit $?) at line $LINENO: $BASH_COMMAND" >&2' ERR
 
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../../.." && pwd)"   # repo root (this file: pipelines/<pipeline>/experiments/<name>/vista/)
 EXP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"

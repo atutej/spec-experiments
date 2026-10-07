@@ -34,7 +34,8 @@ done
 unset _spec_host _spec_machine _spec_f _spec_m _spec_re _spec_v _SPEC_REPO
 
 # NUM_GPUS: GPUs visible here (0 on CPU-only nodes, where nvidia-smi may be missing or fail).
-NUM_GPUS=$( { command -v nvidia-smi >/dev/null && nvidia-smi -L 2>/dev/null; } | grep -c '^GPU' )
+# `|| true`: grep -c exits 1 when it counts 0 (a CPU node), which would kill a caller running under `set -e`.
+NUM_GPUS=$( { command -v nvidia-smi >/dev/null && nvidia-smi -L 2>/dev/null; } | grep -c '^GPU' || true )
 if [[ -z "${NODE_KIND:-}" ]]; then
     [[ "$NUM_GPUS" -gt 0 ]] && NODE_KIND=gpu || NODE_KIND=$([[ -n "${SLURM_JOB_ID:-}" ]] && echo cpu || echo login)
 fi

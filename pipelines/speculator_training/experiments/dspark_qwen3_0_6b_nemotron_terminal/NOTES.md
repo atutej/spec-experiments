@@ -71,7 +71,7 @@ On Vista:
 ## Vista full run (100k conversations)
 
 Files: `settings.sh` (shared settings, identical to the genai script's config block on all 39 shared
-variables), `vista/run.sh` (the pipeline as stages), `vista/run.sbatch` (one stage per job),
+variables when nothing is overridden), `vista/run.sh` (the pipeline as stages), `vista/run.sbatch` (one stage per job),
 `vista/submit_chain.sh` (submits the chain from a login node). Policy: the `.sh` runs as-is on idev, sbatch wraps it.
 
 - **Stages:** `export` (gg, CPU) -> `regen` (gb, 4 GPUs) -> `prepare` (gg, CPU) -> `train` (gb: hidden-state
@@ -80,13 +80,16 @@ variables), `vista/run.sh` (the pipeline as stages), `vista/run.sbatch` (one sta
 - **Submit:** on a login node, `bash pipelines/speculator_training/experiments/dspark_qwen3_0_6b_nemotron_terminal/vista/submit_chain.sh`
   (`--dry-run` first prints the commands). A subset reruns one stage: `... submit_chain.sh train` resumes training
   from `$WORK_DIR/checkpoints` (the trainer resumes by default); `regen` resumes with `--resume`.
-- **Settings:** same as genai (`MAX_GEN_TOKENS=8192`, `REGEN_MAX_MODEL_LEN=32768`, thinking-mode sampling, seed 0,
-  `REGEN_LIMIT=100000`, DSpark settings). Only performance knobs differ: regen concurrency is 1024 on Vista (genai
-  512), because a gb GPU has 189 GB against an H100 NVL's 94 GB. **Not tuned:** check `rps` in the regen log
-  of the first full run.
+- **Settings:** the genai settings (`MAX_GEN_TOKENS=8192`, `REGEN_MAX_MODEL_LEN=32768`, thinking-mode sampling, seed 0,
+  `REGEN_LIMIT=100000`, the other DSpark settings), with two deliberate differences. (1) Regen concurrency 1024 (genai
+  512): a performance knob, flat in the sweep. (2) **`SEQ_LENGTH=16384` and `MAX_ANCHORS=6144` (genai 8192 and 3072):
+  this changes what is trained.** It was chosen from the sequence-length sweep below: +44% training tokens/s, clipping
+  4.9% -> 0.02% of supervised tokens. The learning rate is unchanged (3e-4), so the effective batch is twice genai's
+  tokens per step. Quality (loss, acceptance length) is not evaluated; compare against a genai-length run if it matters.
+  Override from the environment, e.g. `SEQ_LENGTH=8192 MAX_ANCHORS=3072 bash vista/run.sh` for genai-identical settings.
 - **Estimates (extrapolated from smoke tests, order of magnitude):** ~563k rows, ~2.35 G training tokens; regen
-  ~6 h on one gb node (24.5 rows/s measured at concurrency 256 on 300 conversations); training ~6.5 h for one
-  epoch (from ~1e5 tokens/s over the 10 smoke steps, so shaky). Both fit the 12 h gb limit, and both resume.
+  ~6 h on one gb node (24.5 rows/s measured at concurrency 256 on 300 conversations); training ~5.2 h for one
+  epoch at 16384 (125k tokens/s measured over 100 steps; ~7.5 h at 8192). Both fit the 12 h gb limit, and both resume.
 - **Tested on idev (2026-10-07):** all four stages with `REGEN_LIMIT=300 MAX_STEPS=10`: export, regen (300
   conversations, 0 errors, 138 truncated, 62 s at concurrency 1024), prepare, train (stopped at the 10-step limit,
   checkpoint written, no tracebacks). The sbatch wrapper and chain were checked with `--dry-run` only: no job submitted yet.

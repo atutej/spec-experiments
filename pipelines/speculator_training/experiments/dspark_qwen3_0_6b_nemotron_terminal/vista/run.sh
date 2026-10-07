@@ -24,6 +24,11 @@ use_env() { set +u; conda activate "$1"; set -u; }   # conda's activate scripts 
 # genai H100 NVL's 94 GB, so regeneration can keep twice as many requests in flight. Not measured yet:
 # check the `rps` in the regen log of the first full run and tune.
 REGEN_CONCURRENCY=${REGEN_CONCURRENCY:-1024}
+# Unlike the knob above, this CHANGES what is trained (genai uses 8192 and 3072): a gb GPU has room for longer packed
+# sequences, which measured +44% tokens/s and cut clipping from 4.9% to 0.02% of supervised tokens (see ../NOTES.md).
+# max-anchors is scaled with the length (same anchors per token). LR unchanged. MAX_GEN_TOKENS stays 8192.
+SEQ_LENGTH=${SEQ_LENGTH:-16384}
+MAX_ANCHORS=${MAX_ANCHORS:-6144}
 source "$EXP_DIR/settings.sh"
 
 ALL_GPUS="0,1,2,3" NUM_ALL_GPUS=4         # regen runs alone, so it uses every GPU (a gb node has 4)

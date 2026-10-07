@@ -36,12 +36,12 @@ REGEN_CONCURRENCY=${REGEN_CONCURRENCY:-512}            # scale with NUM_ALL_GPUS
 MAX_ERROR_FRAC=0.02              # abort if more conversations than this fail
 
 # Training settings (from the official DSpark Qwen3-0.6B example)
-SEQ_LENGTH=8192                  # training rows longer than this are clipped by prepare-data
+SEQ_LENGTH=${SEQ_LENGTH:-8192}                  # training rows longer than this are clipped by prepare-data
 SPECULATOR_TYPE="dspark"
 EPOCHS=1
 LR=3e-4
 BLOCK_SIZE=8                     # tokens drafted per step
-MAX_ANCHORS=3072
+MAX_ANCHORS=${MAX_ANCHORS:-3072}
 NUM_LAYERS=3
 TARGET_LAYER_IDS="2 14 25"       # Qwen3-0.6B has 28 layers; launch_vllm.py also appends layer 28
 DRAFT_VOCAB_SIZE=32000           # reduced vocab: a full 152K head would dwarf a 3-layer draft

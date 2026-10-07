@@ -19,7 +19,10 @@ if [[ "${TACC_SYSTEM:-}" == "vista" ]]; then
     case "${SLURM_JOB_PARTITION:-}" in
         gg*) NODE_KIND=gg ;; gh*) NODE_KIND=gh ;; gb*) NODE_KIND=gb ;; *) NODE_KIND="" ;;
     esac
-    # TODO(vista): module loads (cuda, gcc, ...) once Phase 3 of docs/vista_setup.md settles them.
+    # The default `nvidia` module sets CC/CXX to nvc/nvc++, which rejects flags torch inductor
+    # (vLLM's torch.compile) passes (nvc-Error-Unknown switch: -Wno-psabi). Use GCC everywhere.
+    # CUDA comes from pip (the vllm env), not a module; recipes load gcc/14.2.0 for source builds.
+    export CC=gcc CXX=g++
 else
     export MACHINE=genai
     export CONDA_ROOT=/ssd1/an34232/miniconda3
@@ -44,6 +47,7 @@ export TORCHINDUCTOR_CACHE_DIR=$PROJECT_ROOT/cache/torch/inductor
 export TORCH_HOME=$PROJECT_ROOT/cache/torch
 export XDG_CACHE_HOME=$PROJECT_ROOT/cache/xdg
 export TMPDIR=$PROJECT_ROOT/tmp
+export FLASHINFER_WORKSPACE_BASE=$PROJECT_ROOT/cache/flashinfer   # JIT kernels; default is ~/.cache (small $HOME quota)
 
 mkdir -p "$HF_DATASETS_CACHE" "$TRANSFORMERS_CACHE" "$TORCHINDUCTOR_CACHE_DIR" "$XDG_CACHE_HOME" "$TMPDIR" "$PIP_CACHE_DIR"
 source "$CONDA_ROOT/etc/profile.d/conda.sh"

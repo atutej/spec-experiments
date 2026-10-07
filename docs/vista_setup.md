@@ -19,6 +19,8 @@ The user works with you on Vista in two ways, and what you can do depends on the
 | **CPU session** | `gg` (Grace CPU only), or a login node | Editing code, commits (with permission), `setup/setup.sh --check`, building envs (on `gg`, not login) | Run anything that needs a GPU. `nvidia-smi` may be missing or fail, and that's normal here. |
 | **GPU idev session** (up to 2 h) | `gh` (1× H100 per node) or `gb` (4× GB200 per node) | Smoke tests, `setup/setup.sh --gpu` | Start a full run. **Full runs always go through `sbatch`**, as do jobs that can't finish in the session's time left. |
 
+**`sbatch` is refused on compute nodes** (gg, gh, gb, including idev sessions: "sbatch not available on compute nodes. Use a login node."). Ask the user to submit from a login node, then watch with `squeue -u $USER` and the job's log. Job accounting: use the account in uppercase (`#SBATCH -A CCR24067`), or Slurm errors out.
+
 At the start of every session, run `source <PROJECT_ROOT>/spec-experiments/env.sh; echo
 $NODE_KIND $NUM_GPUS $SLURM_JOB_PARTITION`, plus `squeue -u $USER` for the time left.
 `env.sh` sets `NODE_KIND` to `gg`, `gh` or `gb` from the Slurm partition, otherwise to
@@ -240,6 +242,34 @@ user wants on Vista:
 4. Launch only with the user's explicit go.
 
 **Checkpoint after each experiment's smoke test**, and again before any full run.
+
+## Vista status (2026-10-07)
+
+Phase 3 is done for `gg` and `gb`; **`gh` is not validated yet.**
+
+Built on `gg`: `vllm` (Marin fork `39e62869693c` compiled for sm_90 + sm_100, wheel cached in
+`$WORK/wheels`, via `scripts/vista/build_vllm_env.sbatch`, about 1 h on a full gg node) and
+`speculators` (`scripts/vista/build_speculators_env.sh`). `setup.sh --gpu` passes on **gb**
+(4x GB200, driver 590.48.01).
+
+Workarounds that are now in the recipes and `env.sh` (don't undo them):
+- `env.sh` sets `CC=gcc CXX=g++`: the default `nvidia` module sets nvc/nvc++, which torch
+  inductor can't use (`-Wno-psabi`).
+- The vllm env has its own `cuda-home` (pip `cuda-toolkit==13.2.1` plus symlinks, and a link-time
+  libcuda stub from module cuda/13.1), activated by `conda activate vllm`. Reason: pip's toolkit
+  has no unversioned `.so` files or lib64 (CMake failed), and FlashInfer JITs with the `nvcc` on
+  PATH, which would be the nvidia module's 12.5.
+- `torchaudio==2.11.0+cpu` in `speculators` (no cu132 build exists; PyPI's cu130 one won't import).
+- `FLASHINFER_WORKSPACE_BASE` points into `$PROJECT_ROOT/cache` (small `$HOME` quota).
+
+**To test on gh (1x H100, sm_90) when we get there:**
+1. `setup/setup.sh --gpu` ends with `READY`. FlashInfer JIT-compiles for sm_90a there, which hasn't
+   been exercised; check the `cuda-home` nvcc handles it.
+2. Check the driver supports CUDA 13.2 (gb's 590 does).
+3. Anything that assumes several GPUs per node (see the experiment notes).
+
+Not tested on any node: `mooncake_master` actually running (only the PATH check), Mooncake
+transfers between processes, `speculators` training and `prepare-data`, multi-node.
 
 ## Experiment notes
 

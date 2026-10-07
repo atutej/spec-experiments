@@ -6,3 +6,35 @@ hidden_states/
 *.jsonl
 __pycache__/
 .ipynb_checkpoints/
+
+# Slurm job logs and ad-hoc run logs (sbatch -o %x-%j.out writes into the submit directory)
+*.out
+*.log
+slurm-*
+nohup.out
+
+# Python / tooling caches
+*.pyc
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.cache/
+.venv/
+venv/
+
+# Builds, wheels and run outputs (wheels live in $WORK/wheels)
+*.whl
+build/
+dist/
+checkpoints/
+wandb/
+outputs/
+lightning_logs/
+
+# Local editor / Claude Code state
+.claude/settings.local.json
+.claude/projects/
+.DS_Store
+.idea/
+.vscode/

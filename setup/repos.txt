@@ -4,3 +4,6 @@
 #
 # dir           url                                          ref                        upstream (optional)
 speculators     git@github.com:atutej/speculators.git        nemotron-terminal-preset   https://github.com/marin-community/speculators
+# Marin vLLM fork, built from source on Vista (aarch64, sm_90 + sm_100). A 40-hex ref is a
+# pinned commit (detached checkout, never fast-forwarded). x86 genai uses a prebuilt wheel.
+vllm            https://github.com/marin-community/vllm.git  39e62869693c46402b1a95fde4fc55ca1aab9ae1

@@ -59,11 +59,22 @@ while read -r dir url ref upstream; do
     if [[ ! -d "$path/.git" ]]; then
         if [[ $CHECK_ONLY -eq 1 ]]; then echo "MISSING  $dir"; FAILED+=("repo:$dir"); continue; fi
         echo "cloning  $dir ($url @ $ref)"
-        git clone --branch "$ref" "$url" "$path" </dev/null || { FAILED+=("repo:$dir"); continue; }
+        if [[ "$ref" =~ ^[0-9a-f]{40}$ ]]; then   # pinned commit: clone, then detach at the SHA
+            { git clone "$url" "$path" && git -C "$path" checkout -q --detach "$ref"; } </dev/null || { FAILED+=("repo:$dir"); continue; }
+        else
+            git clone --branch "$ref" "$url" "$path" </dev/null || { FAILED+=("repo:$dir"); continue; }
+        fi
         [[ -n "${upstream:-}" ]] && git -C "$path" remote add upstream "$upstream"
     fi
     git -C "$path" fetch -q origin </dev/null 2>/dev/null || echo "  (fetch failed for $dir)"
     head=$(git -C "$path" rev-parse --abbrev-ref HEAD)
+    if [[ "$ref" =~ ^[0-9a-f]{40}$ ]]; then   # pinned commit: never fast-forwarded
+        dirty=$(git -C "$path" status --porcelain --untracked-files=no | wc -l)
+        if [[ "$(git -C "$path" rev-parse HEAD)" == "$ref" ]]; then status="pinned at ${ref:0:12}"
+        else status="HEAD $(git -C "$path" rev-parse --short=12 HEAD) (expected pinned ${ref:0:12})"; fi
+        [[ $dirty -gt 0 ]] && status+=", $dirty modified files"
+        echo "ok       $dir: $status"; continue
+    fi
     dirty=$(git -C "$path" status --porcelain --untracked-files=no | wc -l)
     status="$head"
     [[ "$head" != "$ref" ]] && status+=" (expected $ref)"

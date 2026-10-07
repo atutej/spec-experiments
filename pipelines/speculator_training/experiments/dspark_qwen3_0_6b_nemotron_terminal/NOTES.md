@@ -92,6 +92,30 @@ variables), `vista/run.sh` (the pipeline as stages), `vista/run.sbatch` (one sta
   checkpoint written, no tracebacks). The sbatch wrapper and chain were checked with `--dry-run` only: no job submitted yet.
 - **Not done:** backup of results to `$WORK` (deferred), the `gh` variant, a first real submission.
 
+## Tuning on a gb node (2026-10-07, `vista/tune.sh gen train`)
+
+Performance-only knobs, on small data (the 3,000-conversation sample). The number of training GPUs stays 2
+(it sets the effective batch size, so changing it would change what is trained). Results lines are in
+`logs/smoke/tune-results.txt`; the script was written by another Claude session, which I found in the repo and used unchanged.
+
+| Knob | Values | Result (4x GB200) |
+|---|---|---|
+| Regen client concurrency | 256, 512, 1024, 2048, 4096 | 29.7, 29.3, 32.3, 32.0, 30.3 rows/s: flat (within slice noise) |
+| vLLM `--max-num-seqs 2048 --max-num-batched-tokens 32768` | at concurrency 4096 | 32.6 rows/s: no gain over defaults |
+| Training dataloader workers / prefetch | 12/4 vs 24/8 | 90.6k vs 89.9k tokens/s: no gain |
+| Mooncake global/local buffer | 4/2 vs 32/8 GiB | 90.6k vs 88.5k tokens/s: no gain |
+| Hidden-state server GPUs | 2 vs 1 | 90.6k vs 86.9k tokens/s (-4%): one server GPU is nearly enough |
+
+- **Training is compute-bound on the 2 training GPUs:** `fetch_frac` is only ~7% of a 77 ms step, so nothing on the
+  Mooncake or server side speeds it up. The baseline settings are as good as the variants; keep them.
+- **Regeneration saturates the 4 GPUs at or below ~256 concurrent requests** (~30 rows/s). `vista/run.sh` keeps
+  `REGEN_CONCURRENCY=1024`: harmless, not faster. **Caveat:** each trial used only 400 conversations, and a
+  conversation's turns run one after another, so at concurrency above ~400 everything is already in flight and
+  the 1024-4096 trials mostly repeat each other. A longer test with more conversations than the concurrency
+  would show whether 1024 helps at 100k scale; the flat 256 vs 512 result suggests not.
+- **No change made to `vista/run.sh` from this pass.** The only idea left is freeing a GPU (the server is
+  nearly as fast on one), but nothing else can use it without changing the training setup.
+
 ## Vista smoke-test log
 
 - **Step 0 (2026-10-07, gb node):** `vista/smoke_step0_export.sh` (`--limit 300 --seed 0`) reproduced

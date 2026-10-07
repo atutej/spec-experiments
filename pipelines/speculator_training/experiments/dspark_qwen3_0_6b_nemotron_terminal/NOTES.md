@@ -152,6 +152,14 @@ Sweeping the length on the same 13,885 rows, 100 steps each (`--max-anchors` sca
 
 ## Vista smoke-test log
 
+The `vista/smoke_step*.sh` scripts named below were removed once `vista/run.sh` could do the same through environment
+overrides (they are in git history: `smoke_step0_export.sh` from `fbd2af0`, the others from `a8379ad`). To redo a
+small end-to-end test: `REGEN_LIMIT=300 MAX_STEPS=10 WORK_DIR=<abs path> bash vista/run.sh`. To re-check that the
+step 0 export reproduces genai: `REGEN_LIMIT=300 WORK_DIR=<abs path> bash vista/run.sh export`, then
+`sha256sum <WORK_DIR>/source/nemotron-terminal_300_seed0.jsonl` must equal
+`32f16db6c70dbc1f7a7563942b8bacf52747f26d678f1f7fcfb65326fd71ae68` (seed 0; first rows `task_90527__CMJA82Z/episode-8`,
+`task_101944__NX3GDrK/episode-4`, `task_17047__7eZ59DU/episode-10`).
+
 - **Step 0 (2026-10-07, gb node):** `vista/smoke_step0_export.sh` (`--limit 300 --seed 0`) reproduced
   the genai reference exactly: same sha256 and same first three `(trial_name, episode)` values.
   The run took 2 min and cached the whole corpus in `$HF_HOME` (19 GB, more than the ~13 GB guessed).

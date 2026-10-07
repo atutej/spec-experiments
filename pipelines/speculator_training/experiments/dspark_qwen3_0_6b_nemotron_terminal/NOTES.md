@@ -73,4 +73,22 @@ On Vista:
 - **Step 0 (2026-10-07, gb node):** `vista/smoke_step0_export.sh` (`--limit 300 --seed 0`) reproduced
   the genai reference exactly: same sha256 and same first three `(trial_name, episode)` values.
   The run took 2 min and cached the whole corpus in `$HF_HOME` (19 GB, more than the ~13 GB guessed).
-- **Steps 1-4:** not run yet.
+- **Step 1 (2026-10-07, gb node, 1 GPU, `vista/smoke_step1_regen.sh`, first 100 rows):** 0 failed, 41
+  truncated, 569 rows (genai: 0 / 43 / 563), median 5.5 turns per conversation (6), median row 3,993
+  tokens (3,743), median reply 521 tokens (500). 91 s, ~6.2 rows/s (genai ~1.9 requests/s on a shared
+  H100 at 12% memory; not comparable). Not tried: the 4-GPU data-parallel layout of the real script.
+- **Step 2 (`vista/smoke_step2_prepare.sh`):** `prepare-data` on those 569 rows took 43 s, dropped 1
+  row with no supervised tokens, flagged a few rows clipped at 8192 (expected; see the learnings above).
+- **Steps 3-4 (`vista/smoke_step3_4_train.sh`, gb node, genai layout: hidden-state server on GPUs 0-1
+  with data-parallel 2, training on GPUs 2-3):** `mooncake_master` (tcp) and the hidden-state server
+  came up (207 s, compile cache warm); `speculators.train` ran 10 steps (`--max-steps 10`, 2 GPUs),
+  fetched hidden states through Mooncake with 0 error records (~12 ms per step, ~1e5 tokens/s), ran a
+  validation epoch and wrote `checkpoint_best` (`model.safetensors`, 525 MB with optimizer state).
+  Exit code 0 in 156 s. Loss and accuracy after 10 steps at warmup LR are meaningless
+  (`val/eal` 1.0, accuracies ~0); this only shows the pipeline runs end to end.
+- **Noise at exit (fixed):** with `TMPDIR` on shared Lustre, Python's multiprocessing printed
+  `OSError: [Errno 16] Device or resource busy` for `$TMPDIR/pymp-*` while cleaning up (exit code
+  still 0). Vista now uses node-local `TMPDIR=/tmp`; the rerun of steps 3-4 (89 s, exit 0) had no
+  such errors and no tracebacks.
+- **Not tested:** `gh` nodes (1 GPU: the one-GPU variant, with the hidden-state server and training
+  sharing the GPU), the 4-GPU regeneration layout, multi-node, a real-length training run.

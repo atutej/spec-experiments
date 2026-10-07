@@ -18,4 +18,6 @@ Facts checked on 2026-10-07. The porting history is in `docs/vista_setup.md`.
   `PATH`. Both break torch inductor and FlashInfer. `env.sh` sets `CC=gcc CXX=g++`, and the `vllm`
   env brings its own nvcc 13.2.1 (pip) on `conda activate vllm`. `module spider cuda` also lists 12.8
   to 13.3, but nothing in the workspace depends on a CUDA module.
+- **Temp space:** `TMPDIR=/tmp` (node-local, set via `SPEC_TMPDIR` in `env.sh`). It doesn't survive the job and
+  isn't shared between nodes. `/tmp` is 1.1 TB on a gb node; gg and gh sizes are unchecked.
 - **Not yet tested here:** a `gh` node (see the "Vista status" section of `docs/vista_setup.md`).

@@ -63,7 +63,7 @@ marin_speculator/                 # PROJECT_ROOT
 ├── spec-experiments/             # pipelines, env.sh, setup, docs (this repo)
 ├── speculators/                  # speculators fork (library)
 ├── <future repos>/               # more dependencies as the project grows
-├── cache/  tmp/                  # HF, vLLM, torch caches and TMPDIR (set in env.sh)
+├── cache/  tmp/                  # HF, vLLM, torch caches; tmp/ is TMPDIR except on Vista (node-local /tmp)
 ├── logs/{setup,slurm,smoke}/     # env builds and GPU checks, sbatch output, smoke tests
 └── runs/<run name>/              # all outputs of one run (its logs in runs/<run name>/logs/)
 ```

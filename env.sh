@@ -49,7 +49,7 @@ export TRITON_CACHE_DIR=$PROJECT_ROOT/cache/triton
 export TORCHINDUCTOR_CACHE_DIR=$PROJECT_ROOT/cache/torch/inductor
 export TORCH_HOME=$PROJECT_ROOT/cache/torch
 export XDG_CACHE_HOME=$PROJECT_ROOT/cache/xdg
-export TMPDIR=$PROJECT_ROOT/tmp
+export TMPDIR=${SPEC_TMPDIR:-$PROJECT_ROOT/tmp}   # a machine may set SPEC_TMPDIR (node-local, see its env.sh)
 export FLASHINFER_WORKSPACE_BASE=$PROJECT_ROOT/cache/flashinfer   # JIT kernels; default is ~/.cache (small $HOME quota)
 
 mkdir -p "$PROJECT_ROOT/logs/setup" "$PROJECT_ROOT/logs/slurm" "$PROJECT_ROOT/logs/smoke" "$HF_DATASETS_CACHE" "$TRANSFORMERS_CACHE" "$TORCHINDUCTOR_CACHE_DIR" "$XDG_CACHE_HOME" "$TMPDIR" "$PIP_CACHE_DIR"

@@ -30,7 +30,7 @@ Required:
 | `MACHINE_HOSTNAME_REGEX` **or** `MACHINE_FALLBACK=1` | How the machine is detected. Exactly one machine may be the fallback. |
 
 Optional, with a default: `NODE_KIND` (what kind of node this is: Vista sets `gg`, `gh`, `gb`; empty
-falls back to `gpu`, `cpu` or `login`), `PIP_CACHE_DIR`, `CONDA_ENVS_PATH`, and any compiler or
+falls back to `gpu`, `cpu` or `login`), `SPEC_TMPDIR` (becomes `TMPDIR`; default `<workspace>/tmp`), `PIP_CACHE_DIR`, `CONDA_ENVS_PATH`, and any compiler or
 module settings the machine needs (Vista sets `CC=gcc CXX=g++`).
 
 Keep the file cheap and free of side effects beyond exports: the root `env.sh` sources it more than

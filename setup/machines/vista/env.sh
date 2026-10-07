@@ -19,5 +19,11 @@ esac
 # (vLLM's torch.compile) passes (nvc-Error-Unknown switch: -Wno-psabi). Use GCC everywhere.
 # CUDA comes from pip (the vllm env), not a module; recipes load gcc/14.2.0 for source builds.
 export CC=gcc CXX=g++
+# Node-local temp space. $WORK/$SCRATCH are Lustre: Python's multiprocessing cleanup failed there
+# (EBUSY on pymp-*), and many ranks writing small files risk locking errors. Plain /tmp exists on
+# every node, so a multi-node job needs no per-node mkdir (srun copies this value to all nodes).
+# Contents do not survive the job and are not shared between nodes: keep anything persistent in
+# $PROJECT_ROOT.
+export SPEC_TMPDIR=/tmp
 # vLLM is built from source here for sm_90 + sm_100: env_check lists its kernel archs (setup/envs/vllm.sh).
 export VLLM_CHECK_KERNEL_ARCHS=1

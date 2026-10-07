@@ -60,30 +60,32 @@ the data and outputs that don't belong in version control:
 
 ```
 marin_speculator/                 # PROJECT_ROOT
-├── spec-experiments/             # experiment scripts, env.sh, docs (this repo)
+├── spec-experiments/             # pipelines, env.sh, setup, docs (this repo)
 ├── speculators/                  # speculators fork (library)
 ├── <future repos>/               # more dependencies as the project grows
 ├── cache/  tmp/                  # HF, vLLM, torch caches and TMPDIR (set in env.sh)
-└── runs/<run name>/              # all outputs of one run
+├── logs/{setup,slurm,smoke}/     # env builds and GPU checks, sbatch output, smoke tests
+└── runs/<run name>/              # all outputs of one run (its logs in runs/<run name>/logs/)
 ```
 
 `spec-experiments/env.sh` is sourced at the start of every script. It sets
-`PROJECT_ROOT` to the parent of the repo, picks `MACHINE` (`vista` when
-`TACC_SYSTEM=vista`, otherwise `genai`), points every cache and `TMPDIR` into
-`PROJECT_ROOT`, and initializes conda. Scripts reach other repos as
+`PROJECT_ROOT` to the parent of the repo, picks `MACHINE` by hostname (or an explicit
+`MACHINE=<name>`) and sources `setup/machines/<machine>/env.sh` (the Vista settings are in
+`setup/machines/vista/env.sh`; contract in `setup/machines/README.md`), points every cache and
+`TMPDIR` into `PROJECT_ROOT`, and initializes conda. Scripts reach other repos as
 `$PROJECT_ROOT/<repo>`.
 
 **Rebuilding the workspace is automated, and you keep it that way.** Use the
 `workspace-setup` skill (`spec-experiments/.claude/skills/workspace-setup/SKILL.md`; read it
 now):
 - `setup/repos.txt` lists the repos.
-- `setup/envs/<env>.sh` holds each env's build steps and checks, per `MACHINE`.
+- `setup/envs/<env>.sh` holds each env's check; `setup/machines/<machine>/envs/<env>.sh` its build steps.
 - `setup/setup.sh` is the idempotent driver (with `--check`, `--rebuild ENV`, `--freeze` and
   `--gpu`).
-- `setup/locks/<machine>/` holds exact package lists of known-good envs.
+- `setup/machines/<machine>/locks/` holds exact package lists of known-good envs.
 
-On genai, all of this is tested. On Vista, the env recipes are `TODO(vista)` stubs, and
-writing them is your main job in Phase 3. Vista's `$SCRATCH` is purged, so a fix made by hand
+On genai, all of this was tested. On Vista, the recipes were `TODO(vista)` stubs, and
+writing them was the main job of Phase 3 (done; see "Vista status"). Vista's `$SCRATCH` is purged, so a fix made by hand
 inside an env is lost. Put every install step in a recipe.
 
 ### Repositories
@@ -93,7 +95,7 @@ are added.
 
 | Directory | Remote | Ref | Role |
 |---|---|---|---|
-| `spec-experiments` | `git@github.com:atutej/spec-experiments.git` | `main` | Experiment scripts, `env.sh`, the exporter, docs |
+| `spec-experiments` | `git@github.com:atutej/spec-experiments.git` | `main` | Pipelines (experiments by family), `env.sh`, workspace setup, docs |
 | `speculators` | `git@github.com:atutej/speculators.git` (`upstream`: `marin-community/speculators`) | `nemotron-terminal-preset` | Speculative-decoding library: training, `regenerate-responses`, `prepare-data`, `scripts/launch_vllm.py`, plus the `hs_connectors` sub-package in `speculators/hs_connectors/` |
 
 The `speculators` branch is upstream `42ed6ff` plus the user's commits. It currently has one
@@ -103,7 +105,7 @@ clean apart from intended changes.
 ### Environments (as on genai)
 
 There are two conda envs, because vLLM and speculators pin different dependency versions.
-Exact package lists are in `setup/locks/genai/{vllm,speculators}.txt`.
+Exact package lists are in `setup/machines/genai/locks/{vllm,speculators}.txt`.
 
 | Env | Used for | Key packages on genai (x86_64, Python 3.12.14) |
 |---|---|---|
@@ -179,7 +181,7 @@ timeout 10 ssh -T -o BatchMode=yes git@github.com 2>&1 | tail -1
    `--check` to clone the repos in `setup/repos.txt`. The env steps will fail at the
    `TODO(vista)` stubs, which is expected until Phase 3. If GitHub SSH doesn't work on Vista,
    ask the user, because the repos may be private.
-2. Fill in the Vista branch of `env.sh`: confirm `CONDA_ROOT=$WORK/miniconda3`, and add the
+2. Fill in `setup/machines/vista/env.sh`: confirm `CONDA_ROOT=$WORK/miniconda3`, and add the
    module loads Phase 3 needs. Keep the genai branch working.
 
 **Checkpoint:** show the layout and the `env.sh` change.
@@ -212,17 +214,17 @@ Building can happen on gg. Validate the parts that need no GPU anywhere, and the
   `regenerate-responses` needs,
 - `mooncake_master --help` if using Mooncake.
 
-Put every working step into the `vista` branch of `setup/envs/<env>.sh`, and make `env_check`
+Put every working step into `setup/machines/vista/envs/<env>.sh`, and make `env_check` (in `setup/envs/<env>.sh`)
 verify it. Then confirm `setup/setup.sh` ends with `READY` (on any node) and `setup/setup.sh --gpu` ends
 with `READY` on both a gh and a gb node, and run
-`setup/setup.sh --freeze` to record `setup/locks/vista/`. A good test is a rebuild from
+`setup/setup.sh --freeze` to record `setup/machines/vista/locks/`. A good test is a rebuild from
 scratch into a fresh `CONDA_ENVS_PATH`, because that's what happens after a purge.
 
 **Checkpoint:** report versions, differences from genai, and workarounds.
 
 ### Phase 4: Experiments
 
-The experiments are the scripts in `spec-experiments/scripts/`. Each one was written for genai,
+The experiments are under `spec-experiments/pipelines/<family>/experiments/<name>/` (`genai/run.sh`). Each one was written for genai,
 as a single bash pipeline that assumes several GPUs on one machine. For each experiment the
 user wants on Vista:
 
@@ -230,7 +232,7 @@ user wants on Vista:
 2. Run its steps as **smoke tests** at small scale, comparing with genai reference results
    where they exist.
 3. Agree the full-run design with the user, then write sbatch scripts (for example in
-   `spec-experiments/scripts/vista/`) that reuse the experiment's settings. Full runs are
+   `<experiment>/vista/`) that reuse the experiment's settings. Full runs are
    always `sbatch` jobs, possibly multi-node on gh or gb. The node type, node count and
    per-stage layout are open, so decide them with the user and record the result in this
    experiment's notes below. Show the scripts to the user before submitting. Patterns that
@@ -248,8 +250,8 @@ user wants on Vista:
 Phase 3 is done for `gg` and `gb`; **`gh` is not validated yet.**
 
 Built on `gg`: `vllm` (Marin fork `39e62869693c` compiled for sm_90 + sm_100, wheel cached in
-`$WORK/wheels`, via `scripts/vista/build_vllm_env.sbatch`, about 1 h on a full gg node) and
-`speculators` (`scripts/vista/build_speculators_env.sh`). `setup.sh --gpu` passes on **gb**
+`$WORK/wheels`, via `setup/machines/vista/slurm/build_vllm_env.sbatch`, about 1 h on a full gg node) and
+`speculators` (`setup/machines/vista/slurm/build_speculators_env.sh`). `setup.sh --gpu` passes on **gb**
 (4x GB200, driver 590.48.01).
 
 Workarounds that are now in the recipes and `env.sh` (don't undo them):
@@ -273,77 +275,11 @@ transfers between processes, `speculators` training and `prepare-data`, multi-no
 
 ## Experiment notes
 
-Add a subsection here for each experiment as it's set up or changed.
+Per-experiment notes (settings, what was learned on genai, reference results, Vista smoke-test
+log) live next to the experiment: `pipelines/<family>/experiments/<name>/NOTES.md`. Add one when
+an experiment is set up or changed. Currently:
 
-### DSpark drafter for Qwen3-0.6B on Nemotron-Terminal-Corpus
-
-Script: `scripts/dspark_qwen3_0_6b_nemotronterminal_regen_online_think_mooncake_100k.sh`.
-It's launch-ready on genai but hasn't been run anywhere.
-
-It trains a DSpark speculative-decoding drafter for Qwen/Qwen3-0.6B (thinking on) on
-**on-policy** data: Qwen3-0.6B rewrites every assistant turn of 100k randomly sampled
-conversations from `nvidia/Nemotron-Terminal-Corpus` (subset `dataset_adapters`, about 226k
-terminal-agent trajectories covering code, math and SWE).
-
-The pipeline:
-- **Step 0:** export a seeded sample with `export_registry_dataset.py`.
-- **Step 1:** `vllm serve` plus `speculators regenerate-responses` on the sample.
-- **Step 2:** `prepare-data`.
-- **Step 3:** hidden-state server (`launch_vllm.py`, layers `2 14 25`).
-- **Step 4:** online DSpark training over Mooncake.
-
-On genai, steps 1 and 3–4 used four GPUs and two plus two GPUs.
-
-Settings agreed with the user: `MAX_GEN_TOKENS=8192` (= `SEQ_LENGTH`),
-`REGEN_MAX_MODEL_LEN=32768`, Qwen's thinking-mode sampling, `SAMPLE_SEED=0`,
-`REGEN_LIMIT=100000`, and the DSpark settings in the script.
-
-Learned on genai:
-- **`datasets` cannot read this corpus.** Each parquet file is a single row group with 2–7 GB
-  of nested text, and Arrow fails with `Nested data conversions not implemented for chunked
-  array outputs`, in any mode or batch size. Step 0 reads with `pyarrow` `iter_batches`, then
-  uses `Dataset.from_generator`, HF `.shuffle(seed)`, `.select` and `.to_json`, copying rows
-  verbatim and unifying the files' columns (`code.parquet` alone has `source`). Its cache is
-  about 13 GB.
-- **Context length:** at `max-model-len 12288`, 15% of conversations failed with HTTP 400,
-  because the next terminal-output turn can push a prompt past `MAX_GEN_TOKENS`. 32768 fixes
-  it.
-- **Truncation is expected:** about 43% of conversations stop past 8192 tokens. Their last
-  row can exceed 8192 and gets clipped by `prepare-data`, losing about 4% of supervised
-  tokens. The user accepted this, and also accepted that regenerated turns may react to
-  terminal output from commands the model didn't run.
-- **`--resume` in step 1** relies on an unchanged step 0 file (same seed, subset and limit).
-  `prepare-data --overwrite` refuses directories holding other files.
-- Read regenerated JSONL by iterating over the file object, never with `str.splitlines`
-  (U+2028 appears inside records).
-
-Reference results:
-- **Step 0 with `--limit 300 --seed 0`:** 43 rows from code, 218 from math and 39 from swe,
-  all identical to their source rows. The first three `(trial_name, episode)` values are
-  `(task_90527__CMJA82Z, episode-8)`, `(task_101944__NX3GDrK, episode-4)` and
-  `(task_17047__7eZ59DU, episode-10)`. The file's sha256 was
-  `32f16db6c70dbc1f7a7563942b8bacf52747f26d678f1f7fcfb65326fd71ae68`.
-- **Step 1 on the first 100 rows** (one H100 at memory cap 0.12, concurrency 32): 0 failed,
-  43 truncated, 563 training rows, a median of 6 turns per conversation, a median row of
-  3,743 tokens and a median reply of 500 tokens. It ran at about 1.9 requests/s. It's
-  stochastic, so expect similar numbers rather than identical ones.
-- **Steps 2–4** have not been run on this dataset. The same pipeline on Open-PerfectBlend
-  (an earlier run) trained in about 35 minutes on two GPUs and reached a validation accept
-  length of 3.99.
-- **Scale:** about 560k regeneration requests (on genai, perfectblend did about 15 requests/s
-  on four H100s), and about 560k training rows.
-
-On Vista:
-- **Smoke tests** run in a GPU idev session.
-  - On **gb**, the script's genai layout fits one node: step 1 data-parallel on 4 GPUs, and
-    steps 3–4 on 2 + 2, probably with only `GPU_MEM_UTIL` revisited.
-  - On **gh**, use a one-GPU variant. Step 3's hidden-state server and step 4's
-    `torchrun --nproc_per_node 1` share the GPU, with vLLM memory capped at roughly 0.3
-    (a guess).
-- **The full 100k run** is always an `sbatch` job, possibly across several gh or gb nodes.
-  Its configuration (node type and count, how step 1 is split, how steps 3–4 are placed,
-  time limits) **is not decided yet**. Work it out with the user in the Vista session, then
-  record it here.
+- `pipelines/speculator_training/experiments/dspark_qwen3_0_6b_nemotron_terminal/NOTES.md`
 
 ## Open questions for the user
 

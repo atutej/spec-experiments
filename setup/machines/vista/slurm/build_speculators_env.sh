@@ -1,6 +1,6 @@
 #!/bin/bash
 # Build the `speculators` env on Vista (pure pip, no compile; fine in an idev session on gg).
-#   nohup bash scripts/vista/build_speculators_env.sh > build-speculators.log 2>&1 &
+#   nohup bash setup/machines/vista/slurm/build_speculators_env.sh > "$PROJECT_ROOT/logs/setup/build-speculators.log" 2>&1 &
 set -uo pipefail
 REPO_DIR=/scratch/09749/atutej/marin_speculator/spec-experiments
 source "$REPO_DIR/env.sh"

@@ -1,14 +1,15 @@
 #!/bin/bash
 # Build the `vllm` env on Vista: compiles the Marin vLLM fork for sm_90 + sm_100 (hours).
 # Needs no GPU; a whole gg node. The wheel is cached in $WORK/wheels, so re-runs are quick.
-#   sbatch scripts/vista/build_vllm_env.sbatch
+#   sbatch setup/machines/vista/slurm/build_vllm_env.sbatch
 #SBATCH -J build-vllm
 #SBATCH -p gg
 #SBATCH -N 1
 #SBATCH --exclusive
 #SBATCH -t 08:00:00
 #SBATCH -A CCR24067
-#SBATCH -o %x-%j.out
+# Slurm cannot read variables here, and does not create the directory (env.sh does: logs/slurm/).
+#SBATCH -o /scratch/09749/atutej/marin_speculator/logs/slurm/%x-%j.out
 
 set -uo pipefail
 REPO_DIR=/scratch/09749/atutej/marin_speculator/spec-experiments   # sbatch copies the script, so no $0-relative lookup

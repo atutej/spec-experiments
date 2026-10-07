@@ -10,13 +10,17 @@ run outputs. `spec-experiments` holds everything needed to rebuild it:
 
 | File | Holds |
 |---|---|
-| `env.sh` | Per-machine settings (`MACHINE`, `CONDA_ROOT`, env location, caches, modules). Sourced by every script. |
+| `env.sh` | Picks the machine by hostname, sources `setup/machines/<machine>/env.sh` (`MACHINE`, `CONDA_ROOT`, archs, compiler), sets caches. Sourced by every script. |
+| `setup/machines/<machine>/` | One folder per machine: `env.sh`, `NOTES.md`, `slurm/`. Contract in `setup/machines/README.md`. |
 | `setup/repos.txt` | Repo dependencies: `dir url ref [upstream]`. |
-| `setup/envs/<env>.sh` | One recipe per conda env: `env_build` (install steps per `MACHINE`) and `env_check` (verify). |
+| `setup/envs/<env>.sh` | Per conda env, machine-independent: `ENV_NAME` and `env_check` (verify). |
+| `setup/machines/<machine>/envs/<env>.sh` | That env's `env_build` (install steps) on that machine. |
 | `setup/setup.sh` | Idempotent driver: clones missing repos, builds missing or failing envs, checks everything. |
+| `setup/machines/vista/slurm/` | Vista wrappers: `build_vllm_env.sbatch` (compile, submit from a login node), `build_speculators_env.sh`, `rebuild_vllm_env.sh`. |
 | `setup/check_gpu.sh` | GPU smoke test of the serving stack (needs a GPU node). |
-| `setup/locks/<machine>/<env>.txt` | Exact package lists of a known-good env (`pip freeze`). |
+| `setup/machines/<machine>/locks/<env>.txt` | Exact package lists of a known-good env (`pip freeze`). |
 | `docs/vista_setup.md` | Machine notes and how the Vista setup was worked out. |
+| `pipelines/<family>/experiments/<name>/` | The experiments (not workspace setup): `run.sh`, `vista/`, `NOTES.md`. |
 
 ## Rebuild or check a workspace
 
@@ -51,15 +55,15 @@ Do this whenever the project needs something new, so the next rebuild includes i
 
 1. **New repo:** add a line to `setup/repos.txt`. If the code needs it at a path, use
    `$PROJECT_ROOT/<dir>`.
-2. **New package or build step:** add it to `env_build` in `setup/envs/<env>.sh`, in *every*
-   `MACHINE` branch it applies to, and pin a version when it matters. Make `env_check`
-   verify it, with an import or command plus a version or feature check, so a stale env
+2. **New package or build step:** add it to `env_build` in `setup/machines/<machine>/envs/<env>.sh`, for *every*
+   machine it applies to, and pin a version when it matters. Make `env_check` (in
+   `setup/envs/<env>.sh`) verify it, with an import or command plus a version or feature check, so a stale env
    fails the check instead of failing mid-experiment.
-3. **New env:** copy an existing recipe to `setup/envs/<name>.sh`. `setup.sh` picks it up
+3. **New env:** copy an existing recipe to `setup/envs/<name>.sh` and a build file to each `setup/machines/<machine>/envs/<name>.sh`. `setup.sh` picks it up
    automatically.
-4. **New machine:** add a branch in `env.sh` and in each recipe's `case "$MACHINE"`.
+4. **New machine:** add `setup/machines/<name>/env.sh` (see `setup/machines/README.md`) and `setup/machines/<name>/envs/<env>.sh` for each env.
 5. Apply it with `setup/setup.sh --rebuild <env>`, then `setup/setup.sh --check`.
-6. Record the result with `setup/setup.sh --freeze`, which updates `setup/locks/<machine>/`.
+6. Record the result with `setup/setup.sh --freeze`, which updates `setup/machines/<machine>/locks/`.
 7. Note anything non-obvious (workarounds, why a pin exists) in the recipe comments or
    `docs/vista_setup.md`.
 8. Commit to `spec-experiments`, **asking the user first**.

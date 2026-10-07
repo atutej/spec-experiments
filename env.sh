@@ -1,38 +1,41 @@
 #!/bin/bash
 # Sourced before every step of every experiment, and by setup/setup.sh.
-# Machine-specific settings live only here; scripts stay machine-independent.
+# Machine-specific settings live in setup/machines/<machine>/env.sh; scripts stay machine-independent.
 export PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"   # workspace root: parent of this repo
+_SPEC_REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# MACHINE selects the per-machine branches here and in setup/envs/*.sh.
-if [[ "${TACC_SYSTEM:-}" == "vista" ]]; then
-    export MACHINE=vista
-    export CONDA_ROOT=$WORK/miniconda3
-    # Envs live in the workspace ($SCRATCH, purgeable); setup/setup.sh rebuilds them.
-    # With CONDA_ENVS_PATH, `conda activate <name>` and `conda create -n <name>` use it.
-    export CONDA_ENVS_PATH=$PROJECT_ROOT/envs
-    export PIP_CACHE_DIR=$PROJECT_ROOT/cache/pip
-    # One env set serves gh (1x H100, sm_90) and gb (4 GPUs per node, Blackwell, sm_100);
-    # env_check verifies torch was built for both.
-    export REQUIRED_CUDA_ARCHS="sm_90 sm_100"
-    # NODE_KIND: gg (Grace CPU only: code edits, commits, env builds), gh / gb (GPU nodes),
-    # login. Decided by the Slurm partition, else by what nvidia-smi sees.
-    case "${SLURM_JOB_PARTITION:-}" in
-        gg*) NODE_KIND=gg ;; gh*) NODE_KIND=gh ;; gb*) NODE_KIND=gb ;; *) NODE_KIND="" ;;
-    esac
-    # The default `nvidia` module sets CC/CXX to nvc/nvc++, which rejects flags torch inductor
-    # (vLLM's torch.compile) passes (nvc-Error-Unknown switch: -Wno-psabi). Use GCC everywhere.
-    # CUDA comes from pip (the vllm env), not a module; recipes load gcc/14.2.0 for source builds.
-    export CC=gcc CXX=g++
-else
-    export MACHINE=genai
-    export CONDA_ROOT=/ssd1/an34232/miniconda3
-    export PIP_CACHE_DIR=$CONDA_ROOT/pip_cache
-    export REQUIRED_CUDA_ARCHS="sm_90"   # H100 NVL
-    NODE_KIND=genai
+# Pick the machine: an explicit MACHINE=<name> wins, else the first setup/machines/*/env.sh whose
+# MACHINE_HOSTNAME_REGEX matches `hostname -f`, else the one marked MACHINE_FALLBACK=1 (genai).
+_spec_host=$(hostname -f 2>/dev/null || hostname)
+_spec_machine=${MACHINE:-}
+if [[ -z "$_spec_machine" ]]; then
+    for _spec_f in "$_SPEC_REPO"/setup/machines/*/env.sh; do
+        _spec_m=$(basename "$(dirname "$_spec_f")")
+        _spec_re=$(unset MACHINE_HOSTNAME_REGEX; source "$_spec_f" >/dev/null 2>&1; echo "${MACHINE_HOSTNAME_REGEX:-}")
+        if [[ -n "$_spec_re" && "$_spec_host" =~ $_spec_re ]]; then _spec_machine=$_spec_m; break; fi
+    done
 fi
+if [[ -z "$_spec_machine" ]]; then
+    for _spec_f in "$_SPEC_REPO"/setup/machines/*/env.sh; do
+        if (source "$_spec_f" >/dev/null 2>&1; [[ "${MACHINE_FALLBACK:-}" == 1 ]]); then _spec_machine=$(basename "$(dirname "$_spec_f")"); break; fi
+    done
+fi
+if [[ ! -f "$_SPEC_REPO/setup/machines/$_spec_machine/env.sh" ]]; then
+    _spec_known=$(ls "$_SPEC_REPO/setup/machines" | tr '\n' ' ')
+    if [[ -n "${MACHINE:-}" ]]; then echo "env.sh: unknown MACHINE='$MACHINE' (known: $_spec_known)" >&2
+    else echo "env.sh: no machine matches host '$_spec_host' (set MACHINE=<name>; known: $_spec_known)" >&2; fi
+    unset _spec_host _spec_machine _spec_f _spec_m _spec_re _spec_known _SPEC_REPO; return 1 2>/dev/null || exit 1
+fi
+source "$_SPEC_REPO/setup/machines/$_spec_machine/env.sh"
+export MACHINE
+for _spec_v in MACHINE CONDA_ROOT REQUIRED_CUDA_ARCHS; do
+    [[ -n "${!_spec_v:-}" ]] || { echo "env.sh: setup/machines/$_spec_machine/env.sh must set $_spec_v" >&2; return 1 2>/dev/null || exit 1; }
+done
+unset _spec_host _spec_machine _spec_f _spec_m _spec_re _spec_v _SPEC_REPO
+
 # NUM_GPUS: GPUs visible here (0 on CPU-only nodes, where nvidia-smi may be missing or fail).
 NUM_GPUS=$( { command -v nvidia-smi >/dev/null && nvidia-smi -L 2>/dev/null; } | grep -c '^GPU' )
-if [[ -z "$NODE_KIND" ]]; then
+if [[ -z "${NODE_KIND:-}" ]]; then
     [[ "$NUM_GPUS" -gt 0 ]] && NODE_KIND=gpu || NODE_KIND=$([[ -n "${SLURM_JOB_ID:-}" ]] && echo cpu || echo login)
 fi
 export NODE_KIND NUM_GPUS
@@ -49,5 +52,5 @@ export XDG_CACHE_HOME=$PROJECT_ROOT/cache/xdg
 export TMPDIR=$PROJECT_ROOT/tmp
 export FLASHINFER_WORKSPACE_BASE=$PROJECT_ROOT/cache/flashinfer   # JIT kernels; default is ~/.cache (small $HOME quota)
 
-mkdir -p "$HF_DATASETS_CACHE" "$TRANSFORMERS_CACHE" "$TORCHINDUCTOR_CACHE_DIR" "$XDG_CACHE_HOME" "$TMPDIR" "$PIP_CACHE_DIR"
+mkdir -p "$PROJECT_ROOT/logs/setup" "$PROJECT_ROOT/logs/slurm" "$PROJECT_ROOT/logs/smoke" "$HF_DATASETS_CACHE" "$TRANSFORMERS_CACHE" "$TORCHINDUCTOR_CACHE_DIR" "$XDG_CACHE_HOME" "$TMPDIR" "$PIP_CACHE_DIR"
 source "$CONDA_ROOT/etc/profile.d/conda.sh"

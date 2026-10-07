@@ -1,10 +1,8 @@
 #!/bin/bash
-# Online DSpark training for Qwen3-0.6B on Nemotron-Terminal-Corpus, with on-policy regeneration.
+# Online DSpark training for Qwen3-0.6B on Open-PerfectBlend, with on-policy regeneration.
 # DSpark settings follow the official examples/train/dspark_qwen3_0_6b_sharegpt_online.sh;
 # this script adds a generation step so the training data is Qwen3-0.6B's own output:
 #
-#   Step 0  scripts/export_registry_dataset.py -> seeded random sample of the preset as JSONL
-#           (`datasets` cannot read this corpus's parquet files directly)
 #   Step 1  plain `vllm serve` + `speculators regenerate-responses`
 #           -> Qwen3-0.6B rewrites every assistant turn (turn by turn, on its own history)
 #           -> pretokenized per-turn rows (input_ids + loss_mask)
@@ -12,40 +10,36 @@
 #   Step 3  hidden-state vLLM server (scripts/launch_vllm.py) exposing TARGET_LAYER_IDS
 #   Step 4  online DSpark training against that server
 #
-# Needs the vllm and speculators conda envs (speculators >= 0.8.0); see env.sh.
+# Run from the root of a speculators checkout, in an environment with both vllm and
+# speculators (>= 0.8.0) installed, like the official examples.
 set -euo pipefail
 
-source "$(dirname "${BASH_SOURCE[0]}")/../env.sh"
+REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../../.." && pwd)"   # repo root (this file: pipelines/<pipeline>/experiments/<name>/genai/)
+source "$REPO_DIR/env.sh"
 SPEC_DIR="$PROJECT_ROOT/speculators"
 use_env() { set +u; conda activate "$1"; set -u; }   # conda's activate scripts are not nounset-safe
 
 # ============ Configuration ============
 MODEL="Qwen/Qwen3-0.6B"
-DATASET="nemotron-terminal"      # preset in speculators' DATASET_CONFIGS (nvidia/Nemotron-Terminal-Corpus)
-SUBSET=""                        # "" = the preset default (dataset_adapters); or skill_based_{easy,medium,mixed}
-SAMPLE_SEED=0                    # seed of the step-0 random sample
-REGEN_LIMIT=100000               # conversations to sample and regenerate (dataset_adapters has ~226k)
-WORK_DIR="$PROJECT_ROOT/runs/nemotron_qwen3_0_6b_regen_online_think_mooncake_100k"
-SOURCE_FILE="$WORK_DIR/source/${DATASET}${SUBSET:+_$SUBSET}_${REGEN_LIMIT}_seed${SAMPLE_SEED}.jsonl"   # step 0 output
-REGEN_FILE="$WORK_DIR/regen/nemotron_qwen3_0_6b.jsonl"   # step 1 output
+DATASET="open-perfectblend"      # regenerate-responses preset (mlabonne/open-perfectblend)
+REGEN_LIMIT=100000                # conversations to regenerate; remove the flag below for all ~1.4M
+WORK_DIR="$PROJECT_ROOT/runs/main"
+REGEN_FILE="$WORK_DIR/regen/perfectblend_qwen3_0_6b.jsonl"   # step 1 output
 DATA_DIR="$WORK_DIR/data"        # step 2 output; kept separate because prepare-data
                                  # --overwrite refuses directories holding other files
 CKPT_DIR="$WORK_DIR/checkpoints"
 LOG_DIR="$WORK_DIR/logs"
 VLLM_PORT=8000
 MOONCAKE_PORT=50051              # hidden states move through Mooncake's in-RAM store, not files
-MOONCAKE_GLOBAL_GIB=4
+MOONCAKE_GLOBAL_GIB=4 
 MOONCAKE_LOCAL_GIB=2
-GPU_MEM_UTIL=0.9                 # assumes the GPUs are (almost) free; lower it if other jobs share them
+GPU_MEM_UTIL=0.5                 # vLLM default 0.92 does not fit next to other users' jobs on this shared machine
 
 # Generation settings -- match how you will SERVE the model.
 ENABLE_THINKING="true"           # "true" if you serve Qwen3 with thinking on
-MAX_GEN_TOKENS=8192              # per-request max_tokens; also stops a conversation once its
-                                 # total length passes this (regenerate-responses behaviour).
-                                 # = SEQ_LENGTH: longer rows would be clipped by prepare-data anyway
-REGEN_MAX_MODEL_LEN=32768        # Qwen3-0.6B native context. Must exceed prompt + MAX_GEN_TOKENS, and
-                                 # a prompt can pass MAX_GEN_TOKENS once the next terminal-output turn
-                                 # is appended; 12288 failed ~15% of conversations with HTTP 400
+MAX_GEN_TOKENS=6144              # per-request max_tokens; also stops a conversation once its
+                                 # total length passes this (regenerate-responses behaviour)
+REGEN_MAX_MODEL_LEN=12288        # >= prompt + MAX_GEN_TOKENS, or vLLM rejects the request
 REGEN_CONCURRENCY=512            # scale with NUM_ALL_GPUS so every replica stays busy
 MAX_ERROR_FRAC=0.02              # abort if more conversations than this fail
 
@@ -78,8 +72,6 @@ if [[ "$ENABLE_THINKING" == "true" ]]; then   # Qwen3's recommended sampling per
 else
     SAMPLING_PARAMS='{"temperature": 0.7, "top_p": 0.8, "top_k": 20, "chat_template_kwargs": {"enable_thinking": false}}'
 fi
-EXPORT_ARGS=()
-[[ -n "$SUBSET" ]] && EXPORT_ARGS+=(--subset "$SUBSET")
 VOCAB_ARGS=()
 [[ -n "$DRAFT_VOCAB_SIZE" ]] && VOCAB_ARGS=(--draft-vocab-size "$DRAFT_VOCAB_SIZE")
 mkdir -p "$(dirname "$REGEN_FILE")" "$LOG_DIR"
@@ -126,15 +118,6 @@ stop_master() {
 cleanup() { stop_server; stop_master; }
 trap cleanup EXIT
 
-# Step 0: Random sample of the preset, copied verbatim (skipped if already exported)
-if [[ ! -f "$SOURCE_FILE" ]]; then
-    echo "=== Step 0: Exporting a random sample of $DATASET ==="
-    use_env speculators
-    python "$PROJECT_ROOT/spec-experiments/scripts/export_registry_dataset.py" \
-        --dataset "$DATASET" "${EXPORT_ARGS[@]}" \
-        --limit "$REGEN_LIMIT" --seed "$SAMPLE_SEED" --out "$SOURCE_FILE"
-fi
-
 # Step 1: On-policy regeneration with a plain vLLM server (not the hidden-state server)
 echo "=== Step 1: Regenerating $DATASET responses with $MODEL ==="
 use_env vllm
@@ -145,7 +128,7 @@ start_server "$ALL_GPUS" "$LOG_DIR/regen_vllm.log" \
 
 use_env speculators
 speculators regenerate-responses \
-    --dataset "$SOURCE_FILE" \
+    --dataset "$DATASET" \
     --limit "$REGEN_LIMIT" \
     --endpoint "http://127.0.0.1:${VLLM_PORT}/v1/chat/completions" \
     --max-tokens "$MAX_GEN_TOKENS" \

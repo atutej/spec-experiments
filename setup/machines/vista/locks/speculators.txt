@@ -1,4 +1,4 @@
-# speculators on vista (aarch64), 2026-10-07T16:32Z
+# speculators on vista (aarch64), 2026-10-07T17:39Z
 # python 3.12.15
 
 aiohappyeyeballs==2.7.1

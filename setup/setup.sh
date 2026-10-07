@@ -5,7 +5,7 @@
 #   setup/setup.sh --check         only report repo and env status (changes nothing)
 #   setup/setup.sh --update        also fast-forward clean repos to their remote ref
 #   setup/setup.sh --rebuild ENV   re-run ENV's build steps even if its check passes
-#   setup/setup.sh --freeze        write setup/locks/$MACHINE/<env>.txt (exact package lists)
+#   setup/setup.sh --freeze        write setup/machines/$MACHINE/locks/<env>.txt (exact package lists)
 #   setup/setup.sh --gpu           also run the GPU smoke test (setup/check_gpu.sh; GPU nodes only)
 #
 # Everything except --gpu works on CPU-only nodes (Vista gg), including building envs.
@@ -14,7 +14,7 @@
 #   git clone git@github.com:atutej/spec-experiments.git <PROJECT_ROOT>/spec-experiments
 #   bash <PROJECT_ROOT>/spec-experiments/setup/setup.sh
 #
-# Dependencies: repos in setup/repos.txt, env build steps in setup/envs/<env>.sh.
+# Dependencies: repos in setup/repos.txt, env checks in setup/envs/<env>.sh, build steps in setup/machines/<machine>/envs/<env>.sh.
 set -uo pipefail
 
 SETUP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -92,7 +92,10 @@ done < "$SETUP_DIR/repos.txt"
 # ---- envs ----
 for recipe in "$SETUP_DIR"/envs/*.sh; do
     (
-        source "$recipe"
+        source "$recipe"   # ENV_NAME and env_check (machine-independent)
+        mrecipe="$SETUP_DIR/machines/$MACHINE/envs/$(basename "$recipe")"   # env_build for this machine
+        if [[ -f "$mrecipe" ]]; then source "$mrecipe"
+        else env_build() { echo "no $ENV_NAME build recipe for MACHINE=$MACHINE (expected $mrecipe)" >&2; return 1; }; fi
         echo; echo "== env $ENV_NAME ($(basename "$recipe"))"
         rebuild=0
         for r in "${REBUILD[@]:-}"; do [[ "$r" == "$ENV_NAME" ]] && rebuild=1; done
@@ -105,7 +108,7 @@ for recipe in "$SETUP_DIR"/envs/*.sh; do
             env_build && env_check && echo "ok       $ENV_NAME (built)" || { echo "FAILED   $ENV_NAME"; exit 1; }
         fi
         if [[ $FREEZE -eq 1 ]]; then
-            lock="$SETUP_DIR/locks/$MACHINE/$ENV_NAME.txt"
+            lock="$SETUP_DIR/machines/$MACHINE/locks/$ENV_NAME.txt"
             mkdir -p "$(dirname "$lock")"
             {
                 echo "# $ENV_NAME on $MACHINE ($(uname -m)), $(date -u +%Y-%m-%dT%H:%MZ)"

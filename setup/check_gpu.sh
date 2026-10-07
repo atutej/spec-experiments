@@ -6,7 +6,7 @@
 set -uo pipefail
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/env.sh"
 MODEL="${MODEL:-Qwen/Qwen3-0.6B}" PORT="${PORT:-8077}" GPU_MEM_UTIL="${GPU_MEM_UTIL:-0.3}"
-LOG="$TMPDIR/check_gpu_vllm.log"
+LOG="$PROJECT_ROOT/logs/setup/check_gpu_$(hostname -s)_$(date +%Y%m%d-%H%M%S).log"
 
 set +u; conda activate vllm || exit 1; set -u
 CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES:-0}" setsid vllm serve "$MODEL" --port "$PORT" \

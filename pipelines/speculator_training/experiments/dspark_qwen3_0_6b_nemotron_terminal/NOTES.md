@@ -68,6 +68,30 @@ On Vista:
   time limits) **is not decided yet**. Work it out with the user in the Vista session, then
   record it here.
 
+## Vista full run (100k conversations)
+
+Files: `settings.sh` (shared settings, identical to the genai script's config block on all 39 shared
+variables), `vista/run.sh` (the pipeline as stages), `vista/run.sbatch` (one stage per job),
+`vista/submit_chain.sh` (submits the chain from a login node). Policy: the `.sh` runs as-is on idev, sbatch wraps it.
+
+- **Stages:** `export` (gg, CPU) -> `regen` (gb, 4 GPUs) -> `prepare` (gg, CPU) -> `train` (gb: hidden-state
+  server on GPUs 0,1, training on GPUs 2,3, as on genai). Each waits for the previous (`afterok`); time limits
+  are the QOS maxima (gb 12 h, gg 2 days). The chain uses 2 of the 3 gb submit slots.
+- **Submit:** on a login node, `bash pipelines/speculator_training/experiments/dspark_qwen3_0_6b_nemotron_terminal/vista/submit_chain.sh`
+  (`--dry-run` first prints the commands). A subset reruns one stage: `... submit_chain.sh train` resumes training
+  from `$WORK_DIR/checkpoints` (the trainer resumes by default); `regen` resumes with `--resume`.
+- **Settings:** same as genai (`MAX_GEN_TOKENS=8192`, `REGEN_MAX_MODEL_LEN=32768`, thinking-mode sampling, seed 0,
+  `REGEN_LIMIT=100000`, DSpark settings). Only performance knobs differ: regen concurrency is 1024 on Vista (genai
+  512), because a gb GPU has 189 GB against an H100 NVL's 94 GB. **Not tuned:** check `rps` in the regen log
+  of the first full run.
+- **Estimates (extrapolated from smoke tests, order of magnitude):** ~563k rows, ~2.35 G training tokens; regen
+  ~6 h on one gb node (24.5 rows/s measured at concurrency 256 on 300 conversations); training ~6.5 h for one
+  epoch (from ~1e5 tokens/s over the 10 smoke steps, so shaky). Both fit the 12 h gb limit, and both resume.
+- **Tested on idev (2026-10-07):** all four stages with `REGEN_LIMIT=300 MAX_STEPS=10`: export, regen (300
+  conversations, 0 errors, 138 truncated, 62 s at concurrency 1024), prepare, train (stopped at the 10-step limit,
+  checkpoint written, no tracebacks). The sbatch wrapper and chain were checked with `--dry-run` only: no job submitted yet.
+- **Not done:** backup of results to `$WORK` (deferred), the `gh` variant, a first real submission.
+
 ## Vista smoke-test log
 
 - **Step 0 (2026-10-07, gb node):** `vista/smoke_step0_export.sh` (`--limit 300 --seed 0`) reproduced

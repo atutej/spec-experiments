@@ -71,6 +71,14 @@ Do this whenever the project needs something new, so the next rebuild includes i
 ## Rules
 
 - Keep machine-specific paths and modules in `env.sh` and recipes, never in experiment scripts.
+- **Experiment logic goes in a plain `.sh` first, sbatch second.** Write the pipeline as a script that also runs
+  as-is on an idev node (stages as arguments, small-scale overrides through environment variables), then wrap it
+  in a thin `.sbatch` plus a `submit_chain.sh` in the experiment's machine folder
+  (`pipelines/<pipeline>/experiments/<name>/<machine>/`). Test the script on idev with a tiny run before any
+  sbatch job. Settings shared across machines live in the experiment's `settings.sh`.
+- **Set every sbatch time limit (`-t`) to the maximum the partition's QOS allows**, so jobs aren't killed
+  early (Vista: `qgb` 12:00:00, `qgg`/`qgh` 2-00:00:00; see the machine's `NOTES.md`). Restartable stages
+  (`--resume`, trainer checkpoints) make a hit limit recoverable.
 - Prefer fixing a recipe over hand-installing into an env. A hand fix is lost at the next purge.
 - If a recipe step fails, report the error and options to the user. Don't swap in a different
   package source (for example upstream vLLM instead of the Marin fork) without asking.

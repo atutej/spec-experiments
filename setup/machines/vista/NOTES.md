@@ -5,8 +5,8 @@ Facts checked on 2026-10-07. The porting history is in `docs/vista_setup.md`.
 - **CPU:** every node type is aarch64 (Grace). No x86 wheel or env carries over.
 - **Node types / partitions:** `gg` (CPU only, 144 cores, ~237 GB), `gh` (1x H100, sm_90), `gb` (4x
   GB200, sm_100; driver 590.48.01 on the node I tested), plus `gh-dev`. Nodes are exclusive.
-- **Account:** `CCR24067`. Write it in upper case in `#SBATCH -A`, or Slurm errors out. QOS limits a
-  job to 2 days.
+- **Account:** `CCR24067`. Write it in upper case in `#SBATCH -A`, or Slurm errors out. QOS limits (`sacctmgr show qos`): `qgb` 12:00:00 per job and only **3 submitted jobs per user**;
+  `qgg`, `qgh` 2-00:00:00 and 40 submits. Rule of thumb: sbatch `-t` = the QOS maximum.
 - **Submitting:** `sbatch` is refused on compute nodes, including idev sessions. Submit from a login
   node. Job output goes to `$PROJECT_ROOT/logs/slurm/` (set by a literal path in the `#SBATCH -o` line). idev sessions on `gg` and `gb` last up to 2 h.
 - **Filesystems:** `$HOME` (small), `$WORK` (not purged; holds conda and the vLLM wheel in `wheels/`),

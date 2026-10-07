@@ -76,7 +76,13 @@ On Vista:
 - **Step 1 (2026-10-07, gb node, 1 GPU, `vista/smoke_step1_regen.sh`, first 100 rows):** 0 failed, 41
   truncated, 569 rows (genai: 0 / 43 / 563), median 5.5 turns per conversation (6), median row 3,993
   tokens (3,743), median reply 521 tokens (500). 91 s, ~6.2 rows/s (genai ~1.9 requests/s on a shared
-  H100 at 12% memory; not comparable). Not tried: the 4-GPU data-parallel layout of the real script.
+  H100 at 12% memory; not comparable). The 4-GPU layout is tested below.
+- **Step 1, real 4-GPU layout (`DP=4 LIMIT=300 CONCURRENCY=256 GPU_MEM_UTIL=0.9 vista/smoke_step1_regen.sh`,
+  `--data-parallel-size 4`, whole 300-row sample):** server ready in 141 s; 300 conversations, 0 errors,
+  133 truncated (44%), 1,673 rows; median 6 turns, row 3,620 tokens, reply 519 tokens. 68 s of regeneration,
+  24.5 rows/s, 3.94x the 1-GPU run (6.2 rows/s): near-linear data-parallel scaling. Rough extrapolation
+  for the full 100k conversations on one gb node: hours (about 6 h, order of magnitude only; plan the run
+  with a job array).
 - **Step 2 (`vista/smoke_step2_prepare.sh`):** `prepare-data` on those 569 rows took 43 s, dropped 1
   row with no supervised tokens, flagged a few rows clipped at 8192 (expected; see the learnings above).
 - **Steps 3-4 (`vista/smoke_step3_4_train.sh`, gb node, genai layout: hidden-state server on GPUs 0-1
@@ -91,4 +97,4 @@ On Vista:
   still 0). Vista now uses node-local `TMPDIR=/tmp`; the rerun of steps 3-4 (89 s, exit 0) had no
   such errors and no tracebacks.
 - **Not tested:** `gh` nodes (1 GPU: the one-GPU variant, with the hidden-state server and training
-  sharing the GPU), the 4-GPU regeneration layout, multi-node, a real-length training run.
+  sharing the GPU), multi-node, a real-length training run.

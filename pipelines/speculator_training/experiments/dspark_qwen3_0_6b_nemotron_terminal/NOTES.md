@@ -93,6 +93,18 @@ variables when nothing is overridden), `vista/run.sh` (the pipeline as stages), 
 - **Tested on idev (2026-10-07):** all four stages with `REGEN_LIMIT=300 MAX_STEPS=10`: export, regen (300
   conversations, 0 errors, 138 truncated, 62 s at concurrency 1024), prepare, train (stopped at the 10-step limit,
   checkpoint written, no tracebacks). The sbatch wrapper and chain were checked with `--dry-run` only: no job submitted yet.
+- **Checkpointing differs from genai (no `--save-best`).** The trainer writes no mid-epoch checkpoints when
+  `--save-best` is set (`maybe_save_checkpoint` returns early, and the periodic save in the loop requires
+  `not save_best`), and with one epoch `--save-best` has nothing to compare anyway. Vista drops it, so
+  `--checkpoint-freq 0.1` saves every 10% of the epoch; `checkpoint_best` is still written at the end.
+  **Resume tested (2026-10-07):** training the real configuration (`MAX_STEPS` unset), hard-killed at step ~132 of
+  221 with a checkpoint at step 132; rerunning `run.sh train` logged "Resuming mid-epoch ... local_step=132",
+  fast-skipped 132 batches, trained the remaining 88 steps and wrote `epoch0_end` + `checkpoint_best`. So a time
+  limit or crash loses at most 10% of an epoch (~35 min at 16384). A Slurm SIGTERM "interrupted" save is untested.
+- **Bug found by that test:** `settings.sh` ended with `[[ -n "$MAX_STEPS" ]] && ...`, which makes `source` return 1
+  when `MAX_STEPS` is empty, so under `set -e` every stage (starting with `export`) exited silently with code 1
+  in the real configuration. Earlier tests all set `MAX_STEPS=10` and never saw it. Fixed (an `if`); the `export`
+  stage was rerun with `MAX_STEPS` unset to confirm.
 - **Not done:** backup of results to `$WORK` (deferred), the `gh` variant, a first real submission.
 
 ## Tuning on a gb node (2026-10-07, `vista/tune.sh gen train`)

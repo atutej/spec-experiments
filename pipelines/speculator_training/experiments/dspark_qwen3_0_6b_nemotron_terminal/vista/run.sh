@@ -155,6 +155,9 @@ stage_train() {
 
     echo "=== Step 4: Training ==="
     use_env speculators
+    # No --save-best (genai has it): with it the trainer writes NO mid-epoch checkpoints (only at the end of an
+    # epoch), so a time limit in this single-epoch run would lose all progress. Without it, --checkpoint-freq 0.1
+    # saves every 10% of the epoch and a rerun of this stage resumes from the last one. Training itself is unchanged.
     # shellcheck disable=SC2086
     CUDA_VISIBLE_DEVICES="$TRAIN_GPUS" torchrun \
         --standalone --nproc_per_node "$NUM_TRAIN_GPUS" \
@@ -181,7 +184,6 @@ stage_train() {
         --confidence-head-with-markov \
         --loss-fn "$LOSS_FN" \
         --confidence-head-alpha "$CONFIDENCE_HEAD_ALPHA" \
-        --save-best \
         --checkpoint-freq 0.1 \
         --on-missing generate \
         "${TRAIN_EXTRA[@]}"

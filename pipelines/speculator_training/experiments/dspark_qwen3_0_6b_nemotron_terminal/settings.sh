@@ -62,4 +62,7 @@ EXPORT_ARGS=()
 [[ -n "$SUBSET" ]] && EXPORT_ARGS+=(--subset "$SUBSET")
 VOCAB_ARGS=()
 [[ -n "$DRAFT_VOCAB_SIZE" ]] && VOCAB_ARGS=(--draft-vocab-size "$DRAFT_VOCAB_SIZE")
-TRAIN_EXTRA=(); [[ -n "$MAX_STEPS" ]] && TRAIN_EXTRA=(--max-steps "$MAX_STEPS")
+TRAIN_EXTRA=()
+# An `if`, not `[[ ]] && ...`: as the last command of a sourced file, a failing `[[ ]]` makes `source` return 1 and
+# kills any caller running under `set -e` (this killed the first stage whenever MAX_STEPS was unset).
+if [[ -n "$MAX_STEPS" ]]; then TRAIN_EXTRA=(--max-steps "$MAX_STEPS"); fi

@@ -116,6 +116,25 @@ Performance-only knobs, on small data (the 3,000-conversation sample). The numbe
 - **No change made to `vista/run.sh` from this pass.** The only idea left is freeing a GPU (the server is
   nearly as fast on one), but nothing else can use it without changing the training setup.
 
+### GPU utilization and packed sequence length (2026-10-07; `vista/profile_gpu.sh`, `vista/tune_seqlen.sh`)
+
+A training step is one packed sequence of `--total-seq-len` tokens per GPU (no batch-size flag; effective batch =
+2 GPUs x length). At the genai setting (8192) the two trainer GPUs use only **19 GiB of ~183 (10%)** and are ~70% busy
+when active; the two hidden-state-server GPUs hold ~168 GiB (the preallocated KV cache) but are only ~25% busy.
+Sweeping the length on the same 13,885 rows, 100 steps each (`--max-anchors` scaled with the length; LR unchanged):
+
+| `--total-seq-len` | tokens/s | step | trainer mem | busy util | rows clipped | supervised tokens lost | Mooncake retries |
+|---|---|---|---|---|---|---|---|
+| 8192 (genai) | 87k | 77 ms | 19 GiB | 74% | 1,052 / 13,885 | 4.90% | 0 |
+| 16384 | 125k (+44%) | 120 ms | 31 GiB | 77% | 3 | 0.02% | 0 |
+| 32768 | 147k (+69%) | 215 ms | 60 GiB | 96% | 0 | 0% | 325 |
+
+- **This changes what is trained** (tokens per step, the clipping of long rows, steps per epoch), so it is not part of the
+  genai-identical settings. Not evaluated: loss or acceptance quality, the right LR for a larger step.
+- **At 32768 Mooncake rejected puts** (`status=-800`, 325 retries, a few exhausting 3 attempts): the 4/2 GiB buffers are too
+  small for that many long samples in flight. Needs larger buffers (e.g. 32/8 GiB, untested at this length).
+- **Epoch estimates** (2.35 G tokens): ~7.5 h at 8192, ~5.2 h at 16384, ~4.4 h at 32768, with 1x, 0.5x, 0.25x the optimizer steps.
+
 ## Vista smoke-test log
 
 - **Step 0 (2026-10-07, gb node):** `vista/smoke_step0_export.sh` (`--limit 300 --seed 0`) reproduced

@@ -6,11 +6,14 @@
 #   bash vista/run.sh [stage ...]       stages: export prepare train   (default: all, in order)
 #
 #   export   CPU        link the on-policy experiment's 100k sample if it exists, else export it  (skipped if present)
-#   prepare  4-GPU gb   start the hidden-state server, then `speculators prepare-data --render-endpoint` on the raw
-#                       conversations: the server's /render applies Qwen3's chat template, one row per assistant turn
-#                       (reasoning of earlier turns is stripped from the history, as at inference)
+#   prepare  4-GPU gb   `speculators prepare-data --render-endpoint` on the raw conversations: the hidden-state server's
+#                       /render applies Qwen3's chat template, one row per assistant turn (reasoning of earlier turns is
+#                       stripped from the history, as at inference). Skipped if $DATA_DIR exists.
 #   train    4-GPU gb   mooncake_master, hidden-state vLLM on GPUs 0,1, online training on GPUs 2,3 (resumes from
-#                       $WORK_DIR/checkpoints if present)
+#                       $WORK_DIR/checkpoints if present). Runs `prepare` first if $DATA_DIR is missing.
+#
+# The hidden-state server is started once per run and stays up across prepare and train (it renders for prepare, then
+# serves hidden states for train), so `train` alone does the whole GPU part in one job: that is what submit_chain.sh uses.
 #
 # Runs as-is on an idev node (prepare and train need a gb node). Small test of everything on idev:
 #   SAMPLE_LIMIT=300 MAX_STEPS=10 WORK_DIR=<abs path> bash vista/run.sh
@@ -77,11 +80,13 @@ stop_master() {
 cleanup() { stop_server; stop_master; }
 trap cleanup EXIT
 
-start_hidden_state_server() {  # start_hidden_state_server <logfile>: mooncake_master + the hidden-state vLLM on VLLM_GPUS
+HS_UP=0
+ensure_hidden_state_server() {  # mooncake_master + the hidden-state vLLM on VLLM_GPUS, started once per run (stopped at exit)
+    [[ $HS_UP -eq 0 ]] || return 0
     use_env vllm
     start_master
     # shellcheck disable=SC2086  # TARGET_LAYER_IDS is intentionally word-split
-    start_server "$VLLM_GPUS" "$1" \
+    start_server "$VLLM_GPUS" "$LOG_DIR/hs_vllm.log" \
         python "$SPEC_DIR/scripts/launch_vllm.py" "$MODEL" \
         --hidden-states-backend mooncake \
         --mooncake-master "127.0.0.1:$MOONCAKE_PORT" --mooncake-protocol tcp \
@@ -89,6 +94,7 @@ start_hidden_state_server() {  # start_hidden_state_server <logfile>: mooncake_m
         --target-layer-ids $TARGET_LAYER_IDS \
         -- --data-parallel-size "$NUM_VLLM_GPUS" --port "$VLLM_PORT" \
         --gpu-memory-utilization "$GPU_MEM_UTIL"
+    HS_UP=1
 }
 
 stage_export() {
@@ -108,7 +114,7 @@ stage_prepare() {
     [[ -f "$SOURCE_FILE" ]] || { echo "missing $SOURCE_FILE (run the export stage first)" >&2; exit 1; }
     if [[ -d "$DATA_DIR" ]]; then echo "=== Step 1: $DATA_DIR exists, skipping (delete it to redo) ==="; return 0; fi
     echo "=== Step 1: Preparing data from the corpus's own completions (render via the hidden-state server) ==="
-    start_hidden_state_server "$LOG_DIR/hs_vllm_prepare.log"
+    ensure_hidden_state_server
     use_env speculators
     # Written to $DATA_DIR.tmp and renamed, so an interrupted run never leaves a half-written $DATA_DIR behind.
     speculators prepare-data \
@@ -119,15 +125,12 @@ stage_prepare() {
         --seq-length "$SEQ_LENGTH" \
         --overwrite
     rm -rf "$DATA_DIR"; mv "$DATA_DIR.tmp" "$DATA_DIR"
-    stop_server; stop_master
 }
 
 stage_train() {
-    [[ -d "$DATA_DIR" ]] || { echo "missing $DATA_DIR (run the prepare stage first)" >&2; exit 1; }
-    echo "=== Step 2: Launching hidden-state vLLM server ==="
-    start_hidden_state_server "$LOG_DIR/hs_vllm.log"
-
-    echo "=== Step 3: Training ==="
+    ensure_hidden_state_server
+    stage_prepare            # a no-op when the data exists (a resumed job, or prepare already ran)
+    echo "=== Step 2: Training ==="
     use_env speculators
     # No --save-best: with it the trainer writes NO mid-epoch checkpoints (only at the end of an epoch), so a time
     # limit in this single-epoch run would lose all progress. --checkpoint-freq 0.1 saves every 10% of the epoch and

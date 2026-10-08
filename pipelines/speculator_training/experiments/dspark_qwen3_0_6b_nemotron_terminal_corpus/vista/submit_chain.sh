@@ -1,6 +1,6 @@
 #!/bin/bash
 # Submit the pipeline stages as a chain of Slurm jobs (run from a LOGIN node: sbatch is refused on compute nodes).
-#   bash submit_chain.sh [--dry-run] [stage ...]     stages: export prepare train   (default: all)
+#   bash submit_chain.sh [--dry-run] [stage ...]     stages: export prepare train   (default: export train; `train` also runs `prepare` when its data is missing)
 # Each submitted stage waits for the previous submitted one (afterok). Submit a subset to rerun or resume one
 # stage (e.g. `bash submit_chain.sh train` resumes training from its checkpoints; `prepare` skips if the data exists). Overrides pass through the
 # environment of this command, e.g. REGEN_LIMIT=1000 WORK_DIR=... bash submit_chain.sh --dry-run
@@ -9,11 +9,11 @@
 # first job: `AFTER=1056558 bash submit_chain.sh regen prepare train`.
 #
 # Time limits are the maximum the partition's QOS allows (rule of thumb for all jobs: qgb 12:00:00,
-# qgg / qgh 2-00:00:00). The qgb QOS also allows only 3 submitted jobs per user: this chain uses 2 gb jobs (prepare, train).
+# qgg / qgh 2-00:00:00). The qgb QOS also allows only 3 submitted jobs per user: this chain uses 1 gb job (train, which prepares first).
 set -uo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DRY=0; [[ "${1:-}" == "--dry-run" ]] && { DRY=1; shift; }
-STAGES=("$@"); [[ ${#STAGES[@]} -gt 0 ]] || STAGES=(export prepare train)
+STAGES=("$@"); [[ ${#STAGES[@]} -gt 0 ]] || STAGES=(export train)
 if [[ $DRY -eq 0 ]] && ! command -v sbatch >/dev/null; then echo "sbatch not found (login node?)" >&2; exit 1; fi
 
 partition() { case "$1" in export) echo gg ;; prepare|train) echo gb ;; *) return 1 ;; esac; }

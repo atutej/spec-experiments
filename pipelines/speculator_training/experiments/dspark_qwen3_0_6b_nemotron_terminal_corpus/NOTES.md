@@ -23,8 +23,9 @@ not from a fine-tuned one: for a fine-tuned target, change `MODEL`.
 ## How it works
 
 - `prepare-data` gets raw `conversations` here, so it needs a live vLLM server for the target model to render them
-  (`render_endpoint is required to convert natural-language conversations ...`). The `prepare` stage therefore runs on a gb
-  node: it starts `mooncake_master` and the hidden-state server, renders through it, writes `$DATA_DIR.tmp` and renames it.
+  (`render_endpoint is required to convert natural-language conversations ...`). So `prepare` needs a gb node. It renders
+  through the hidden-state server (the same one `train` then uses for hidden states), writes `$DATA_DIR.tmp` and renames it.
+  The server and `mooncake_master` start once per run and stop at exit, so a `train` job does prepare + train with one start.
 - Qwen3's chat template strips the `<think>` block of every earlier assistant turn from the history (checked on 298
   rendered rows: always exactly one `<think>`, the supervised turn's own). That turn's reasoning is supervised in its own row.
 - Per turn, the boundary is where the full render extends the generation-prompt render, so only the new turn is supervised.
@@ -32,9 +33,12 @@ not from a fine-tuned one: for a fine-tuned target, change `MODEL`.
 
 ## Chain
 
-`bash vista/submit_chain.sh` (login node) submits `export` (gg) -> `prepare` (gb) -> `train` (gb), time limits at the QOS
-maximum. The qgb QOS allows 3 submitted jobs per user, so this plus the on-policy `train` job fits only if nothing else
-is queued on gb (an idev counts). `AFTER=<jobid>` and subsets work as in the on-policy chain.
+`bash vista/submit_chain.sh` (login node) submits two jobs: `export` (gg) -> `train` (gb), time limits at the QOS maximum.
+`train` runs `prepare` first when `$DATA_DIR` is missing, and skips it when the data exists (a resumed or resubmitted job).
+One gb job instead of two because gb jobs queue for hours (the on-policy run waited 3.6 h and 8.8 h for its two gb jobs),
+so a separate `prepare` job would mean a second wait. The cost is a shared 12 h limit: if `prepare` turns out to take more
+than ~3-4 h, split it (`submit_chain.sh export prepare train`). The qgb QOS allows 3 submitted jobs per user.
+`AFTER=<jobid>` and subsets work as in the on-policy chain.
 
 ## Expected size (estimates from 60 conversations; refine after a run)
 

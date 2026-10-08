@@ -1,6 +1,6 @@
 # DSpark drafter for Qwen3-0.6B on the Nemotron-Terminal corpus's own completions (no regeneration)
 
-Sibling of `../dspark_qwen3_0_6b_nemotron_terminal` (read its `NOTES.md` for the corpus, the pipeline and the Vista
+Sibling of `../dspark_qwen3_0_6b_nemotron-terminal-corpus_onpolicy` (read its `NOTES.md` for the corpus, the pipeline and the Vista
 learnings). That experiment trains on Qwen3-0.6B's own regenerated responses (on-policy). This one trains on the
 corpus's original completions instead, so the two runs differ only in the completions:
 

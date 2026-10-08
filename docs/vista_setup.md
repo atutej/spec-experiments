@@ -279,7 +279,7 @@ Per-experiment notes (settings, what was learned on genai, reference results, Vi
 log) live next to the experiment: `pipelines/<family>/experiments/<name>/NOTES.md`. Add one when
 an experiment is set up or changed. Currently:
 
-- `pipelines/speculator_training/experiments/dspark_qwen3_0_6b_nemotron_terminal/NOTES.md`
+- `pipelines/speculator_training/experiments/dspark_qwen3_0_6b_nemotron-terminal-corpus_onpolicy/NOTES.md`
 
 ## Open questions for the user
 

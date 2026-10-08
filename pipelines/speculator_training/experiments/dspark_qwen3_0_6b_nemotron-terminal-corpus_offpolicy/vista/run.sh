@@ -1,6 +1,6 @@
 #!/bin/bash
 # DSpark drafter for Qwen3-0.6B trained on the Nemotron-Terminal corpus's OWN completions (DeepSeek-V3.2), with no
-# regeneration, on Vista. Sibling of ../../dspark_qwen3_0_6b_nemotron_terminal/vista/run.sh (on-policy, Qwen3-0.6B's
+# regeneration, on Vista. Sibling of ../../dspark_qwen3_0_6b_nemotron-terminal-corpus_onpolicy/vista/run.sh (on-policy, Qwen3-0.6B's
 # own regenerated responses); same data sample, same training settings, so the two runs differ only in the completions.
 #
 #   bash vista/run.sh [stage ...]       stages: export prepare train   (default: all, in order)

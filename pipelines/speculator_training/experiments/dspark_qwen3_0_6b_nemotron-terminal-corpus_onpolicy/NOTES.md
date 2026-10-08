@@ -77,7 +77,7 @@ variables when nothing is overridden), `vista/run.sh` (the pipeline as stages), 
 - **Stages:** `export` (gg, CPU) -> `regen` (gb, 4 GPUs) -> `prepare` (gg, CPU) -> `train` (gb: hidden-state
   server on GPUs 0,1, training on GPUs 2,3, as on genai). Each waits for the previous (`afterok`); time limits
   are the QOS maxima (gb 12 h, gg 2 days). The chain uses 2 of the 3 gb submit slots.
-- **Submit:** on a login node, `bash pipelines/speculator_training/experiments/dspark_qwen3_0_6b_nemotron_terminal/vista/submit_chain.sh`
+- **Submit:** on a login node, `bash pipelines/speculator_training/experiments/dspark_qwen3_0_6b_nemotron-terminal-corpus_onpolicy/vista/submit_chain.sh`
   (`--dry-run` first prints the commands). A subset reruns one stage: `... submit_chain.sh train` resumes training
   from `$WORK_DIR/checkpoints` (the trainer resumes by default); `regen` resumes with `--resume`.
 - **Settings:** the genai settings (`MAX_GEN_TOKENS=8192`, `REGEN_MAX_MODEL_LEN=32768`, thinking-mode sampling, seed 0,

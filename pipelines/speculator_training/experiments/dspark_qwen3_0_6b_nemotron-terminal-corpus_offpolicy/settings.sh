@@ -1,6 +1,6 @@
 # Settings of the DSpark / Qwen3-0.6B / Nemotron-Terminal experiment that trains on the CORPUS'S OWN completions
 # (DeepSeek-V3.2 terminus-2 trajectories) instead of Qwen3-0.6B's regenerated ones. Sibling of
-# ../dspark_qwen3_0_6b_nemotron_terminal (on-policy): everything that changes what is trained is the same as that
+# ../dspark_qwen3_0_6b_nemotron-terminal-corpus_onpolicy (on-policy): everything that changes what is trained is the same as that
 # experiment's Vista run (16384 / 6144 anchors, DSpark settings, same 100k conversations); only the data differs.
 # Sourced after env.sh (needs PROJECT_ROOT). Override from the environment, e.g.
 #   SAMPLE_LIMIT=300 MAX_STEPS=10 WORK_DIR=<abs path> bash vista/run.sh

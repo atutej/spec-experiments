@@ -11,5 +11,5 @@ with vLLM, build hidden-state data, train online over Mooncake.
 - **`tools/`:** `export_registry_dataset.py` (seeded sample of a dataset preset as JSONL).
 - **`notebooks/`:** `dspark_from_scratch*.ipynb`, walkthroughs of the drafter and its training.
 
-Experiments: `dspark_qwen3_0_6b_nemotron_terminal` (on-policy: regenerated responses), `dspark_qwen3_0_6b_nemotron_terminal_corpus`
+Experiments: `dspark_qwen3_0_6b_nemotron-terminal-corpus_onpolicy` (on-policy: regenerated responses), `dspark_qwen3_0_6b_nemotron-terminal-corpus_offpolicy`
 (the same data with the corpus's own completions, no regeneration), `dspark_qwen3_0_6b_perfectblend`.

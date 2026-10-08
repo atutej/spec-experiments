@@ -8,4 +8,4 @@
 # Slurm cannot read variables here, and does not create the directory (env.sh does: logs/slurm/).
 #SBATCH -o /scratch/09749/atutej/marin_speculator/logs/slurm/%x-%j.out
 set -uo pipefail
-exec bash /scratch/09749/atutej/marin_speculator/spec-experiments/pipelines/speculator_training/experiments/dspark_qwen3_0_6b_nemotron_terminal_corpus/vista/run.sh "$@"
+exec bash /scratch/09749/atutej/marin_speculator/spec-experiments/pipelines/speculator_training/experiments/dspark_qwen3_0_6b_nemotron-terminal-corpus_offpolicy/vista/run.sh "$@"

@@ -46,9 +46,13 @@ not from a fine-tuned one: for a fine-tuned target, change `MODEL`.
 
 So an epoch has about **2x the tokens of the on-policy epoch** (~5-6 h at the on-policy run's ~8 steps/s, if the step time is similar;
 the on-policy epoch is ~2.7 h).
-`prepare` speed: 300 conversations took 40 s in total; 3,000 conversations took 317 s (62,465 render calls, ~20.8 per conversation)
-with only 3 of 27 map workers busy (1,000 conversations per batch), and the render server (6 API servers x 2 workers) at ~170% CPU, far from
-saturated. For 100k conversations (100 batches over 27 workers, ~2.1M render calls) a rough projection is 0.5-2.6 h; the gg limit is 2 days.
+`prepare` speed: 300 conversations took 40 s in total; 3,000 conversations took 317 s (62,465 render calls, ~20.8 per conversation).
+**The 100k run is slow because the render server is the bottleneck, not the node**: `vllm launch render` is one Python process
+(it ignores `--api-server-count`), GIL-bound at ~2-2.5 cores of a 144-core node, and the 27 `prepare-data` workers mostly wait on it.
+Measured (27 concurrent clients, speculators' own render client): `--renderer-num-workers 2` -> 171 calls/s, 8 -> 333, 32 -> 296.
+The first real run used 2 workers and sustained ~190 calls/s: ~2.1M render calls for 100k conversations = ~3 h (an earlier version of
+this note projected 0.5-2.6 h from a 3-worker test and wrongly assumed the server would scale). `settings.sh` now uses 8 (~1.7 h).
+Going much faster needs several server processes (shard the conversations, or a load balancer) and has not been built.
 
 ## Chain
 

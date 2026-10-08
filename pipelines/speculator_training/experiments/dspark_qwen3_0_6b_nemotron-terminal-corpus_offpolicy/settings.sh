@@ -21,8 +21,8 @@ CKPT_DIR="$WORK_DIR/checkpoints"
 LOG_DIR="$WORK_DIR/logs"
 VLLM_PORT=8000
 RENDER_PORT=8091                 # the GPU-less render server used by prepare
-RENDER_API_SERVERS=6             # as launch_vllm.py picks for a 144-CPU node; the server was far from saturated in tests
-RENDER_WORKERS=2                 # renderer threads per API server
+RENDER_WORKERS=8                 # renderer threads. `vllm launch render` is ONE process (it ignores --api-server-count) and is GIL-bound:
+                                 # 27 clients got 171 calls/s with 2 threads, 333 with 8, 296 with 32 (so 8; more does not help)
 MOONCAKE_PORT=50051              # hidden states move through Mooncake's in-RAM store, not files
 MOONCAKE_GLOBAL_GIB=4
 MOONCAKE_LOCAL_GIB=2

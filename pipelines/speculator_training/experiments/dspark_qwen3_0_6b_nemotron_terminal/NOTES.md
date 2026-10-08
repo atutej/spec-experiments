@@ -88,8 +88,9 @@ variables when nothing is overridden), `vista/run.sh` (the pipeline as stages), 
   tokens per step. Quality (loss, acceptance length) is not evaluated; compare against a genai-length run if it matters.
   Override from the environment, e.g. `SEQ_LENGTH=8192 MAX_ANCHORS=3072 bash vista/run.sh` for genai-identical settings.
 - **Estimates (extrapolated from smoke tests, order of magnitude):** ~563k rows, ~2.35 G training tokens; regen
-  ~6 h on one gb node (24.5 rows/s measured at concurrency 256 on 300 conversations); training ~5.2 h for one
-  epoch at 16384 (125k tokens/s measured over 100 steps; ~7.5 h at 8192). Both fit the 12 h gb limit, and both resume.
+  ~6 h on one gb node (24.5 rows/s measured at concurrency 256 on 300 conversations); training about 2.7 h for one
+  epoch at 16384 (inferred: ~78k steps at ~8 steps/s; confirm from the finished job's log; an earlier version of this
+  note said 5.2 h because it read the per-rank `tokens_per_s` as the total). Both fit the 12 h gb limit, and both resume.
 - **Tested on idev (2026-10-07):** all four stages with `REGEN_LIMIT=300 MAX_STEPS=10`: export, regen (300
   conversations, 0 errors, 138 truncated, 62 s at concurrency 1024), prepare, train (stopped at the 10-step limit,
   checkpoint written, no tracebacks). The sbatch wrapper and chain were checked with `--dry-run` only: no job submitted yet.
@@ -148,7 +149,8 @@ Sweeping the length on the same 13,885 rows, 100 steps each (`--max-anchors` sca
   genai-identical settings. Not evaluated: loss or acceptance quality, the right LR for a larger step.
 - **At 32768 Mooncake rejected puts** (`status=-800`, 325 retries, a few exhausting 3 attempts): the 4/2 GiB buffers are too
   small for that many long samples in flight. Needs larger buffers (e.g. 32/8 GiB, untested at this length).
-- **Epoch estimates** (2.35 G tokens): ~7.5 h at 8192, ~5.2 h at 16384, ~4.4 h at 32768, with 1x, 0.5x, 0.25x the optimizer steps.
+- **Epoch estimates** (2.35 G tokens): the profiler's `tokens_per_s` is **per rank**, so with 2 training ranks the epoch is about
+  half of what first appeared here: ~3.7 h at 8192, ~2.6 h at 16384, ~2.2 h at 32768, with 1x, 0.5x, 0.25x the optimizer steps.
 
 ## Vista smoke-test log
 

@@ -37,7 +37,11 @@ for s in "${STAGES[@]}"; do case "$s" in
     *) echo "unknown stage '$s' (export prepare train)" >&2; exit 2 ;;
 esac; done
 mkdir -p "$LOG_DIR" "$(dirname "$SOURCE_FILE")"
-echo "node=$(hostname) kind=$NODE_KIND gpus=$NUM_GPUS stages=${STAGES[*]} WORK_DIR=$WORK_DIR SAMPLE_LIMIT=$SAMPLE_LIMIT MAX_STEPS=${MAX_STEPS:-none}"
+# Work from the run directory, not from wherever the job was submitted. A Slurm job starts in the submit directory (here the
+# experiment's vista/ folder), and torch's DataLoader workers (multiprocessing "spawn") re-enter the parent's working directory
+# when they start: renaming that folder while a job runs crashed the validation workers of the first on-policy run.
+cd "$WORK_DIR"
+echo "node=$(hostname) cwd=$PWD kind=$NODE_KIND gpus=$NUM_GPUS stages=${STAGES[*]} WORK_DIR=$WORK_DIR SAMPLE_LIMIT=$SAMPLE_LIMIT MAX_STEPS=${MAX_STEPS:-none}"
 
 # ---- server helpers: start in its own process group, stop the whole group ----
 SERVER_PGID=""

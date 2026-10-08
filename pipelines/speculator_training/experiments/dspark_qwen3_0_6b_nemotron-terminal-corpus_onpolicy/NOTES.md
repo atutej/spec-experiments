@@ -155,6 +155,23 @@ Sweeping the length on the same 13,885 rows, 100 steps each (`--max-anchors` sca
 - **Epoch estimates** (2.35 G tokens): the profiler's `tokens_per_s` is **per rank**, so with 2 training ranks the epoch is about
   half of what first appeared here: ~3.7 h at 8192, ~2.6 h at 16384, ~2.2 h at 32768, with 1x, 0.5x, 0.25x the optimizer steps.
 
+## First full run (job 1056600, 2026-10-08): training finished, validation did not run
+
+- **Training completed:** 78,175 steps (one epoch of the 584,553-row dataset, 16384-token packed sequences, 2 training GPUs) in 2 h 46 min
+  at ~8 steps/s. The end-of-epoch checkpoint is saved and intact: `checkpoints/0/` (= `epoch0_end`; `model.safetensors` 260 MB, optimizer
+  and scheduler state, `training_state.json` at global_step 78175). On the last training batches: loss ~0.26-0.30, accept length ~5.3-5.5,
+  position-0 accuracy ~0.90 (these are *training-batch* numbers, not validation).
+- **Slurm state `FAILED` (exit 1) because validation crashed at its start.** The job's working directory was the experiment's `vista/` folder
+  (the directory it was submitted from). The folders were renamed (commit `2354648`) while the job was running; the training DataLoader
+  workers had already been spawned, but the validation epoch spawns new workers, and `multiprocessing`'s `spawn` re-enters the parent's original
+  working directory, which no longer existed: 24 workers died with `FileNotFoundError: .../dspark_qwen3_0_6b_nemotron_terminal/vista`.
+  The rename was safe for the running *script* (an open file keeps its identity) but not for the job's *working directory*.
+- **What is missing:** the validation metrics (`val/*`), the `checkpoint_best` marker, and a clean exit. Resuming does not recover them: the
+  checkpoint is a finished epoch, so a rerun trains zero epochs and skips validation. Validation needs a separate pass (a gb job with the
+  hidden-state server) over the saved checkpoint; not done.
+- **Fix:** both experiments' `run.sh` now `cd "$WORK_DIR"` at the start, so a job's working directory is its run directory, which a rename of the
+  experiment folder cannot invalidate. Rule: do not rename or move a folder a running job was started from.
+
 ## Metric logging (Weights & Biases)
 
 `train` logs with `--logger wandb`: **entity `atutej`, project `marin_speculator`, run name = this experiment's folder name**
@@ -166,9 +183,13 @@ Before training starts, `run.sh` checks the W&B login and that the entity is one
 fails (no key, no network, wrong entity) it logs **offline** instead of crashing, with a warning in the job log; upload later with
 `wandb sync <run dir>`. `wandb` is installed in the `speculators` env by the recipe and checked by `env_check`.
 
-**The first full run (job 1056600) started before this and logged to no tracker**: its metrics exist only in its Slurm log
-(`logs/slurm/dspark-nemotron-train-1056600.out`), printed every step. They can be parsed from there and uploaded to the same
-project for comparison with the off-policy run.
+**The first full run (job 1056600) started before this and logged to no tracker, so it was backfilled** from its Slurm log with
+`pipelines/speculator_training/tools/backfill_wandb_from_slurm_log.py`: run `atutej/marin_speculator/dspark_qwen3_0_6b_nemotron-terminal-corpus_onpolicy`
+(https://wandb.ai/atutej/marin_speculator/runs/9z6aoy4y), tag `backfilled-from-slurm-log`. It follows the trainer's conventions: the same flattened
+keys (`train/*`, `profile/*`, `lr/*`, `epoch`, `global_step`) logged with `step=global_step`, and the config rebuilt with the trainer's own
+`TrainConfig.resolve()` from the saved `train_command.txt` (97 keys). Checked: 78,175 history rows (steps 0-78174, no gaps), 31 metric columns, 30
+spot-checked values equal to the parsed log. **Limits:** values have the console's precision (about 3 significant digits), timestamps are the
+upload time, and there are no `val/*` metrics (see above).
 
 
 ## Vista smoke-test log

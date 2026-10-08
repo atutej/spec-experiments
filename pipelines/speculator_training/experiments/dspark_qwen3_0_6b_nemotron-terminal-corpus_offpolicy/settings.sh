@@ -11,7 +11,7 @@ DATASET="nemotron-terminal"      # preset in speculators' DATASET_CONFIGS (nvidi
 SUBSET=""                        # "" = the preset default (dataset_adapters); or skill_based_{easy,medium,mixed}
 SAMPLE_SEED=0                    # seed of the step-0 random sample (same as the on-policy experiment)
 SAMPLE_LIMIT=${SAMPLE_LIMIT:-100000}             # conversations to sample (dataset_adapters has ~226k)
-WORK_DIR=${WORK_DIR:-$PROJECT_ROOT/runs/nemotron_qwen3_0_6b_corpus_online_mooncake_100k}
+WORK_DIR=${WORK_DIR:-$PROJECT_ROOT/runs/nemotron_qwen3_0_6b_corpus_offpolicy_mooncake_100k}
 SOURCE_FILE="$WORK_DIR/source/${DATASET}${SUBSET:+_$SUBSET}_${SAMPLE_LIMIT}_seed${SAMPLE_SEED}.jsonl"   # step 0 output
 # The on-policy experiment's export of the same sample: linked instead of re-exported, so both runs use the SAME
 # conversations (same seed and limit give the same rows, but sharing the file makes it certain).

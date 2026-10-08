@@ -80,6 +80,9 @@ variables when nothing is overridden), `vista/run.sh` (the pipeline as stages), 
 - **Submit:** on a login node, `bash pipelines/speculator_training/experiments/dspark_qwen3_0_6b_nemotron-terminal-corpus_onpolicy/vista/submit_chain.sh`
   (`--dry-run` first prints the commands). A subset reruns one stage: `... submit_chain.sh train` resumes training
   from `$WORK_DIR/checkpoints` (the trainer resumes by default); `regen` resumes with `--resume`.
+- **Names:** outputs are in `runs/nemotron_qwen3_0_6b_regen_online_think_mooncake_100k/`. New submissions use the Slurm job names
+  `dspark-onpolicy-<stage>`; the first full run (jobs 1056597-1056600, 2026-10-07) was submitted before that rename and its logs are
+  `logs/slurm/dspark-nemotron-<stage>-<jobid>.out`.
 - **Settings:** the genai settings (`MAX_GEN_TOKENS=8192`, `REGEN_MAX_MODEL_LEN=32768`, thinking-mode sampling, seed 0,
   `REGEN_LIMIT=100000`, the other DSpark settings), with two deliberate differences. (1) Regen concurrency 1024 (genai
   512): a performance knob, flat in the sweep. (2) **`SEQ_LENGTH=16384` and `MAX_ANCHORS=6144` (genai 8192 and 3072):

@@ -57,6 +57,10 @@ the QOS maximum. Only `train` needs a gb node, so only it waits in the long gb q
 for its two gb jobs; its gg jobs waited minutes). The qgb QOS allows 3 submitted jobs per user; this uses 1.
 `AFTER=<jobid>` and subsets work as in the on-policy chain.
 
+Names: outputs go to `runs/nemotron_qwen3_0_6b_corpus_offpolicy_mooncake_100k/` (checkpoints, data, logs), and the Slurm jobs are
+`dspark-offpolicy-<stage>`, so their logs are `logs/slurm/dspark-offpolicy-<stage>-<jobid>.out`. `submit_chain.sh` prints the
+run directory it will use (it follows a `WORK_DIR=...` override).
+
 ## Expected size (estimates from 60 conversations; refine after a run)
 
 See the measurements above: about 2x the on-policy run's training tokens per epoch.

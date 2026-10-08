@@ -29,10 +29,11 @@ submit() {
     echo "$id"
 }
 
+JOB_PREFIX=dspark-offpolicy   # Slurm job names (and log file names): <prefix>-<stage>
 prev="${AFTER:-}"; SUBMITTED=()
 for s in "${STAGES[@]}"; do
     p=$(partition "$s") || { echo "unknown stage '$s' (export prepare train)" >&2; exit 2; }
-    cmd=(sbatch --parsable -p "$p" -t "$(maxtime "$p")" -J "dspark-corpus-$s" --export=ALL)
+    cmd=(sbatch --parsable -p "$p" -t "$(maxtime "$p")" -J "$JOB_PREFIX-$s" --export=ALL)
     [[ -n "$prev" ]] && cmd+=(--dependency="afterok:$prev")
     cmd+=("$HERE/run.sbatch" "$s")
     if [[ $DRY -eq 1 ]]; then echo "${cmd[*]}"; prev="<job-$s>"; continue; fi
@@ -43,4 +44,6 @@ for s in "${STAGES[@]}"; do
     SUBMITTED+=("$s=$prev")
     echo "$s: job $prev (partition $p)"
 done
-[[ $DRY -eq 1 ]] || echo "Watch: squeue -u \$USER ; logs in the workspace logs/slurm/, run logs in \$WORK_DIR/logs/"
+# The directory the jobs will really use (settings.sh default, or WORK_DIR from this command's environment).
+RUN_DIR=$( PROJECT_ROOT="$(cd "$HERE/../../../../../.." && pwd)"; source "$HERE/../settings.sh" >/dev/null 2>&1; echo "${WORK_DIR:-}" )
+[[ $DRY -eq 1 ]] || echo "Watch: squeue -u \$USER ; Slurm logs in <workspace>/logs/slurm/${JOB_PREFIX}-<stage>-<jobid>.out, run logs in ${RUN_DIR}/logs/"

@@ -84,7 +84,9 @@ trap cleanup EXIT
 RENDER_PGID=""
 start_render_server() {  # vLLM's GPU-less render server: preprocessing only, no GPU and no model weights
     use_env vllm
-    CUDA_VISIBLE_DEVICES="" setsid vllm launch render "$MODEL" --port "$RENDER_PORT" \
+    # VLLM_TARGET_DEVICE=cpu: on a gg node (no NVIDIA driver) vLLM cannot infer a device and exits with "Failed to infer
+    # device type"; the render server only tokenizes, so the CPU platform is enough. Harmless on a node with GPUs.
+    VLLM_TARGET_DEVICE=cpu CUDA_VISIBLE_DEVICES="" setsid vllm launch render "$MODEL" --port "$RENDER_PORT" \
         --api-server-count "$RENDER_API_SERVERS" --renderer-num-workers "$RENDER_WORKERS" \
         > "$LOG_DIR/render_vllm.log" 2>&1 &
     RENDER_PGID=$!

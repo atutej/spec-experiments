@@ -27,6 +27,9 @@ not from a fine-tuned one: for a fine-tuned target, change `MODEL`.
   vLLM build does not register that route** (a first version rendered through it and got `404 Not Found` for all 300 test
   conversations), but the build has `vllm launch render`, **a GPU-less render server** (no GPU, no weights, ~25-50 s to start).
   So `prepare` is a CPU stage: it starts that server, runs `prepare-data`, writes `$DATA_DIR.tmp`, renames it and stops the server.
+  On a gg node (no NVIDIA driver at all) the server first failed with `Failed to infer device type`; `VLLM_TARGET_DEVICE=cpu` fixes
+  that (the render server only tokenizes), and `run.sh` sets it. The CPU-platform render produced exactly the same dataset as the
+  GPU node's (2,272 rows, identical content hash on 300 conversations).
 - Qwen3's chat template strips the `<think>` block of every earlier assistant turn from the history. Checked on the real rendered
   rows: every row has exactly one `<think>`, it is inside the supervised part, and the history carries actions only.
 - Per turn, the boundary is where the full render extends the generation-prompt render, so only the new turn is supervised.
@@ -60,7 +63,7 @@ See the measurements above: about 2x the on-policy run's training tokens per epo
 
 ## Status
 
-Written 2026-10-08. Tested on a gb idev with `SAMPLE_LIMIT=300 MAX_STEPS=10`: all three stages pass (export, prepare through the
-GPU-less render server, 10 training steps, checkpoint written, no Mooncake retries). Not tested: `prepare` on an actual gg node
-(no NVIDIA driver at all; the render server was run here with `CUDA_VISIBLE_DEVICES=""`, the vllm env imports fine on gg), the
-render step at full scale, and a full-length run. Not submitted. Whether this data suits your target model is the open question above.
+Written 2026-10-08. Tested with `SAMPLE_LIMIT=300`: all three stages on a gb idev (export, prepare, 10 training steps, checkpoint, no
+Mooncake retries), and export + prepare on a real gg idev (no GPU driver; render server ready in 27 s, 0 failed conversations,
+dataset identical to the gb run). Not tested: the render step at full scale (projected 0.5-2.6 h, limit 2 days on gg), a full-length
+run, and whether this data suits your target model (see above). Not submitted.

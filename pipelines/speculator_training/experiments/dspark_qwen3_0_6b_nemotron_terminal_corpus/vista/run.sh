@@ -6,14 +6,15 @@
 #   bash vista/run.sh [stage ...]       stages: export prepare train   (default: all, in order)
 #
 #   export   CPU        link the on-policy experiment's 100k sample if it exists, else export it  (skipped if present)
-#   prepare  4-GPU gb   `speculators prepare-data --render-endpoint` on the raw conversations: the hidden-state server's
-#                       /render applies Qwen3's chat template, one row per assistant turn (reasoning of earlier turns is
-#                       stripped from the history, as at inference). Skipped if $DATA_DIR exists.
+#   prepare  CPU        `speculators prepare-data --render-endpoint` on the raw conversations. Rendering is done by
+#                       `vllm launch render`, vLLM's GPU-less render server (no GPU, no weights): it applies Qwen3's chat
+#                       template, one row per assistant turn (reasoning of earlier turns is stripped from the history, as at
+#                       inference). Runs on a gg node. Skipped if $DATA_DIR exists.
 #   train    4-GPU gb   mooncake_master, hidden-state vLLM on GPUs 0,1, online training on GPUs 2,3 (resumes from
-#                       $WORK_DIR/checkpoints if present). Runs `prepare` first if $DATA_DIR is missing.
+#                       $WORK_DIR/checkpoints if present). Needs $DATA_DIR (run prepare first).
 #
-# The hidden-state server is started once per run and stays up across prepare and train (it renders for prepare, then
-# serves hidden states for train), so `train` alone does the whole GPU part in one job: that is what submit_chain.sh uses.
+# Why a separate render server: the hidden-state server of this vLLM build does not register the
+# `/v1/chat/completions/render` route (a first version that rendered through it got a 404 for every conversation).
 #
 # Runs as-is on an idev node (prepare and train need a gb node). Small test of everything on idev:
 #   SAMPLE_LIMIT=300 MAX_STEPS=10 WORK_DIR=<abs path> bash vista/run.sh
@@ -31,8 +32,8 @@ VLLM_GPUS="0,1" NUM_VLLM_GPUS=2           # hidden-state server (also renders du
 TRAIN_GPUS="2,3" NUM_TRAIN_GPUS=2         # ... and training side by side
 STAGES=("$@"); [[ ${#STAGES[@]} -gt 0 ]] || STAGES=(export prepare train)
 for s in "${STAGES[@]}"; do case "$s" in
-    export) ;;
-    prepare|train) [[ "$NUM_GPUS" -ge 4 ]] || { echo "stage '$s' needs a 4-GPU gb node (NODE_KIND=$NODE_KIND, NUM_GPUS=$NUM_GPUS)" >&2; exit 1; } ;;
+    export|prepare) ;;
+    train) [[ "$NUM_GPUS" -ge 4 ]] || { echo "stage '$s' needs a 4-GPU gb node (NODE_KIND=$NODE_KIND, NUM_GPUS=$NUM_GPUS)" >&2; exit 1; } ;;
     *) echo "unknown stage '$s' (export prepare train)" >&2; exit 2 ;;
 esac; done
 mkdir -p "$LOG_DIR" "$(dirname "$SOURCE_FILE")"
@@ -77,12 +78,32 @@ stop_master() {
     kill -KILL -- "-$MASTER_PGID" 2>/dev/null || true
     MASTER_PGID=""
 }
-cleanup() { stop_server; stop_master; }
+cleanup() { stop_server; stop_master; stop_render_server; }
 trap cleanup EXIT
 
-HS_UP=0
-ensure_hidden_state_server() {  # mooncake_master + the hidden-state vLLM on VLLM_GPUS, started once per run (stopped at exit)
-    [[ $HS_UP -eq 0 ]] || return 0
+RENDER_PGID=""
+start_render_server() {  # vLLM's GPU-less render server: preprocessing only, no GPU and no model weights
+    use_env vllm
+    CUDA_VISIBLE_DEVICES="" setsid vllm launch render "$MODEL" --port "$RENDER_PORT" \
+        --api-server-count "$RENDER_API_SERVERS" --renderer-num-workers "$RENDER_WORKERS" \
+        > "$LOG_DIR/render_vllm.log" 2>&1 &
+    RENDER_PGID=$!
+    echo "Waiting for the render server (log: $LOG_DIR/render_vllm.log)..."
+    until curl -sf "http://localhost:${RENDER_PORT}/health" > /dev/null 2>&1; do
+        kill -0 "$RENDER_PGID" 2>/dev/null || { echo "render server exited; see $LOG_DIR/render_vllm.log" >&2; tail -n 30 "$LOG_DIR/render_vllm.log" >&2; exit 1; }
+        sleep 3
+    done
+    echo "render server ready after ${SECONDS}s."
+}
+stop_render_server() {
+    [[ -n "$RENDER_PGID" ]] || return 0
+    kill -TERM -- "-$RENDER_PGID" 2>/dev/null || true
+    sleep 3
+    kill -KILL -- "-$RENDER_PGID" 2>/dev/null || true
+    RENDER_PGID=""
+}
+
+start_hidden_state_server() {  # mooncake_master + the hidden-state vLLM on VLLM_GPUS (train only; stopped at exit)
     use_env vllm
     start_master
     # shellcheck disable=SC2086  # TARGET_LAYER_IDS is intentionally word-split
@@ -94,7 +115,6 @@ ensure_hidden_state_server() {  # mooncake_master + the hidden-state vLLM on VLL
         --target-layer-ids $TARGET_LAYER_IDS \
         -- --data-parallel-size "$NUM_VLLM_GPUS" --port "$VLLM_PORT" \
         --gpu-memory-utilization "$GPU_MEM_UTIL"
-    HS_UP=1
 }
 
 stage_export() {
@@ -113,24 +133,26 @@ stage_export() {
 stage_prepare() {
     [[ -f "$SOURCE_FILE" ]] || { echo "missing $SOURCE_FILE (run the export stage first)" >&2; exit 1; }
     if [[ -d "$DATA_DIR" ]]; then echo "=== Step 1: $DATA_DIR exists, skipping (delete it to redo) ==="; return 0; fi
-    echo "=== Step 1: Preparing data from the corpus's own completions (render via the hidden-state server) ==="
-    ensure_hidden_state_server
+    echo "=== Step 1: Preparing data from the corpus's own completions (render via the GPU-less render server) ==="
+    start_render_server
     use_env speculators
     # Written to $DATA_DIR.tmp and renamed, so an interrupted run never leaves a half-written $DATA_DIR behind.
     speculators prepare-data \
         --model "$MODEL" \
         --data "$SOURCE_FILE" \
-        --render-endpoint "http://localhost:${VLLM_PORT}" \
+        --render-endpoint "http://localhost:${RENDER_PORT}" \
         --output "$DATA_DIR.tmp" \
         --seq-length "$SEQ_LENGTH" \
         --overwrite
     rm -rf "$DATA_DIR"; mv "$DATA_DIR.tmp" "$DATA_DIR"
+    stop_render_server
 }
 
 stage_train() {
-    ensure_hidden_state_server
-    stage_prepare            # a no-op when the data exists (a resumed job, or prepare already ran)
-    echo "=== Step 2: Training ==="
+    [[ -d "$DATA_DIR" ]] || { echo "missing $DATA_DIR (run the prepare stage first)" >&2; exit 1; }
+    echo "=== Step 2: Launching hidden-state vLLM server ==="
+    start_hidden_state_server
+    echo "=== Step 3: Training ==="
     use_env speculators
     # No --save-best: with it the trainer writes NO mid-epoch checkpoints (only at the end of an epoch), so a time
     # limit in this single-epoch run would lose all progress. --checkpoint-freq 0.1 saves every 10% of the epoch and

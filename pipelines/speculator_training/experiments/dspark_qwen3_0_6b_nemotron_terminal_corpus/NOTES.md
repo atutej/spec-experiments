@@ -22,34 +22,45 @@ not from a fine-tuned one: for a fine-tuned target, change `MODEL`.
 
 ## How it works
 
-- `prepare-data` gets raw `conversations` here, so it needs a live vLLM server for the target model to render them
-  (`render_endpoint is required to convert natural-language conversations ...`). So `prepare` needs a gb node. It renders
-  through the hidden-state server (the same one `train` then uses for hidden states), writes `$DATA_DIR.tmp` and renames it.
-  The server and `mooncake_master` start once per run and stop at exit, so a `train` job does prepare + train with one start.
-- Qwen3's chat template strips the `<think>` block of every earlier assistant turn from the history (checked on 298
-  rendered rows: always exactly one `<think>`, the supervised turn's own). That turn's reasoning is supervised in its own row.
+- `prepare-data` gets raw `conversations` here, so it needs a vLLM render endpoint (`/v1/chat/completions/render`) to apply the
+  chat template (`render_endpoint is required to convert natural-language conversations ...`). **The hidden-state server of this
+  vLLM build does not register that route** (a first version rendered through it and got `404 Not Found` for all 300 test
+  conversations), but the build has `vllm launch render`, **a GPU-less render server** (no GPU, no weights, ~25-50 s to start).
+  So `prepare` is a CPU stage: it starts that server, runs `prepare-data`, writes `$DATA_DIR.tmp`, renames it and stops the server.
+- Qwen3's chat template strips the `<think>` block of every earlier assistant turn from the history. Checked on the real rendered
+  rows: every row has exactly one `<think>`, it is inside the supervised part, and the history carries actions only.
 - Per turn, the boundary is where the full render extends the generation-prompt render, so only the new turn is supervised.
-  Checked locally with the tokenizer on 60 conversations: 0 of 414 rows had an unstable boundary.
+  On 300 conversations: 2,272 rows (7.6 per conversation), 0 zero-supervised rows, no boundary errors.
+
+## Measured on the 300-conversation and 3,000-conversation samples (2026-10-08, gb idev, render server run on that node)
+
+| | corpus rows (this experiment) | regenerated rows (on-policy) |
+|---|---|---|
+| Rows per conversation | 7.6 | 5.8 |
+| Mean row tokens (cap 16384) | 6,443 (2.7% at the cap) | 4,292 |
+| Supervised tokens per row | 1,396 | 1,062 |
+| Total tokens per conversation | 48,795 | 24,833 |
+
+So an epoch has about **2x the tokens of the on-policy epoch** (~5-6 h at the on-policy run's ~8 steps/s, if the step time is similar;
+the on-policy epoch is ~2.7 h).
+`prepare` speed: 300 conversations took 40 s in total; 3,000 conversations took 317 s (62,465 render calls, ~20.8 per conversation)
+with only 3 of 27 map workers busy (1,000 conversations per batch), and the render server (6 API servers x 2 workers) at ~170% CPU, far from
+saturated. For 100k conversations (100 batches over 27 workers, ~2.1M render calls) a rough projection is 0.5-2.6 h; the gg limit is 2 days.
 
 ## Chain
 
-`bash vista/submit_chain.sh` (login node) submits two jobs: `export` (gg) -> `train` (gb), time limits at the QOS maximum.
-`train` runs `prepare` first when `$DATA_DIR` is missing, and skips it when the data exists (a resumed or resubmitted job).
-One gb job instead of two because gb jobs queue for hours (the on-policy run waited 3.6 h and 8.8 h for its two gb jobs),
-so a separate `prepare` job would mean a second wait. The cost is a shared 12 h limit: if `prepare` turns out to take more
-than ~3-4 h, split it (`submit_chain.sh export prepare train`). The qgb QOS allows 3 submitted jobs per user.
+`bash vista/submit_chain.sh` (login node) submits three jobs: `export` (gg) -> `prepare` (gg) -> `train` (gb), time limits at
+the QOS maximum. Only `train` needs a gb node, so only it waits in the long gb queue (the on-policy run waited 3.6 h and 8.8 h
+for its two gb jobs; its gg jobs waited minutes). The qgb QOS allows 3 submitted jobs per user; this uses 1.
 `AFTER=<jobid>` and subsets work as in the on-policy chain.
 
 ## Expected size (estimates from 60 conversations; refine after a run)
 
-About 6.9 rows per conversation (plus ~8% of turns skipped because their context alone fills 16384 tokens), mean row
-~6.2k tokens, ~42k tokens per conversation against ~25k for the regenerated rows: about 1.7x the training tokens.
-At the on-policy run's measured ~8 steps/s that is roughly 4-5 h for one epoch, on top of the render time of `prepare`
-(about 1.5-2 render calls per turn, ~1.5M for 100k conversations; not timed).
+See the measurements above: about 2x the on-policy run's training tokens per epoch.
 
 ## Status
 
-Written 2026-10-08. `export` tested here on a CPU node (links the shared sample; exports when none exists). Not yet
-tested: `prepare` and `train` on a gb node (needs a 4-GPU idev: `SAMPLE_LIMIT=300 MAX_STEPS=10 WORK_DIR=<abs path> bash vista/run.sh`),
-including that `prepare-data` accepts the corpus rows with their extra columns, how `/render` behaves on this data, and the
-time of the render step. Not submitted.
+Written 2026-10-08. Tested on a gb idev with `SAMPLE_LIMIT=300 MAX_STEPS=10`: all three stages pass (export, prepare through the
+GPU-less render server, 10 training steps, checkpoint written, no Mooncake retries). Not tested: `prepare` on an actual gg node
+(no NVIDIA driver at all; the render server was run here with `CUDA_VISIBLE_DEVICES=""`, the vllm env imports fine on gg), the
+render step at full scale, and a full-length run. Not submitted. Whether this data suits your target model is the open question above.

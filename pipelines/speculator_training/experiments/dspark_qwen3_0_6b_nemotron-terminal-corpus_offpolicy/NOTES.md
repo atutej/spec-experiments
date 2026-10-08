@@ -52,10 +52,14 @@ saturated. For 100k conversations (100 batches over 27 workers, ~2.1M render cal
 
 ## Chain
 
-`bash vista/submit_chain.sh` (login node) submits three jobs: `export` (gg) -> `prepare` (gg) -> `train` (gb), time limits at
-the QOS maximum. Only `train` needs a gb node, so only it waits in the long gb queue (the on-policy run waited 3.6 h and 8.8 h
-for its two gb jobs; its gg jobs waited minutes). The qgb QOS allows 3 submitted jobs per user; this uses 1.
-`AFTER=<jobid>` and subsets work as in the on-policy chain.
+`bash vista/submit_chain.sh` (login node) submits two jobs, time limits at the QOS maximum: one gg job running `export prepare`,
+then `train` on gb (`afterok`). `export` here only links the on-policy experiment's 100k sample (a symlink, seconds) unless that
+file is missing, so it shares a job with `prepare` instead of queuing separately. Only `train` needs a gb node, so only it waits in
+the long gb queue (the on-policy run waited 3.6 h and 8.8 h for its two gb jobs; its gg jobs waited minutes). The qgb QOS allows
+3 submitted jobs per user; this uses 1. Each argument of `submit_chain.sh` is one job and stages are joined with commas
+(default `export,prepare train`; `export prepare train` makes three jobs; stages that need different partitions cannot share
+a job). `AFTER=<jobid>` and subsets work as in the on-policy chain. The job name of the first job is
+`dspark-offpolicy-export-prepare`.
 
 Names: outputs go to `runs/nemotron_qwen3_0_6b_corpus_offpolicy_mooncake_100k/` (checkpoints, data, logs), and the Slurm jobs are
 `dspark-offpolicy-<stage>`, so their logs are `logs/slurm/dspark-offpolicy-<stage>-<jobid>.out`. `submit_chain.sh` prints the

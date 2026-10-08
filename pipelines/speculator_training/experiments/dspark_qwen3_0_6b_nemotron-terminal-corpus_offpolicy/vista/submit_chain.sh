@@ -1,22 +1,33 @@
 #!/bin/bash
 # Submit the pipeline stages as a chain of Slurm jobs (run from a LOGIN node: sbatch is refused on compute nodes).
-#   bash submit_chain.sh [--dry-run] [stage ...]     stages: export prepare train   (default: all)
-# Each submitted stage waits for the previous submitted one (afterok). Submit a subset to rerun or resume one
-# stage (e.g. `bash submit_chain.sh train` resumes training from its checkpoints; `prepare` skips if the data exists). Overrides pass through the
-# environment of this command, e.g. REGEN_LIMIT=1000 WORK_DIR=... bash submit_chain.sh --dry-run
+#   bash submit_chain.sh [--dry-run] [job ...]     stages: export prepare train
+# Each argument is ONE Slurm job; join stages with commas to run several in the same job. The default is
+# `export,prepare train`: one gg job (export only links the on-policy experiment's sample, so it is seconds of work, then
+# prepare renders) followed by one gb job (train). The stages of one job must use the same partition. Each job waits for
+# the previous one (afterok). Submit a subset to rerun or resume (e.g. `bash submit_chain.sh train` resumes training from
+# its checkpoints; `export` and `prepare` skip when their output exists; `export prepare train` makes three jobs).
+# Overrides pass through the environment of this command, e.g. SAMPLE_LIMIT=1000 WORK_DIR=... bash submit_chain.sh --dry-run
 #
-# AFTER=<jobid> makes the first submitted stage wait for an already queued job, e.g. when a chain broke after its
-# first job: `AFTER=1056558 bash submit_chain.sh regen prepare train`.
+# AFTER=<jobid> makes the first submitted job wait for an already queued job, e.g. when a chain broke after its first
+# job: `AFTER=1056558 bash submit_chain.sh train`.
 #
 # Time limits are the maximum the partition's QOS allows (rule of thumb for all jobs: qgb 12:00:00,
-# qgg / qgh 2-00:00:00). The qgb QOS also allows only 3 submitted jobs per user: this chain uses 1 gb job (train); export and prepare are CPU jobs on gg.
+# qgg / qgh 2-00:00:00). The qgb QOS also allows only 3 submitted jobs per user: this chain uses 1 gb job (train).
 set -uo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DRY=0; [[ "${1:-}" == "--dry-run" ]] && { DRY=1; shift; }
-STAGES=("$@"); [[ ${#STAGES[@]} -gt 0 ]] || STAGES=(export prepare train)
+STAGES=("$@"); [[ ${#STAGES[@]} -gt 0 ]] || STAGES=(export,prepare train)
 if [[ $DRY -eq 0 ]] && ! command -v sbatch >/dev/null; then echo "sbatch not found (login node?)" >&2; exit 1; fi
 
-partition() { case "$1" in export|prepare) echo gg ;; train) echo gb ;; *) return 1 ;; esac; }
+partition() {  # the partition of a job: one stage, or comma-joined stages that all need the same one
+    local st p="" q
+    for st in ${1//,/ }; do
+        case "$st" in export|prepare) q=gg ;; train) q=gb ;; *) return 1 ;; esac
+        [[ -z "$p" || "$p" == "$q" ]] || { echo "stages '$1' need different partitions (gg and gb); make them separate jobs" >&2; return 2; }
+        p=$q
+    done
+    [[ -n "$p" ]] && echo "$p"
+}
 maxtime()   { case "$1" in gb) echo 12:00:00 ;; *) echo 2-00:00:00 ;; esac; }
 
 # On Vista, sbatch prints a welcome banner and its checks on stdout before the job id, so $(sbatch --parsable) is not
@@ -32,10 +43,11 @@ submit() {
 JOB_PREFIX=dspark-offpolicy   # Slurm job names (and log file names): <prefix>-<stage>
 prev="${AFTER:-}"; SUBMITTED=()
 for s in "${STAGES[@]}"; do
-    p=$(partition "$s") || { echo "unknown stage '$s' (export prepare train)" >&2; exit 2; }
-    cmd=(sbatch --parsable -p "$p" -t "$(maxtime "$p")" -J "$JOB_PREFIX-$s" --export=ALL)
+    p=$(partition "$s") || { echo "bad job '$s' (stages: export prepare train; join with commas)" >&2; exit 2; }
+    cmd=(sbatch --parsable -p "$p" -t "$(maxtime "$p")" -J "$JOB_PREFIX-${s//,/-}" --export=ALL)
     [[ -n "$prev" ]] && cmd+=(--dependency="afterok:$prev")
-    cmd+=("$HERE/run.sbatch" "$s")
+    # shellcheck disable=SC2206  # the comma-joined stages become separate arguments of run.sh on purpose
+    cmd+=("$HERE/run.sbatch" ${s//,/ })
     if [[ $DRY -eq 1 ]]; then echo "${cmd[*]}"; prev="<job-$s>"; continue; fi
     prev=$(submit "${cmd[@]}") || {
         echo "sbatch failed for stage $s." >&2

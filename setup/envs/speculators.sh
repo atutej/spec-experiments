@@ -11,7 +11,7 @@ env_check() {
     conda run --no-capture-output -n "$ENV_NAME" python - <<'PY'
 import os, sys, shutil
 from importlib.metadata import version
-import torch, transformers, datasets, pyarrow, speculators, hs_connectors
+import torch, transformers, datasets, pyarrow, speculators, hs_connectors, wandb   # wandb: --logger wandb needs it
 from speculators.data_generation.configs import DATASET_CONFIGS
 print(f"speculators {version('speculators')} | torch {torch.__version__} | transformers "
       f"{transformers.__version__} | datasets {datasets.__version__} | pyarrow {pyarrow.__version__}")

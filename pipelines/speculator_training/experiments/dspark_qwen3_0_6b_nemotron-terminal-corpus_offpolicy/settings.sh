@@ -48,6 +48,14 @@ EXPORT_ARGS=()
 if [[ -n "$SUBSET" ]]; then EXPORT_ARGS+=(--subset "$SUBSET"); fi
 VOCAB_ARGS=()
 if [[ -n "$DRAFT_VOCAB_SIZE" ]]; then VOCAB_ARGS=(--draft-vocab-size "$DRAFT_VOCAB_SIZE"); fi
+# ---- metric logging (the trainer's --logger) ----
+# Weights & Biases for real runs; smoke runs (MAX_STEPS set) log nowhere unless LOGGER is given. LOGGER= (empty) turns it off.
+if [[ -n "$MAX_STEPS" ]]; then LOGGER=${LOGGER-}; else LOGGER=${LOGGER-wandb}; fi
+RUN_NAME=${RUN_NAME:-$(basename "$(dirname "${BASH_SOURCE[0]}")")}   # the experiment's folder name
+# Entity and project are set outright, not defaulted: this account's default W&B entity is the team "dogml", not "atutej".
+export WANDB_ENTITY=atutej WANDB_PROJECT=marin_speculator
+LOGGER_ARGS=()
+if [[ -n "$LOGGER" ]]; then LOGGER_ARGS=(--logger "$LOGGER" --run-name "$RUN_NAME" --log-dir "$LOG_DIR/tracker"); fi
 TRAIN_EXTRA=()
 # An `if`, not `[[ ]] && ...`: as the last command of a sourced file a failing `[[ ]]` would make `source` return 1 and
 # kill any caller running under `set -e`.

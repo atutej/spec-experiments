@@ -155,6 +155,22 @@ Sweeping the length on the same 13,885 rows, 100 steps each (`--max-anchors` sca
 - **Epoch estimates** (2.35 G tokens): the profiler's `tokens_per_s` is **per rank**, so with 2 training ranks the epoch is about
   half of what first appeared here: ~3.7 h at 8192, ~2.6 h at 16384, ~2.2 h at 32768, with 1x, 0.5x, 0.25x the optimizer steps.
 
+## Metric logging (Weights & Biases)
+
+`train` logs with `--logger wandb`: **entity `atutej`, project `marin_speculator`, run name = this experiment's folder name**
+(`dspark_qwen3_0_6b_nemotron-terminal-corpus_onpolicy`). The entity and project are set outright in `settings.sh`: this account's *default* entity is the team `dogml`, so
+leaving it unset would send the runs there. Logging is off for smoke runs (`MAX_STEPS` set) unless `LOGGER=wandb` is given, and
+`LOGGER= bash ...` turns it off. Local files go to `$WORK_DIR/logs/tracker/`.
+
+Before training starts, `run.sh` checks the W&B login and that the entity is one of the account's (`wandb_preflight`). If that
+fails (no key, no network, wrong entity) it logs **offline** instead of crashing, with a warning in the job log; upload later with
+`wandb sync <run dir>`. `wandb` is installed in the `speculators` env by the recipe and checked by `env_check`.
+
+**The first full run (job 1056600) started before this and logged to no tracker**: its metrics exist only in its Slurm log
+(`logs/slurm/dspark-nemotron-train-1056600.out`), printed every step. They can be parsed from there and uploaded to the same
+project for comparison with the off-policy run.
+
+
 ## Vista smoke-test log
 
 The `vista/smoke_step*.sh` scripts named below were removed once `vista/run.sh` could do the same through environment

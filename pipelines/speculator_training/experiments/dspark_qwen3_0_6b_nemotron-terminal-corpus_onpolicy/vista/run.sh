@@ -87,6 +87,32 @@ stop_master() {
 cleanup() { stop_server; stop_master; }
 trap cleanup EXIT
 
+# W&B pre-flight: the trainer only imports and logs in at its first log call, so a bad login or entity would crash a
+# train job that waited hours for a gb node. Check once, on the CPU, and fall back to offline logging (sync it later with
+# `wandb sync <dir>`) instead of failing.
+wandb_preflight() {
+    [[ "$LOGGER" == *wandb* ]] || return 0
+    use_env speculators
+    if timeout 90 python - <<'PY'
+import os, sys
+try:
+    import wandb
+    viewer = wandb.Api(timeout=30).viewer
+    allowed = {viewer.username, *(getattr(viewer, "teams", None) or [])}
+    if os.environ["WANDB_ENTITY"] not in allowed:
+        sys.exit(f"entity {os.environ['WANDB_ENTITY']!r} is not one of this login's entities {sorted(allowed)}")
+except SystemExit:
+    raise
+except Exception as e:  # no key, no network, bad credentials ...
+    sys.exit(f"W&B check failed: {type(e).__name__}: {str(e)[:150]}")
+PY
+    then echo "W&B ok: entity $WANDB_ENTITY, project $WANDB_PROJECT, run $RUN_NAME"
+    else
+        export WANDB_MODE=offline
+        echo "WARNING: W&B is not usable from this node; logging OFFLINE under $LOG_DIR/tracker (upload later: wandb sync <run dir>)" >&2
+    fi
+}
+
 stage_export() {
     if [[ -f "$SOURCE_FILE" ]]; then echo "=== Step 0: $SOURCE_FILE exists, skipping ==="; return 0; fi
     echo "=== Step 0: Exporting a random sample of $DATASET ==="
@@ -160,6 +186,8 @@ stage_train() {
     # No --save-best (genai has it): with it the trainer writes NO mid-epoch checkpoints (only at the end of an
     # epoch), so a time limit in this single-epoch run would lose all progress. Without it, --checkpoint-freq 0.1
     # saves every 10% of the epoch and a rerun of this stage resumes from the last one. Training itself is unchanged.
+    wandb_preflight
+    echo "Metric logging: ${LOGGER:-none}${LOGGER:+ (entity $WANDB_ENTITY, project $WANDB_PROJECT, run $RUN_NAME)}"
     # shellcheck disable=SC2086
     CUDA_VISIBLE_DEVICES="$TRAIN_GPUS" torchrun \
         --standalone --nproc_per_node "$NUM_TRAIN_GPUS" \
@@ -188,6 +216,7 @@ stage_train() {
         --confidence-head-alpha "$CONFIDENCE_HEAD_ALPHA" \
         --checkpoint-freq 0.1 \
         --on-missing generate \
+        "${LOGGER_ARGS[@]}" \
         "${TRAIN_EXTRA[@]}"
     echo "Done. Checkpoints saved to $CKPT_DIR/"
     echo "Serve with: vllm serve $MODEL --speculative-config '{\"model\": \"$CKPT_DIR/checkpoint_best\", \"num_speculative_tokens\": $BLOCK_SIZE, \"method\": \"dspark\"}'"

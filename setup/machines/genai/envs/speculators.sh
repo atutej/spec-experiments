@@ -7,4 +7,5 @@ env_build() {
     pip install -e "$PROJECT_ROOT/speculators/hs_connectors" || return 1
     pip install -e "$PROJECT_ROOT/speculators[mooncake-cuda13]" || return 1
     pip install jupyterlab ipywidgets matplotlib nbclient || return 1   # analysis notebooks
+    pip install wandb || return 1   # metric logging: the trainer's --logger wandb imports it at the first log call
 }

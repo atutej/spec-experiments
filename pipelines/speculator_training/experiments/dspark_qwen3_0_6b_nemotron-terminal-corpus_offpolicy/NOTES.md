@@ -69,6 +69,21 @@ run directory it will use (it follows a `WORK_DIR=...` override).
 
 See the measurements above: about 2x the on-policy run's training tokens per epoch.
 
+## Metric logging (Weights & Biases)
+
+`train` logs with `--logger wandb`: **entity `atutej`, project `marin_speculator`, run name = this experiment's folder name**
+(`dspark_qwen3_0_6b_nemotron-terminal-corpus_offpolicy`). The entity and project are set outright in `settings.sh`: this account's *default* entity is the team `dogml`, so
+leaving it unset would send the runs there. Logging is off for smoke runs (`MAX_STEPS` set) unless `LOGGER=wandb` is given, and
+`LOGGER= bash ...` turns it off. Local files go to `$WORK_DIR/logs/tracker/`.
+
+Before training starts, `run.sh` checks the W&B login and that the entity is one of the account's (`wandb_preflight`). If that
+fails (no key, no network, wrong entity) it logs **offline** instead of crashing, with a warning in the job log; upload later with
+`wandb sync <run dir>`. `wandb` is installed in the `speculators` env by the recipe and checked by `env_check`.
+
+Tested here: the pre-flight (login ok, wrong entity, bad key), the trainer's own `WandbHandler` offline (entity, project and run
+name resolved as above), and that `speculators.train` accepts the flags and starts the W&B run. Not yet run end to end on a gb node.
+
+
 ## Status
 
 Written 2026-10-08. Tested with `SAMPLE_LIMIT=300`: all three stages on a gb idev (export, prepare, 10 training steps, checkpoint, no

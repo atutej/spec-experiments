@@ -1,10 +1,11 @@
 #!/bin/bash
 # Submit the pipeline stages as a chain of Slurm jobs (run from a LOGIN node: sbatch is refused on compute nodes).
 #   bash submit_chain.sh [--dry-run] [job ...]     stages: export prepare convert train
-# Each argument is ONE Slurm job; join stages with commas to run several in the same job. The default is `export,prepare train`:
+# Each argument is ONE Slurm job; join stages with commas to run several in the same job (one after another, one time limit). The default is `export,prepare train`:
 # one gg job (link or export the sample, then build the dataset on 144 CPU cores) followed by one gb job (train). To use the speculator
 # pipeline's prepared data instead of tokenizing (minutes, not hours): `bash submit_chain.sh export,convert train`. The stages of one
-# job must use the same partition. Each job waits for the previous one (afterok). Submit a subset to rerun or resume (e.g.
+# job must use the same partition. Each job waits for the previous one (afterok; afterany between two train jobs, so a second train
+# job still starts after the first hit its time limit and resumes from its last checkpoint). Submit a subset to rerun or resume (e.g.
 # `bash submit_chain.sh train` resumes training from its checkpoints; `export` and `prepare` skip when their output exists).
 # Overrides pass through the environment of this command, e.g. PREBUILT_DATASET=<path> bash submit_chain.sh train
 # AFTER=<jobid> makes the first submitted job wait for an already queued job.
@@ -38,18 +39,23 @@ submit() {
 }
 
 JOB_PREFIX=sft-qwen3   # Slurm job names (and log file names): <prefix>-<stage>
-prev="${AFTER:-}"; SUBMITTED=()
+prev="${AFTER:-}"; prev_stage=""; SUBMITTED=()
 for s in "${STAGES[@]}"; do
     p=$(partition "$s") || { echo "bad job '$s' (stages: export prepare convert train; join with commas)" >&2; exit 2; }
     cmd=(sbatch --parsable -p "$p" -t "$(maxtime "$p")" -J "$JOB_PREFIX-${s//,/-}" --export=ALL)
-    [[ -n "$prev" ]] && cmd+=(--dependency="afterok:$prev")
+    # afterok: a stage starts only if the previous job succeeded. Between two train jobs it is afterany: a train job that hits its time
+    # limit counts as failed, and the next one must still start (it resumes from the last checkpoint). A crash then restarts too.
+    if [[ -n "$prev" ]]; then
+        if [[ "$s" == train && "$prev_stage" == train ]]; then cmd+=(--dependency="afterany:$prev"); else cmd+=(--dependency="afterok:$prev"); fi
+    fi
     # shellcheck disable=SC2206  # the comma-joined stages become separate arguments of run.sh on purpose
     cmd+=("$HERE/run.sbatch" ${s//,/ })
-    if [[ $DRY -eq 1 ]]; then echo "${cmd[*]}"; prev="<job-$s>"; continue; fi
+    if [[ $DRY -eq 1 ]]; then echo "${cmd[*]}"; prev="<job-$s>"; prev_stage=$s; continue; fi
     prev=$(submit "${cmd[@]}") || {
         echo "sbatch failed for stage $s." >&2
         [[ ${#SUBMITTED[@]} -gt 0 ]] && echo "Already submitted: ${SUBMITTED[*]}. Cancel (scancel) or continue with AFTER=<last id> bash submit_chain.sh <remaining stages>." >&2
         exit 1; }
+    prev_stage=$s
     SUBMITTED+=("$s=$prev")
     echo "$s: job $prev (partition $p)"
 done

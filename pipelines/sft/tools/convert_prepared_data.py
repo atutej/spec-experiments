@@ -43,6 +43,9 @@ def main() -> None:
     args = ap.parse_args()
 
     ds = load_from_disk(args.prepared)
+    # The prepared data is saved with format 'torch'; keeping it would store that format in the output, and datasets 4.x's torch formatter
+    # fails in the training dataloader workers (it imports torchvision.io.VideoReader, which torchvision 0.28 removed).
+    ds.reset_format()
     if args.limit_rows:
         ds = ds.select(range(args.limit_rows))
     n0 = len(ds)
@@ -51,6 +54,8 @@ def main() -> None:
     ds = ds.map(convert, batched=True, num_proc=args.workers, remove_columns=ds.column_names, features=FEATURES)
     split = ds.train_test_split(test_size=min(args.val_rows, len(ds) // 10), seed=args.seed, shuffle=True)
     dd = DatasetDict({"train": split["train"], "validation": split["test"]})
+    for part in dd.values():
+        assert part.format["type"] is None, "output must carry no format"
     out = Path(args.out)
     tmp = out.with_name(out.name + ".tmp")
     shutil.rmtree(tmp, ignore_errors=True)

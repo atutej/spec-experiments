@@ -27,10 +27,19 @@ bash vista/run.sh [export] [prepare] [train]   # as-is on an idev node
 
 ## Status (2026-10-10)
 
-Smoke-tested end to end on the first 300 conversations (gb idev, 4 GPUs, 3 steps, global batch 8, per-device batch 1): export, prepare,
-train all ran, `checkpoint-3` and the final model were written; train loss 1.74, eval loss 0.975 (3 steps: meaningless as a result).
-Not done yet: the 100k prepare (time and size unknown), throughput and per-device batch tuning, resume test of training, serving the
-saved model with vLLM, hyperparameters (all placeholders in settings.sh: lr 2e-5, global batch 64, 1 epoch).
+End to end through `run.sh` on a gb idev node (4 GPUs), `export convert train` with SAMPLE_LIMIT=300, 6,000 prepared rows (5,869 kept after
+dropping 131 clipped at 16384), global batch 64 (2 per device x 8 accumulation x 4 GPUs), 10 steps: ran, eval loss 1.067 (step 5) ->
+1.012 (step 10). Resume: rerun with MAX_STEPS=14 continued from `checkpoint-10` ("global step 10", fast-forwarded 80 batches), saved
+`checkpoint-14`. The final model at `$WORK_DIR/model` loads and serves with vLLM and answers corpus prompts in the corpus format
+(`<think>` then JSON with analysis/commands) after 14 steps. Bug found and fixed on the way: the converter inherited the prepared data's
+saved format `torch`, which crashed the training dataloader workers (datasets 4.0.0's torch formatter imports torchvision.io.VideoReader,
+removed in torchvision 0.28; datasets 5.x fixes it but LLaMA-Factory refuses it); `convert_prepared_data.py` now resets the format.
+
+Throughput (rough, from steps 6-10 of that run): about 8 s per step at global batch 64, i.e. ~54k tokens/s on 4 GPUs, a few percent of the
+GPUs' peak. One epoch is ~772k examples = ~12k steps = ~27 h at that rate: more than one 12 h gb job, so the train stage must be chained
+(each job resumes from the last checkpoint; save_steps 500 is ~1.1 h) unless throughput is improved first.
+Not done yet: the full 100k convert/prepare run, throughput tuning (per-device batch, gradient checkpointing, padding waste), hyperparameters
+(all placeholders in settings.sh: lr 2e-5, global batch 64, 1 epoch).
 
 Known properties of the data: about 12% of the per-turn examples (the later turns, whose context alone is too long) exceed 16,384
 tokens and are dropped; the rest is ~5B tokens. No packing: LLaMA-Factory packs during its own tokenization, which the pre-tokenized

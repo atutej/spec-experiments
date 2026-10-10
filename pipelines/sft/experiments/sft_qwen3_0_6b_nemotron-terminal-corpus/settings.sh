@@ -21,6 +21,9 @@ if [[ "$SAMPLE_LIMIT" == 100000 && -z "$SUBSET" ]]; then SAMPLE_SHA256=${SAMPLE_
 
 # Dataset: made by the prepare stage (tools/build_sft_dataset.py, LLaMA-Factory's own encoder), or provide a prebuilt one.
 DATA_DIR="$WORK_DIR/data"        # a datasets.DatasetDict {train, validation} with input_ids / attention_mask / labels
+# The convert stage makes the same dataset from the speculator pipeline's prepared data (one tokenized row per assistant turn) instead:
+# no tokenization, minutes instead of hours. Either stage writes $DATA_DIR (whose manifest.json says how it was made).
+PREPARED_DATA=${PREPARED_DATA:-$PROJECT_ROOT/runs/nemotron_qwen3_0_6b_corpus_offpolicy_mooncake_100k/data}
 PREBUILT_DATASET=${PREBUILT_DATASET:-}   # path of an existing dataset of that format: used for training instead of $DATA_DIR, prepare is skipped
 MAX_LEN=${MAX_LEN:-16384}        # examples longer than this are dropped (not truncated)
 VAL_FRACTION=${VAL_FRACTION:-0.002}               # fraction of conversations (by hash) held out for validation

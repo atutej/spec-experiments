@@ -2,12 +2,15 @@
 # SFT of Qwen3-0.6B on the Nemotron-Terminal corpus (the speculator pipeline's 100k conversations), one example per assistant turn,
 # loss on that turn only, with LLaMA-Factory, on Vista. Settings: ../settings.sh. Design notes: ../../../README.md.
 #
-#   bash vista/run.sh [stage ...]       stages: export prepare train   (default: all, in order)
+#   bash vista/run.sh [stage ...]       stages: export prepare convert train   (default: export prepare train)
 #
 #   export   CPU        link the speculator pipeline's 100k sample if it exists, else export it with the same script; then check
 #                       its sha256 (skipped if $SOURCE_FILE exists, but the sha256 is always checked)
 #   prepare  CPU        tools/build_sft_dataset.py: per-turn examples encoded by LLaMA-Factory's own encoder -> $DATA_DIR
 #                       (skipped if $DATA_DIR or PREBUILT_DATASET exists)
+#   convert  CPU        alternative to prepare: tools/convert_prepared_data.py turns the speculator pipeline's prepared data
+#                       ($PREPARED_DATA, one tokenized row per assistant turn) into the same format -> $DATA_DIR. No tokenization,
+#                       minutes. Rows clipped at $MAX_LEN are dropped; validation = random rows (see that tool). Skipped if $DATA_DIR exists.
 #   train    gb node    llamafactory-cli train on all GPUs of the node (resumes from $OUTPUT_DIR/checkpoint-* if present)
 #
 # Runs as-is on an idev node (train needs a GPU node). Small test of everything:
@@ -25,9 +28,9 @@ source "$EXP_DIR/settings.sh"
 
 STAGES=("$@"); [[ ${#STAGES[@]} -gt 0 ]] || STAGES=(export prepare train)
 for s in "${STAGES[@]}"; do case "$s" in
-    export|prepare) ;;
+    export|prepare|convert) ;;
     train) [[ "$NUM_GPUS" -ge 1 ]] || { echo "stage 'train' needs a GPU node (NODE_KIND=$NODE_KIND)" >&2; exit 1; } ;;
-    *) echo "unknown stage '$s' (export prepare train)" >&2; exit 2 ;;
+    *) echo "unknown stage '$s' (export prepare convert train)" >&2; exit 2 ;;
 esac; done
 mkdir -p "$LOG_DIR" "$(dirname "$SOURCE_FILE")"
 # Work from the run directory, not from wherever the job was submitted (a Slurm job starts in the submit directory, and worker
@@ -68,6 +71,17 @@ stage_prepare() {
                 --workers "$BUILD_WORKERS" --val-fraction "$VAL_FRACTION")
     [[ -z "$BUILD_LIMIT" ]] || args+=(--limit-conversations "$BUILD_LIMIT")
     python "$TOOLS/build_sft_dataset.py" "${args[@]}"   # writes $DATA_DIR.tmp, then renames
+}
+
+stage_convert() {
+    if [[ -n "$PREBUILT_DATASET" ]]; then echo "=== Convert: PREBUILT_DATASET=$PREBUILT_DATASET is used, skipping ==="; return 0; fi
+    if [[ -d "$DATA_DIR" ]]; then echo "=== Convert: $DATA_DIR exists, skipping (delete it to redo) ==="; return 0; fi
+    [[ -d "$PREPARED_DATA" ]] || { echo "missing $PREPARED_DATA (the speculator pipeline's prepared data; run its prepare stage, or use the prepare stage here)" >&2; exit 1; }
+    echo "=== Convert: $PREPARED_DATA -> $DATA_DIR ($BUILD_WORKERS workers, drop rows >= $MAX_LEN) ==="
+    use_env sft
+    local args=(--prepared "$PREPARED_DATA" --out "$DATA_DIR" --max-len "$MAX_LEN" --workers "$BUILD_WORKERS")
+    [[ -z "$BUILD_LIMIT" ]] || args+=(--limit-rows "$BUILD_LIMIT")
+    python "$TOOLS/convert_prepared_data.py" "${args[@]}"   # writes $DATA_DIR.tmp, then renames
 }
 
 write_train_config() {  # $1 = the dataset to train on; writes $WORK_DIR/train_config.yaml (kept with the run)
@@ -133,7 +147,7 @@ YAML
 
 stage_train() {
     local data=${PREBUILT_DATASET:-$DATA_DIR}
-    [[ -d "$data" ]] || { echo "missing $data (run the prepare stage, or give PREBUILT_DATASET)" >&2; exit 1; }
+    [[ -d "$data" ]] || { echo "missing $data (run the prepare or convert stage, or give PREBUILT_DATASET)" >&2; exit 1; }
     echo "=== Train: $MODEL on $data, output $OUTPUT_DIR ==="
     use_env sft
     write_train_config "$data"

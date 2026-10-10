@@ -1,8 +1,9 @@
 #!/bin/bash
 # Submit the pipeline stages as a chain of Slurm jobs (run from a LOGIN node: sbatch is refused on compute nodes).
-#   bash submit_chain.sh [--dry-run] [job ...]     stages: export prepare train
+#   bash submit_chain.sh [--dry-run] [job ...]     stages: export prepare convert train
 # Each argument is ONE Slurm job; join stages with commas to run several in the same job. The default is `export,prepare train`:
-# one gg job (link or export the sample, then build the dataset on 144 CPU cores) followed by one gb job (train). The stages of one
+# one gg job (link or export the sample, then build the dataset on 144 CPU cores) followed by one gb job (train). To use the speculator
+# pipeline's prepared data instead of tokenizing (minutes, not hours): `bash submit_chain.sh export,convert train`. The stages of one
 # job must use the same partition. Each job waits for the previous one (afterok). Submit a subset to rerun or resume (e.g.
 # `bash submit_chain.sh train` resumes training from its checkpoints; `export` and `prepare` skip when their output exists).
 # Overrides pass through the environment of this command, e.g. PREBUILT_DATASET=<path> bash submit_chain.sh train
@@ -18,7 +19,7 @@ if [[ $DRY -eq 0 ]] && ! command -v sbatch >/dev/null; then echo "sbatch not fou
 partition() {  # the partition of a job: one stage, or comma-joined stages that all need the same one
     local st p="" q
     for st in ${1//,/ }; do
-        case "$st" in export|prepare) q=gg ;; train) q=gb ;; *) return 1 ;; esac
+        case "$st" in export|prepare|convert) q=gg ;; train) q=gb ;; *) return 1 ;; esac
         [[ -z "$p" || "$p" == "$q" ]] || { echo "stages '$1' need different partitions (gg and gb); make them separate jobs" >&2; return 2; }
         p=$q
     done
@@ -39,7 +40,7 @@ submit() {
 JOB_PREFIX=sft-qwen3   # Slurm job names (and log file names): <prefix>-<stage>
 prev="${AFTER:-}"; SUBMITTED=()
 for s in "${STAGES[@]}"; do
-    p=$(partition "$s") || { echo "bad job '$s' (stages: export prepare train; join with commas)" >&2; exit 2; }
+    p=$(partition "$s") || { echo "bad job '$s' (stages: export prepare convert train; join with commas)" >&2; exit 2; }
     cmd=(sbatch --parsable -p "$p" -t "$(maxtime "$p")" -J "$JOB_PREFIX-${s//,/-}" --export=ALL)
     [[ -n "$prev" ]] && cmd+=(--dependency="afterok:$prev")
     # shellcheck disable=SC2206  # the comma-joined stages become separate arguments of run.sh on purpose

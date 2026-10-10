@@ -18,6 +18,8 @@ bash vista/run.sh [export] [prepare] [train]   # as-is on an idev node
   are chosen by hash, so none has turns on both sides). Examples over 16,384 tokens are dropped, not truncated.
 - `train`: `llamafactory-cli train` from the generated `$WORK_DIR/train_config.yaml`; output `$WORK_DIR/model` (`checkpoint-N/` while
   training, the final HF model at its root); an existing `checkpoint-N` is resumed.
+- `convert` (alternative to `prepare`, writes the same `$WORK_DIR/data`): `bash vista/submit_chain.sh export,convert train` makes the
+  dataset from the speculator pipeline's prepared data with `tools/convert_prepared_data.py` (below): no tokenization, minutes.
 - **Prebuilt data:** `PREBUILT_DATASET=<dir>` trains on an existing dataset of that format and skips prepare. To use the speculator
   pipeline's prepared data (one tokenized row per assistant turn, already made): `python tools/convert_prepared_data.py --prepared
   <run>/data --out DIR` (drops the rows clipped at 16384; validation = random rows, not by conversation).

@@ -49,14 +49,15 @@ step 3 on). The data is 5,869 examples of the prepared set (shuffled, so the sam
 
 Padding is the bottleneck: turning gradient checkpointing off changes nothing, a larger batch alone does not help, and grouping batches by
 length does (an 8-step run showed 2.6 s/step for batch 4 grouped; 8 steps were too few, the 40-step figure is 3.24). Defaults are now
-per-device batch 4 + `group_by_length`. At 3.24 s/step the full epoch (~772k examples = ~12k steps) is ~11 h plus evals and saves: it
+per-device batch 4 + `group_by_length`, and global batch 32 = 4 per device x 2 accumulation x 4 GPUs (the table is at global batch 64 = 4 x 4 x 4; the
+step time should be about half at 32, the epoch time the same, with twice as many optimizer steps: ~24k; evals and saves every 1000 steps). At 3.24 s/step the full epoch (~772k examples = ~12k steps) is ~11 h plus evals and saves: it
 barely fits one 12 h gb job, so chain a second `train` job (it resumes). The step time is still only ~5% of the GPUs' peak: attention
 with a padding mask is probably the next limit (packing with varlen attention would avoid the mask, not done). The grouped sampler computes
 all lengths at startup by iterating the dataset: a few minutes expected on 772k examples, not measured. Grouping makes the examples of a
 step similar in length, which changes the batch statistics somewhat compared with random batches.
 
 Not done yet: the full 100k convert/prepare run, hyperparameters
-(all placeholders in settings.sh: lr 2e-5, global batch 64, 1 epoch).
+(all placeholders in settings.sh: lr 2e-5, global batch 32, 1 epoch).
 
 Known properties of the data: about 12% of the per-turn examples (the later turns, whose context alone is too long) exceed 16,384
 tokens and are dropped; the rest is ~5B tokens. No packing: LLaMA-Factory packs during its own tokenization, which the pre-tokenized

@@ -35,10 +35,27 @@ dropping 131 clipped at 16384), global batch 64 (2 per device x 8 accumulation x
 saved format `torch`, which crashed the training dataloader workers (datasets 4.0.0's torch formatter imports torchvision.io.VideoReader,
 removed in torchvision 0.28; datasets 5.x fixes it but LLaMA-Factory refuses it); `convert_prepared_data.py` now resets the format.
 
-Throughput (rough, from steps 6-10 of that run): about 8 s per step at global batch 64, i.e. ~54k tokens/s on 4 GPUs, a few percent of the
-GPUs' peak. One epoch is ~772k examples = ~12k steps = ~27 h at that rate: more than one 12 h gb job, so the train stage must be chained
-(each job resumes from the last checkpoint; save_steps 500 is ~1.1 h) unless throughput is improved first.
-Not done yet: the full 100k convert/prepare run, throughput tuning (per-device batch, gradient checkpointing, padding waste), hyperparameters
+Throughput tuning (`vista/tune.sh`, 4 GPUs of a gb node, global batch 64, 40 steps each unless noted, same data and seed; step time from
+step 3 on). The data is 5,869 examples of the prepared set (shuffled, so the same length mix as the full set):
+
+| per-device batch | gradient checkpointing | batches | s/step | samples/s | peak GiB/GPU |
+|---|---|---|---|---|---|
+| 2 | on | random | 6.03 | 10.6 | 60 |
+| 2 | on | grouped by length | 4.54 | 14.1 | 60 |
+| 4 | on | grouped by length | **3.24** | **19.7** | 109 |
+| 4 | on | random (8 steps only) | 7.0 | 9.1 | 111 |
+| 8 | on | random | out of memory (a 71.5 GiB allocation) | | |
+| 2 / 4 | off | random (8 steps only) | 6.4 / 7.0 | 10.0 / 9.1 | 172 / 108 |
+
+Padding is the bottleneck: turning gradient checkpointing off changes nothing, a larger batch alone does not help, and grouping batches by
+length does (an 8-step run showed 2.6 s/step for batch 4 grouped; 8 steps were too few, the 40-step figure is 3.24). Defaults are now
+per-device batch 4 + `group_by_length`. At 3.24 s/step the full epoch (~772k examples = ~12k steps) is ~11 h plus evals and saves: it
+barely fits one 12 h gb job, so chain a second `train` job (it resumes). The step time is still only ~5% of the GPUs' peak: attention
+with a padding mask is probably the next limit (packing with varlen attention would avoid the mask, not done). The grouped sampler computes
+all lengths at startup by iterating the dataset: a few minutes expected on 772k examples, not measured. Grouping makes the examples of a
+step similar in length, which changes the batch statistics somewhat compared with random batches.
+
+Not done yet: the full 100k convert/prepare run, hyperparameters
 (all placeholders in settings.sh: lr 2e-5, global batch 64, 1 epoch).
 
 Known properties of the data: about 12% of the per-turn examples (the later turns, whose context alone is too long) exceed 16,384

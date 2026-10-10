@@ -113,7 +113,7 @@ enable_thinking: true
 ### output
 output_dir: $OUTPUT_DIR
 overwrite_output_dir: false   # an existing checkpoint-N is resumed
-logging_steps: 5
+logging_steps: $LOGGING_STEPS
 save_strategy: steps
 save_steps: $SAVE_STEPS
 save_total_limit: 2
@@ -131,7 +131,8 @@ lr_scheduler_type: cosine
 warmup_ratio: $WARMUP_RATIO
 optim: adamw_torch_fused
 bf16: true
-gradient_checkpointing: true
+gradient_checkpointing: $GRAD_CKPT
+train_sampling_strategy: $SAMPLING
 ddp_timeout: 180000000
 dataloader_num_workers: 4
 

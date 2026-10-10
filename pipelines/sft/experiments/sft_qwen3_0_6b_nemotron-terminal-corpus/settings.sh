@@ -37,7 +37,10 @@ EPOCHS=${EPOCHS:-1}              # (placeholder)
 LR=${LR:-2e-5}                   # (placeholder)
 WARMUP_RATIO=0.03                # (placeholder)
 GLOBAL_BATCH=${GLOBAL_BATCH:-64} # sequences per optimizer step (placeholder); grad accumulation is derived
-PER_DEVICE_BATCH=${PER_DEVICE_BATCH:-2}  # (not tuned: up to 16k tokens per sequence)
+PER_DEVICE_BATCH=${PER_DEVICE_BATCH:-4}  # tuned with vista/tune.sh (see NOTES.md): 8 runs out of memory at 16k tokens, 4 peaks at ~110 GiB of 184
+GRAD_CKPT=${GRAD_CKPT:-true}      # gradient checkpointing (off = faster, more memory)
+SAMPLING=${SAMPLING:-group_by_length}  # random | group_by_length: batches of similar length, less padding (1.9x faster at batch 4, see NOTES.md)
+LOGGING_STEPS=${LOGGING_STEPS:-5}
 SAVE_STEPS=${SAVE_STEPS:-500}
 EVAL_STEPS=${EVAL_STEPS:-500}
 # ---- metric logging ----

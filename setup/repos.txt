@@ -7,3 +7,6 @@ speculators     git@github.com:atutej/speculators.git        nemotron-terminal-p
 # Marin vLLM fork, built from source on Vista (aarch64, sm_90 + sm_100). A 40-hex ref is a
 # pinned commit (detached checkout, never fast-forwarded). x86 genai uses a prebuilt wheel.
 vllm            https://github.com/marin-community/vllm.git  39e62869693c46402b1a95fde4fc55ca1aab9ae1
+# LLaMA-Factory (upstream, installed from source into the `sft` env). Pinned commit: main on 2026-09-28, 72 commits after v0.9.5.
+# Not OpenThoughts-Agent's fork: see pipelines/sft/README.md.
+llamafactory    https://github.com/hiyouga/LlamaFactory.git  ce9dc9e072f80fa3abe0989d4ab90da25f083438

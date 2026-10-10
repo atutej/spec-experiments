@@ -44,7 +44,10 @@ LOGGING_STEPS=${LOGGING_STEPS:-5}
 SAVE_STEPS=${SAVE_STEPS:-1000}
 EVAL_STEPS=${EVAL_STEPS:-1000}
 # ---- metric logging ----
-# W&B project/naming is not decided yet (to discuss after the pipeline works): off by default. REPORT_TO=wandb turns it on.
-REPORT_TO=${REPORT_TO:-none}
+# Weights & Biases for real runs (entity atutej, project marin_speculator_sft, run name = this experiment's folder name, as the drafter
+# experiments); smoke runs (MAX_STEPS set) log nowhere unless REPORT_TO is given. REPORT_TO=none turns it off.
+if [[ -n "$MAX_STEPS" ]]; then REPORT_TO=${REPORT_TO:-none}; else REPORT_TO=${REPORT_TO:-wandb}; fi
 RUN_NAME=${RUN_NAME:-$(basename "$(dirname "${BASH_SOURCE[0]}")")}
-export WANDB_ENTITY=atutej WANDB_PROJECT=marin_speculator   # this account's default entity is the team "dogml", not "atutej"
+# Entity and project are set outright, not defaulted: this account's default W&B entity is the team "dogml", not "atutej".
+export WANDB_ENTITY=atutej WANDB_PROJECT=marin_speculator_sft WANDB_DIR="$LOG_DIR/tracker"
+export WANDB_JOB_TYPE=sft WANDB_TAGS=sft,qwen3-0.6b,nemotron-terminal   # SFT runs have their own project; job type and tags for filtering

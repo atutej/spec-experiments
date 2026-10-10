@@ -84,6 +84,31 @@ stage_convert() {
     python "$TOOLS/convert_prepared_data.py" "${args[@]}"   # writes $DATA_DIR.tmp, then renames
 }
 
+# Check once, on the CPU side of the job, that this login can log to the entity, and fall back to OFFLINE logging (sync it later with
+# `wandb sync <dir>`) instead of failing: a run that dies at its first log call after waiting hours for a gb node loses the slot.
+wandb_preflight() {
+    [[ "$REPORT_TO" == *wandb* ]] || return 0
+    mkdir -p "$WANDB_DIR"
+    if timeout 90 python - <<'PY'
+import os, sys
+try:
+    import wandb
+    viewer = wandb.Api(timeout=30).viewer
+    allowed = {viewer.username, *(getattr(viewer, "teams", None) or [])}
+    if os.environ["WANDB_ENTITY"] not in allowed:
+        sys.exit(f"entity {os.environ['WANDB_ENTITY']!r} is not one of this login's entities {sorted(allowed)}")
+except SystemExit:
+    raise
+except Exception as e:  # no key, no network, bad credentials ...
+    sys.exit(f"W&B check failed: {type(e).__name__}: {str(e)[:150]}")
+PY
+    then echo "W&B ok: entity $WANDB_ENTITY, project $WANDB_PROJECT, run $RUN_NAME"
+    else
+        export WANDB_MODE=offline
+        echo "WARNING: W&B is not usable from this node; logging OFFLINE under $WANDB_DIR (upload later: wandb sync <run dir>)" >&2
+    fi
+}
+
 write_train_config() {  # $1 = the dataset to train on; writes $WORK_DIR/train_config.yaml (kept with the run)
     local per_step=$(( PER_DEVICE_BATCH * NUM_GPUS ))
     (( GLOBAL_BATCH % per_step == 0 )) || { echo "GLOBAL_BATCH=$GLOBAL_BATCH is not a multiple of PER_DEVICE_BATCH x GPUs = $per_step" >&2; exit 1; }
@@ -152,6 +177,8 @@ stage_train() {
     echo "=== Train: $MODEL on $data, output $OUTPUT_DIR ==="
     use_env sft
     write_train_config "$data"
+    wandb_preflight
+    echo "Metric logging: $REPORT_TO${REPORT_TO:+ (entity $WANDB_ENTITY, project $WANDB_PROJECT, run $RUN_NAME)}"
     export TOKENIZERS_PARALLELISM=false TRITON_CACHE_DIR="${TMPDIR:-/tmp}/triton-$USER"
     llamafactory-cli train "$WORK_DIR/train_config.yaml" 2>&1 | tee -a "$LOG_DIR/train.log"
     echo "Done. The model is in $OUTPUT_DIR (a vLLM target: vllm serve $OUTPUT_DIR)."

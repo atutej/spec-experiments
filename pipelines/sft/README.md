@@ -16,13 +16,20 @@ conda env.
   database upload), and it LACKS upstream's `discarding_history_cot` / `preserve_thinking`, which with `mask_history` strip earlier
   turns' thinking without inserting empty think tags (what we need). Its multi-turn Qwen3 path keeps history thinking and inserts empty
   think tags. If LLaMA-Factory is ever needed for a large model, port ALST / chunked loss onto upstream instead.
-  `marin-community` has no LLaMA-Factory fork. Not yet run: confirm tokenization and masks against `apply_chat_template`.
-- **Data: exactly the 100k-conversation sample the speculator pipeline uses** (seed 0), made by the same export code
-  (`tools/export_registry_dataset.py`) and checked by hash against the existing sample file, so SFT and drafter training see the
-  same conversations and the rollout-eval prompts (which exclude that sample) stay held out.
+  `marin-community` has no LLaMA-Factory fork.
+- **Data: exactly the 100k-conversation sample the speculator pipeline uses** (seed 0). It is made by calling the same export script
+  (`pipelines/speculator_training/tools/export_registry_dataset.py`, run in the `speculators` env from the SFT `.sh`), and until then
+  we link the drafter's existing sample file. That export does NOT filter content: it is `Dataset.shuffle(seed=0)` of all 226,313 rows
+  of `nvidia/Nemotron-Terminal-Corpus` (`dataset_adapters/{code,math,swe}.parquet`, revision `a1667c4ffdadea02a89bffe4f1bb7ca2ff19f8d9`)
+  and the first 100,000 rows, i.e. `numpy.random.default_rng(0).permutation(226313)[:100000]` over the files in sorted order.
+  Checked on 2026-10-10 with an independent numpy/pyarrow reimplementation: the 100,000 rows are identical to the drafter's file, in
+  order (and the 300-row sample matches too). The rollout-eval prompts exclude this sample, so they stay held out.
 - **Loss:** one training example per assistant turn; loss only on that turn's thinking and response; earlier turns, user and tool
   turns are context, and earlier assistant turns have their thinking stripped (what the Qwen3 chat template does at inference).
-  Verify LLaMA-Factory's tokenization and masks against HF `apply_chat_template` on sample rows before any real run.
+  Checked on 2026-10-10 (template `qwen3`, `mask_history`, upstream `ce9dc9e0`, 4,364 per-turn examples from 1,500 rows): LLaMA-Factory's
+  token IDs equal HF `apply_chat_template` in 4,356 (the other 8 differ only by `\n\n</think>` vs `\n</think>` in the last turn's own
+  thinking); the loss starts exactly at the end of HF's generation prompt (4,363 of 4,364; one example not examined) and runs to the
+  end, through `<|im_end|>\n`. Earlier turns' thinking is stripped, no empty think tags are added.
 - **Scope:** off-policy rerun only for now. **W&B project/naming:** to be decided after the rest is done.
 
 ## Possible later: a Levanter backend (likely needed for Snowball)

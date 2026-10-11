@@ -6,7 +6,8 @@
 #
 # env: PROMPTS_DIR (default $PROJECT_ROOT/runs/eval_prompts_500, made by build_prompts.py), TARGET (Qwen/Qwen3-0.6B),
 #      NUM_SPEC_TOKENS (8 = the draft's block size), MAX_PROMPTS (testing: only the first N per subset), MAX_TOKENS (8192),
-#      CONCURRENCY (32), GPU (0), PORT (8100), WANDB_NAME (log the results to W&B as an eval run)
+#      CONCURRENCY (32), GPU (0), PORT (8100), WANDB_NAME (log the results to W&B as an eval run),
+#      DTYPE (passed to vllm serve as --dtype; set bfloat16 for a target saved in float32; empty = vLLM's default)
 set -euo pipefail
 set -E; trap 'echo "run_eval.sh: command failed (exit $?) at line $LINENO: $BASH_COMMAND" >&2' ERR
 
@@ -30,8 +31,9 @@ mkdir -p "$OUT"
 [[ -f "$CKPT/config.json" && -f "$PROMPTS_DIR/manifest.json" ]] || { echo "missing $CKPT/config.json or $PROMPTS_DIR/manifest.json" >&2; exit 1; }
 
 use_env vllm
+DTYPE_ARGS=(); [[ -z "${DTYPE:-}" ]] || DTYPE_ARGS=(--dtype "$DTYPE")
 SPEC=$(printf '{"model": "%s", "num_speculative_tokens": %s, "method": "dspark"}' "$CKPT" "$NUM_SPEC_TOKENS")
-CUDA_VISIBLE_DEVICES=$GPU vllm serve "$TARGET" --port "$PORT" --max-model-len 32768 --speculative-config "$SPEC" \
+CUDA_VISIBLE_DEVICES=$GPU vllm serve "$TARGET" --port "$PORT" --max-model-len 32768 --speculative-config "$SPEC" "${DTYPE_ARGS[@]}" \
     > "$OUT/server.log" 2>&1 &
 echo $! > "$OUT/server.pid"
 trap 'kill "$(cat "$OUT/server.pid")" 2>/dev/null || true' EXIT

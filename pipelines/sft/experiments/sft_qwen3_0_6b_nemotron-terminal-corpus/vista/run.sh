@@ -11,7 +11,7 @@
 #   convert  CPU        alternative to prepare: tools/convert_prepared_data.py turns the speculator pipeline's prepared data
 #                       ($PREPARED_DATA, one tokenized row per assistant turn) into the same format -> $DATA_DIR. No tokenization,
 #                       minutes. Rows clipped at $MAX_LEN are dropped; validation = random rows (see that tool). Skipped if $DATA_DIR exists.
-#   upload   any node   tools/upload_to_hf.py: the final model + a generated card to the Hub repo $HF_REPO (HF_REPO=auto: <experiment>-<date>; private unless HF_PRIVATE=false).
+#   upload   any node   tools/upload_to_hf.py: the final model + a generated card to the Hub repo $HF_REPO (HF_REPO=auto: <experiment>-<date>; public unless HF_PRIVATE=true).
 #                       Also runs at the end of `train` when HF_REPO is set. Needs a Hugging Face write token (see settings.sh).
 #   train    gb node    llamafactory-cli train on all GPUs of the node (resumes from $OUTPUT_DIR/checkpoint-* if present)
 #
@@ -191,12 +191,12 @@ stage_train() {
 stage_upload() {
     [[ -n "$HF_REPO" ]] || { echo "set HF_REPO=<namespace>/<name> to upload" >&2; exit 1; }
     [[ -f "$OUTPUT_DIR/model.safetensors" ]] || { echo "no finished model in $OUTPUT_DIR (run the train stage first)" >&2; exit 1; }
-    echo "=== Upload: $OUTPUT_DIR -> https://huggingface.co/$HF_REPO ==="
+    echo "=== Upload: $OUTPUT_DIR -> Hugging Face repo $HF_REPO (the logged-in account if it has no namespace) ==="
     export HF_TOKEN="${HF_TOKEN:-${HUG_TOKEN:-}}"   # this account keeps its token as HUG_TOKEN in ~/.bashrc; the Hub library reads HF_TOKEN
     [[ -n "$HF_TOKEN" ]] || unset HF_TOKEN          # an empty value would hide a token saved by `hf auth login`
     use_env sft
     local args=(--model-dir "$OUTPUT_DIR" --repo-id "$HF_REPO" --commit-message "SFT model $RUN_NAME")
-    [[ "$HF_PRIVATE" == false ]] && args+=(--public)
+    [[ "$HF_PRIVATE" == true ]] || args+=(--public)   # public by default; HF_PRIVATE=true makes the repo private
     python "$TOOLS/upload_to_hf.py" "${args[@]}"
 }
 

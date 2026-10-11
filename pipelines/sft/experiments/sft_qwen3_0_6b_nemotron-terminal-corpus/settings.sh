@@ -59,8 +59,8 @@ export WANDB_JOB_TYPE=sft WANDB_TAGS=sft,qwen3-0.6b,nemotron-terminal   # SFT ru
 #                                that is logged in, or under HF_NAMESPACE=<user or org> if given
 # Needs a write token: HF_TOKEN (or HUG_TOKEN, as in this account's ~/.bashrc) in the environment, or `hf auth login` in the sft env once
 # (stored under $HF_HOME). The repo is created
-# PRIVATE unless HF_PRIVATE=false. Empty = no upload.
+# PUBLIC unless HF_PRIVATE=true (a private repo). Empty = no upload.
 HF_REPO=${HF_REPO:-}
 HF_NAMESPACE=${HF_NAMESPACE:-}
-HF_PRIVATE=${HF_PRIVATE:-true}
+HF_PRIVATE=${HF_PRIVATE:-false}
 if [[ "$HF_REPO" == auto ]]; then HF_REPO="${HF_NAMESPACE:+$HF_NAMESPACE/}$RUN_NAME-${HF_DATE:-$(date +%Y%m%d)}"; fi

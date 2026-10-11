@@ -3,7 +3,7 @@
 
 Uploads only the files of the final model: weights, config, tokenizer, chat template, result json files and the card. NOT the
 checkpoint-N/ directories (optimizer states, several GB each) and NOT training_args.bin (a pickle). The repo is created if missing,
-PRIVATE unless --public. Needs a Hugging Face token with write access (`hf auth login` in the `sft` env, or HF_TOKEN in the environment).
+private unless --public (the SFT run.sh passes --public by default). Needs a Hugging Face token with write access (`hf auth login` in the `sft` env, or HF_TOKEN in the environment).
 
   python upload_to_hf.py --model-dir <WORK_DIR>/model --repo-id <namespace>/<name> [--public] [--dry-run]
 

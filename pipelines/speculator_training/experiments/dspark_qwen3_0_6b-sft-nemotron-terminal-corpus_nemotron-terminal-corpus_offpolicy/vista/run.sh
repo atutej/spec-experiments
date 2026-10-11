@@ -27,14 +27,15 @@ EXP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 source "$REPO_DIR/env.sh"
 use_env() { set +u; conda activate "$1"; set -u; }   # conda's activate scripts are not nounset-safe
 source "$EXP_DIR/settings.sh"
+source "$REPO_DIR/pipelines/speculator_training/tools/upload_drafter.sh"   # stage_upload, upload_after_training
 
 VLLM_GPUS="0,1" NUM_VLLM_GPUS=2           # hidden-state server (also renders during prepare) ...
 TRAIN_GPUS="2,3" NUM_TRAIN_GPUS=2         # ... and training side by side
 STAGES=("$@"); [[ ${#STAGES[@]} -gt 0 ]] || STAGES=(export prepare train)
 for s in "${STAGES[@]}"; do case "$s" in
-    export|prepare) ;;
+    export|prepare|upload) ;;
     train) [[ "$NUM_GPUS" -ge 4 ]] || { echo "stage '$s' needs a 4-GPU gb node (NODE_KIND=$NODE_KIND, NUM_GPUS=$NUM_GPUS)" >&2; exit 1; } ;;
-    *) echo "unknown stage '$s' (export prepare train)" >&2; exit 2 ;;
+    *) echo "unknown stage '$s' (export prepare train upload)" >&2; exit 2 ;;
 esac; done
 mkdir -p "$LOG_DIR" "$(dirname "$SOURCE_FILE")"
 # Work from the run directory, not from wherever the job was submitted. A Slurm job starts in the submit directory (here the
@@ -232,4 +233,5 @@ stage_train() {
 }
 
 for s in "${STAGES[@]}"; do "stage_$s"; done
+upload_after_training "${STAGES[@]}"   # uploads the drafter when this job trained and HF_REPO is set (settings.sh)
 echo "Stages finished: ${STAGES[*]}"

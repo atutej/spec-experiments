@@ -32,15 +32,16 @@ REGEN_CONCURRENCY=${REGEN_CONCURRENCY:-1024}
 SEQ_LENGTH=${SEQ_LENGTH:-16384}
 MAX_ANCHORS=${MAX_ANCHORS:-6144}
 source "$EXP_DIR/settings.sh"
+source "$REPO_DIR/pipelines/speculator_training/tools/upload_drafter.sh"   # stage_upload, upload_after_training
 
 ALL_GPUS="0,1,2,3" NUM_ALL_GPUS=4         # regen runs alone, so it uses every GPU (a gb node has 4)
 VLLM_GPUS="0,1" NUM_VLLM_GPUS=2           # train: hidden-state server ...
 TRAIN_GPUS="2,3" NUM_TRAIN_GPUS=2         # ... and training side by side
 STAGES=("$@"); [[ ${#STAGES[@]} -gt 0 ]] || STAGES=(export regen prepare train)
 for s in "${STAGES[@]}"; do case "$s" in
-    export|prepare) ;;
+    export|prepare|upload) ;;
     regen|train) [[ "$NUM_GPUS" -ge 4 ]] || { echo "stage '$s' needs a 4-GPU gb node (NODE_KIND=$NODE_KIND, NUM_GPUS=$NUM_GPUS)" >&2; exit 1; } ;;
-    *) echo "unknown stage '$s' (export regen prepare train)" >&2; exit 2 ;;
+    *) echo "unknown stage '$s' (export regen prepare train upload)" >&2; exit 2 ;;
 esac; done
 mkdir -p "$(dirname "$REGEN_FILE")" "$LOG_DIR"
 # Work from the run directory, not from wherever the job was submitted. A Slurm job starts in the submit directory (here the
@@ -227,4 +228,5 @@ stage_train() {
 }
 
 for s in "${STAGES[@]}"; do "stage_$s"; done
+upload_after_training "${STAGES[@]}"   # uploads the drafter when this job trained and HF_REPO is set (settings.sh)
 echo "Stages finished: ${STAGES[*]}"

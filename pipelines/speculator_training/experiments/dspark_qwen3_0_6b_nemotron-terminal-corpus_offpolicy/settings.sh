@@ -60,3 +60,13 @@ TRAIN_EXTRA=()
 # An `if`, not `[[ ]] && ...`: as the last command of a sourced file a failing `[[ ]]` would make `source` return 1 and
 # kill any caller running under `set -e`.
 if [[ -n "$MAX_STEPS" ]]; then TRAIN_EXTRA=(--max-steps "$MAX_STEPS"); fi
+
+# ---- upload of the finished drafter to the Hugging Face Hub (best and latest checkpoint; tools/upload_drafter_to_hf.py) ----
+# HF_REPO=auto (the default for full runs) names the repo <experiment folder name>-<YYYYMMDD> under the logged-in account, or under
+# HF_NAMESPACE=<user or org>; HF_REPO=<namespace>/<name> is explicit; HF_REPO= (empty) turns the upload off. Smoke runs (MAX_STEPS set)
+# never upload unless HF_REPO is given. The repo is PUBLIC unless HF_PRIVATE=true. Needs a write token (HF_TOKEN or HUG_TOKEN).
+if [[ -n "$MAX_STEPS" ]]; then HF_REPO=${HF_REPO-}; else HF_REPO=${HF_REPO-auto}; fi
+HF_NAMESPACE=${HF_NAMESPACE:-}
+HF_PRIVATE=${HF_PRIVATE:-false}
+if [[ "$HF_REPO" == auto ]]; then HF_REPO="${HF_NAMESPACE:+$HF_NAMESPACE/}$RUN_NAME-${HF_DATE:-$(date +%Y%m%d)}"; fi
+HF_DESCRIPTION="Trained on the corpus's own completions (DeepSeek-V3.2 terminus-2 trajectories, thinking on) of nvidia/Nemotron-Terminal-Corpus (a seeded 100k sample), i.e. off-policy data for the base target Qwen/Qwen3-0.6B."

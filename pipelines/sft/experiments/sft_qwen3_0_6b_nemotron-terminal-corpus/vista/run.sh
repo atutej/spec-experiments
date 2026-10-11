@@ -185,7 +185,10 @@ stage_train() {
     llamafactory-cli train "$WORK_DIR/train_config.yaml" 2>&1 | tee -a "$LOG_DIR/train.log"
     echo "Done. The model is in $OUTPUT_DIR (a vLLM target: vllm serve $OUTPUT_DIR)."
     # Only reached when training ran to its end (a failed or time-limited job never gets here), so a partial model is never uploaded.
-    if [[ -n "$HF_REPO" ]]; then stage_upload; fi
+    # A failed upload must not fail the job (the model is trained and saved): it says how to retry.
+    if [[ -n "$HF_REPO" ]]; then
+        stage_upload || echo "WARNING: the upload to $HF_REPO failed; retry with: HF_REPO=$HF_REPO bash vista/run.sh upload" >&2
+    fi
 }
 
 stage_upload() {

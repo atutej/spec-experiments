@@ -192,6 +192,8 @@ stage_upload() {
     [[ -n "$HF_REPO" ]] || { echo "set HF_REPO=<namespace>/<name> to upload" >&2; exit 1; }
     [[ -f "$OUTPUT_DIR/model.safetensors" ]] || { echo "no finished model in $OUTPUT_DIR (run the train stage first)" >&2; exit 1; }
     echo "=== Upload: $OUTPUT_DIR -> https://huggingface.co/$HF_REPO ==="
+    export HF_TOKEN="${HF_TOKEN:-${HUG_TOKEN:-}}"   # this account keeps its token as HUG_TOKEN in ~/.bashrc; the Hub library reads HF_TOKEN
+    [[ -n "$HF_TOKEN" ]] || unset HF_TOKEN          # an empty value would hide a token saved by `hf auth login`
     use_env sft
     local args=(--model-dir "$OUTPUT_DIR" --repo-id "$HF_REPO" --commit-message "SFT model $RUN_NAME")
     [[ "$HF_PRIVATE" == false ]] && args+=(--public)

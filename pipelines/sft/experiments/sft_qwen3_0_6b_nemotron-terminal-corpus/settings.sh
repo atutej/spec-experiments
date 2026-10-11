@@ -57,7 +57,8 @@ export WANDB_JOB_TYPE=sft WANDB_TAGS=sft,qwen3-0.6b,nemotron-terminal   # SFT ru
 #   HF_REPO=<namespace>/<name>   an explicit repo id
 #   HF_REPO=auto                 the name defaults to <experiment folder name>-<YYYYMMDD> (HF_DATE overrides the date), under the account
 #                                that is logged in, or under HF_NAMESPACE=<user or org> if given
-# Needs a write token: `hf auth login` in the sft env once (stored under $HF_HOME), or HF_TOKEN in the environment. The repo is created
+# Needs a write token: HF_TOKEN (or HUG_TOKEN, as in this account's ~/.bashrc) in the environment, or `hf auth login` in the sft env once
+# (stored under $HF_HOME). The repo is created
 # PRIVATE unless HF_PRIVATE=false. Empty = no upload.
 HF_REPO=${HF_REPO:-}
 HF_NAMESPACE=${HF_NAMESPACE:-}

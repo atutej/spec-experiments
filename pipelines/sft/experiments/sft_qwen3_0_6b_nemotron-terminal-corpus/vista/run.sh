@@ -2,7 +2,7 @@
 # SFT of Qwen3-0.6B on the Nemotron-Terminal corpus (the speculator pipeline's 100k conversations), one example per assistant turn,
 # loss on that turn only, with LLaMA-Factory, on Vista. Settings: ../settings.sh. Design notes: ../../../README.md.
 #
-#   bash vista/run.sh [stage ...]       stages: export prepare convert train   (default: export prepare train)
+#   bash vista/run.sh [stage ...]       stages: export prepare convert train upload   (default: export prepare train)
 #
 #   export   CPU        link the speculator pipeline's 100k sample if it exists, else export it with the same script; then check
 #                       its sha256 (skipped if $SOURCE_FILE exists, but the sha256 is always checked)
@@ -11,6 +11,8 @@
 #   convert  CPU        alternative to prepare: tools/convert_prepared_data.py turns the speculator pipeline's prepared data
 #                       ($PREPARED_DATA, one tokenized row per assistant turn) into the same format -> $DATA_DIR. No tokenization,
 #                       minutes. Rows clipped at $MAX_LEN are dropped; validation = random rows (see that tool). Skipped if $DATA_DIR exists.
+#   upload   any node   tools/upload_to_hf.py: the final model + a generated card to the Hub repo $HF_REPO (private unless HF_PRIVATE=false).
+#                       Also runs at the end of `train` when HF_REPO is set. Needs a Hugging Face write token (see settings.sh).
 #   train    gb node    llamafactory-cli train on all GPUs of the node (resumes from $OUTPUT_DIR/checkpoint-* if present)
 #
 # Runs as-is on an idev node (train needs a GPU node). Small test of everything:
@@ -28,9 +30,9 @@ source "$EXP_DIR/settings.sh"
 
 STAGES=("$@"); [[ ${#STAGES[@]} -gt 0 ]] || STAGES=(export prepare train)
 for s in "${STAGES[@]}"; do case "$s" in
-    export|prepare|convert) ;;
+    export|prepare|convert|upload) ;;
     train) [[ "$NUM_GPUS" -ge 1 ]] || { echo "stage 'train' needs a GPU node (NODE_KIND=$NODE_KIND)" >&2; exit 1; } ;;
-    *) echo "unknown stage '$s' (export prepare convert train)" >&2; exit 2 ;;
+    *) echo "unknown stage '$s' (export prepare convert train upload)" >&2; exit 2 ;;
 esac; done
 mkdir -p "$LOG_DIR" "$(dirname "$SOURCE_FILE")"
 # Work from the run directory, not from wherever the job was submitted (a Slurm job starts in the submit directory, and worker
@@ -182,6 +184,18 @@ stage_train() {
     export TOKENIZERS_PARALLELISM=false TRITON_CACHE_DIR="${TMPDIR:-/tmp}/triton-$USER"
     llamafactory-cli train "$WORK_DIR/train_config.yaml" 2>&1 | tee -a "$LOG_DIR/train.log"
     echo "Done. The model is in $OUTPUT_DIR (a vLLM target: vllm serve $OUTPUT_DIR)."
+    # Only reached when training ran to its end (a failed or time-limited job never gets here), so a partial model is never uploaded.
+    if [[ -n "$HF_REPO" ]]; then stage_upload; fi
+}
+
+stage_upload() {
+    [[ -n "$HF_REPO" ]] || { echo "set HF_REPO=<namespace>/<name> to upload" >&2; exit 1; }
+    [[ -f "$OUTPUT_DIR/model.safetensors" ]] || { echo "no finished model in $OUTPUT_DIR (run the train stage first)" >&2; exit 1; }
+    echo "=== Upload: $OUTPUT_DIR -> https://huggingface.co/$HF_REPO ==="
+    use_env sft
+    local args=(--model-dir "$OUTPUT_DIR" --repo-id "$HF_REPO" --commit-message "SFT model $RUN_NAME")
+    [[ "$HF_PRIVATE" == false ]] && args+=(--public)
+    python "$TOOLS/upload_to_hf.py" "${args[@]}"
 }
 
 for s in "${STAGES[@]}"; do "stage_$s"; done

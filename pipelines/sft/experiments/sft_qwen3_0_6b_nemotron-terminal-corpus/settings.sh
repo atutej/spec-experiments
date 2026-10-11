@@ -43,6 +43,13 @@ SAMPLING=${SAMPLING:-group_by_length}  # random | group_by_length: batches of si
 LOGGING_STEPS=${LOGGING_STEPS:-5}
 SAVE_STEPS=${SAVE_STEPS:-1000}
 EVAL_STEPS=${EVAL_STEPS:-1000}
+# ---- upload ----
+# Set HF_REPO=<namespace>/<name> to upload the final model to the Hugging Face Hub when training finishes (and use the `upload` stage to
+# do it on its own). Needs a write token: `hf auth login` in the sft env once (stored under $HF_HOME), or HF_TOKEN in the environment.
+# The repo is created PRIVATE unless HF_PRIVATE=false. Empty = no upload.
+HF_REPO=${HF_REPO:-}
+HF_PRIVATE=${HF_PRIVATE:-true}
+
 # ---- metric logging ----
 # Weights & Biases for real runs (entity atutej, project marin_speculator_sft, run name = this experiment's folder name, as the drafter
 # experiments); smoke runs (MAX_STEPS set) log nowhere unless REPORT_TO is given. REPORT_TO=none turns it off.

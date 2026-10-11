@@ -79,7 +79,7 @@ def model_card(model_dir: Path, repo_id: str) -> str:
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("--model-dir", required=True)
-    ap.add_argument("--repo-id", required=True, help="<namespace>/<name>")
+    ap.add_argument("--repo-id", required=True, help="<namespace>/<name>, or just <name> for the logged-in account")
     ap.add_argument("--public", action="store_true", help="make the repo public if it has to be created (default: private)")
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--commit-message", default="Upload SFT model")
@@ -90,8 +90,9 @@ def main() -> None:
     missing = [f for f in ("model.safetensors", "config.json", "tokenizer.json") if f not in present]
     if missing:
         sys.exit(f"{model_dir} is not a finished model: missing {missing}")
-    card = model_card(model_dir, args.repo_id)
-    print(f"model dir: {model_dir}\nrepo: {args.repo_id} ({'public' if args.public else 'private'} if created)")
+    repo_id = args.repo_id if "/" in args.repo_id else f"<logged-in account>/{args.repo_id}"
+    card = model_card(model_dir, repo_id)
+    print(f"model dir: {model_dir}\nrepo: {repo_id} ({'public' if args.public else 'private'} if created)")
     for f in present:
         print(f"  {f:28s} {(model_dir / f).stat().st_size / 1e6:10.1f} MB")
     print("  README.md                    (generated model card)\n--- card ---\n" + card + "--- end card ---")
@@ -107,6 +108,9 @@ def main() -> None:
     except Exception as e:  # noqa: BLE001
         sys.exit(f"no usable Hugging Face login ({type(e).__name__}); run `hf auth login` in the sft env or set HF_TOKEN")
     print(f"logged in as {who}")
+    if "/" not in args.repo_id:
+        args.repo_id = f"{who}/{args.repo_id}"
+        card = model_card(model_dir, args.repo_id)
     api.create_repo(args.repo_id, repo_type="model", private=not args.public, exist_ok=True)
     with tempfile.TemporaryDirectory() as tmp:
         for f in present:

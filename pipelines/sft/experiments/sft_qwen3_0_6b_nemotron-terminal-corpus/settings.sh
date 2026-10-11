@@ -43,13 +43,6 @@ SAMPLING=${SAMPLING:-group_by_length}  # random | group_by_length: batches of si
 LOGGING_STEPS=${LOGGING_STEPS:-5}
 SAVE_STEPS=${SAVE_STEPS:-1000}
 EVAL_STEPS=${EVAL_STEPS:-1000}
-# ---- upload ----
-# Set HF_REPO=<namespace>/<name> to upload the final model to the Hugging Face Hub when training finishes (and use the `upload` stage to
-# do it on its own). Needs a write token: `hf auth login` in the sft env once (stored under $HF_HOME), or HF_TOKEN in the environment.
-# The repo is created PRIVATE unless HF_PRIVATE=false. Empty = no upload.
-HF_REPO=${HF_REPO:-}
-HF_PRIVATE=${HF_PRIVATE:-true}
-
 # ---- metric logging ----
 # Weights & Biases for real runs (entity atutej, project marin_speculator_sft, run name = this experiment's folder name, as the drafter
 # experiments); smoke runs (MAX_STEPS set) log nowhere unless REPORT_TO is given. REPORT_TO=none turns it off.
@@ -58,3 +51,15 @@ RUN_NAME=${RUN_NAME:-$(basename "$(dirname "${BASH_SOURCE[0]}")")}
 # Entity and project are set outright, not defaulted: this account's default W&B entity is the team "dogml", not "atutej".
 export WANDB_ENTITY=atutej WANDB_PROJECT=marin_speculator_sft WANDB_DIR="$LOG_DIR/tracker"
 export WANDB_JOB_TYPE=sft WANDB_TAGS=sft,qwen3-0.6b,nemotron-terminal   # SFT runs have their own project; job type and tags for filtering
+
+# ---- upload (after RUN_NAME is known) ----
+# Set HF_REPO to upload the final model to the Hugging Face Hub when training finishes (the `upload` stage does it on its own):
+#   HF_REPO=<namespace>/<name>   an explicit repo id
+#   HF_REPO=auto                 the name defaults to <experiment folder name>-<YYYYMMDD> (HF_DATE overrides the date), under the account
+#                                that is logged in, or under HF_NAMESPACE=<user or org> if given
+# Needs a write token: `hf auth login` in the sft env once (stored under $HF_HOME), or HF_TOKEN in the environment. The repo is created
+# PRIVATE unless HF_PRIVATE=false. Empty = no upload.
+HF_REPO=${HF_REPO:-}
+HF_NAMESPACE=${HF_NAMESPACE:-}
+HF_PRIVATE=${HF_PRIVATE:-true}
+if [[ "$HF_REPO" == auto ]]; then HF_REPO="${HF_NAMESPACE:+$HF_NAMESPACE/}$RUN_NAME-${HF_DATE:-$(date +%Y%m%d)}"; fi

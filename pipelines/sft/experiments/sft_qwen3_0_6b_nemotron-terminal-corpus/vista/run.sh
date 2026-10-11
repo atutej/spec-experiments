@@ -11,7 +11,7 @@
 #   convert  CPU        alternative to prepare: tools/convert_prepared_data.py turns the speculator pipeline's prepared data
 #                       ($PREPARED_DATA, one tokenized row per assistant turn) into the same format -> $DATA_DIR. No tokenization,
 #                       minutes. Rows clipped at $MAX_LEN are dropped; validation = random rows (see that tool). Skipped if $DATA_DIR exists.
-#   upload   any node   tools/upload_to_hf.py: the final model + a generated card to the Hub repo $HF_REPO (private unless HF_PRIVATE=false).
+#   upload   any node   tools/upload_to_hf.py: the final model + a generated card to the Hub repo $HF_REPO (HF_REPO=auto: <experiment>-<date>; private unless HF_PRIVATE=false).
 #                       Also runs at the end of `train` when HF_REPO is set. Needs a Hugging Face write token (see settings.sh).
 #   train    gb node    llamafactory-cli train on all GPUs of the node (resumes from $OUTPUT_DIR/checkpoint-* if present)
 #

@@ -14,6 +14,9 @@ Facts checked on 2026-10-07. The porting history is in `docs/vista_setup.md`.
   `RESERVATION=<name>` uses another. A job in a reservation runs only on its nodes (two, jobs are exclusive), and its `-t` must end before the reservation does.
   **QOS consequence:** `qgb` allows only 3 submitted jobs per user and 12 h per job, so the chains put short CPU stages in the same job as a GPU stage (comma-joined: `prepare,train`,
   `export,regen`); check the job count of a new chain with `--dry-run`.
+  An idev session counts as a submitted gb job too: with one open, a chain of 3 gb jobs has its last job REJECTED ("job violates ... QOS policy"; Slurm does not queue it). To submit it
+  as soon as a slot frees up, run `common/submit_when_free.sh -- <submit command>` on a login node (in tmux, or with nohup): it polls `squeue` and runs the command once the count is below 3.
+  Slurm cannot do this itself: `JobRequeue` is 0 (no self-restart) and `sbatch` is refused on compute nodes (no submitter job).
 - **Submitting:** `sbatch` is refused on compute nodes, including idev sessions. Submit from a login
   node. Job output goes to `$PROJECT_ROOT/logs/slurm/` (set by a literal path in the `#SBATCH -o` line). idev sessions on `gg` and `gb` last up to 2 h.
 - **Filesystems:** `$HOME` (small), `$WORK` (not purged; holds conda and the vLLM wheel in `wheels/`),

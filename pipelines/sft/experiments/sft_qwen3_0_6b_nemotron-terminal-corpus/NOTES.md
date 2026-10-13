@@ -8,7 +8,7 @@ earlier turns' thinking is stripped from the context. The result is meant to be 
 ## Run
 
 ```
-bash vista/submit_chain.sh [--dry-run]     # from a login node: gg job (export, prepare), then gb job (train), 4 GPUs
+bash vista/submit_chain.sh [--dry-run]     # from a login node: job 1 (export, prepare) then job 2 (train, 4 GPUs); both on gb in the CGAI-gb reservation
 bash vista/run.sh [export] [prepare] [train]   # as-is on an idev node
 ```
 

@@ -10,16 +10,24 @@
 # first job: `AFTER=1056558 bash submit_chain.sh regen prepare train`.
 #
 # Time limits are the maximum the partition's QOS allows (rule of thumb for all jobs: qgb 12:00:00,
-# qgg / qgh 2-00:00:00). The qgb QOS also allows only 3 submitted jobs per user: this chain uses 3 gb jobs (regen, regen, train): all that the QOS
+# qgg / qgh 2-00:00:00). The qgb QOS also allows only 3 submitted jobs per user: this chain uses 3 gb jobs (regen, regen, prepare+train): all that the QOS
 # allows at once, so leave no other gb job queued while it runs (submit evals after).
 set -uo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$HERE/../../../../../common/slurm.sh"   # gb_reservation_args: the CGAI-gb reservation for gb jobs
 DRY=0; [[ "${1:-}" == "--dry-run" ]] && { DRY=1; shift; }
-STAGES=("$@"); [[ ${#STAGES[@]} -gt 0 ]] || STAGES=(export regen regen prepare train)   # the second regen resumes if the first hit its time limit
+STAGES=("$@"); [[ ${#STAGES[@]} -gt 0 ]] || STAGES=(export regen regen prepare,train)   # the second regen is a retry; the CPU stage prepare rides along with train (3 gb jobs in all)
 if [[ $DRY -eq 0 ]] && ! command -v sbatch >/dev/null; then echo "sbatch not found (login node?)" >&2; exit 1; fi
 
-partition() { case "$1" in export|prepare) echo gg ;; regen|train) echo gb ;; *) return 1 ;; esac; }
+partition() {  # the partition of a job: one stage, or comma-joined stages that all need the same one
+    local st p="" q
+    for st in ${1//,/ }; do
+        case "$st" in export|prepare) q=$CPU_PARTITION ;; regen|train) q=gb ;; *) return 1 ;; esac
+        [[ -z "$p" || "$p" == "$q" ]] || { echo "stages '$1' need different partitions; make them separate jobs" >&2; return 2; }
+        p=$q
+    done
+    [[ -n "$p" ]] && echo "$p"
+}
 maxtime()   { case "$1" in gb) echo 12:00:00 ;; *) echo 2-00:00:00 ;; esac; }
 
 # On Vista, sbatch prints a welcome banner and its checks on stdout before the job id, so $(sbatch --parsable) is not
@@ -33,7 +41,7 @@ submit() {
 }
 
 # The export stage is only a symlink to the base on-policy experiment's sample when that sample exists: create it HERE, on the login node
-# (it takes a moment), instead of queueing a gg job for it. If the sample is missing, the export stage stays in the chain and exports it
+# (it takes a moment), instead of queueing a job for it. If the sample is missing, the export stage stays in the chain and exports it
 # for real on a node (minutes of CPU: never on the login node). Overrides in the environment (WORK_DIR, REGEN_LIMIT, ...) apply.
 if [[ "${STAGES[0]:-}" == export ]]; then
     read -r SHARED LINK < <( PROJECT_ROOT="$(cd "$HERE/../../../../../.." && pwd)"; source "$HERE/../settings.sh" >/dev/null 2>&1; echo "$SHARED_SOURCE_FILE $SOURCE_FILE" )
@@ -45,7 +53,8 @@ if [[ "${STAGES[0]:-}" == export ]]; then
         fi
         STAGES=("${STAGES[@]:1}")
     else
-        echo "export: $SHARED does not exist, so the export stage stays in the chain and exports the sample on a gg node"
+        echo "export: $SHARED does not exist, so the export stage stays in the chain, in the first regen job (it exports the sample first)"
+        [[ "${STAGES[1]:-}" == regen ]] && STAGES=("export,regen" "${STAGES[@]:2}")
     fi
 fi
 
@@ -59,10 +68,10 @@ JOB_PREFIX=dspark-sft-onpolicy   # Slurm job names (and log file names): <prefix
 prev="${AFTER:-}"; prev_stage=""; group=(); SUBMITTED=()
 for s in "${STAGES[@]}"; do
     p=$(partition "$s") || { echo "unknown stage '$s' (export regen prepare train)" >&2; exit 2; }
-    cmd=(sbatch --parsable -p "$p" -t "$(maxtime "$p")" -J "$JOB_PREFIX-$s" --export=ALL)
+    cmd=(sbatch --parsable -p "$p" -t "$(maxtime "$p")" -J "$JOB_PREFIX-${s//,/-}" --export=ALL)
     if [[ "$p" == gb ]]; then res=$(gb_reservation_args); [[ -z "$res" ]] || cmd+=("$res"); fi
     retry=0
-    if [[ -n "$prev_stage" && "$s" == "$prev_stage" && ( "$s" == regen || "$s" == train ) ]]; then
+    if [[ -n "$prev_stage" && "$s" == "${prev_stage##*,}" && ( "$s" == regen || "$s" == train ) ]]; then
         retry=1; cmd+=(--dependency="afternotok:$prev" --kill-on-invalid-dep=yes)
     elif [[ ${#group[@]} -gt 0 ]]; then
         dep=""; for g in "${group[@]}"; do dep+="${dep:+?}afterok:$g"; done
@@ -70,7 +79,8 @@ for s in "${STAGES[@]}"; do
     elif [[ -n "$prev" ]]; then
         cmd+=(--dependency="afterok:$prev")
     fi
-    cmd+=("$HERE/run.sbatch" "$s")
+    # shellcheck disable=SC2206  # the comma-joined stages become separate arguments of run.sh on purpose
+    cmd+=("$HERE/run.sbatch" ${s//,/ })
     if [[ $DRY -eq 1 ]]; then
         echo "${cmd[*]}"; id="<job-$s>"; [[ $retry -eq 1 ]] && id="<job-$s#2>"
     else

@@ -19,7 +19,7 @@ prompts and target; the base-model pair (4.058 vs 3.430) is the reference for th
 ## Run
 
 ```
-bash vista/submit_chain.sh [--dry-run]    # login node: export (gg), regen, regen, prepare (gg), train (gb)
+bash vista/submit_chain.sh [--dry-run]    # login node: (the sample is linked there), regen, regen (retry), prepare+train; all on gb in the CGAI-gb reservation
 bash vista/run.sh [export] [regen] [prepare] [train]   # as-is on an idev node (regen and train need 4 GPUs)
 bash vista/submit_eval.sh [CHECKPOINT_NAME]            # rollout acceptance eval, target = the SFT model (../../tools/eval_acceptance/)
 ```
@@ -30,7 +30,8 @@ bash vista/submit_eval.sh [CHECKPOINT_NAME]            # rollout acceptance eval
   jobs (the second starts after the first even if it timed out, and resumes; if the first finishes, the second exits quickly). Three gb jobs is all the QOS
   allows at once: do not queue other gb jobs (evals) before the chain ends. MAX_GEN_TOKENS stays 8192, so more conversations than with the base model are cut short
   (28% of first-turn rollouts hit 8192): fewer rows per conversation, a property of this target. Check the truncated count in the regen log.
-- `prepare` (gg), `train` (gb, 4 GPUs, about 3 h for the base on-policy run) as in the base on-policy experiment; the trainer uses 16384 / 6144 anchors.
+- `prepare` and `train` run in ONE gb job (`prepare,train`: the gb QOS allows only 3 submitted jobs, and every job is on gb in the reservation, CPU stages included), as in the base
+  on-policy experiment (train about 3 h there); the trainer uses 16384 / 6144 anchors.
 - At the end of training the drafter is uploaded to the Hub (public, `<this folder>-<date>`, best and latest checkpoint) when `HF_REPO` is set (default `auto` for full runs).
 - W&B: project `marin_speculator`, run name = this folder's name.
 

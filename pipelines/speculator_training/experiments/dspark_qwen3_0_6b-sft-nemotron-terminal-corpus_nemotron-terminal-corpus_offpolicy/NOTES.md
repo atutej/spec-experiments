@@ -25,7 +25,7 @@ back to rendering the corpus itself if `$SHARED_DATA_DIR` does not exist.
 ## Run
 
 ```
-bash vista/submit_chain.sh [--dry-run]        # login node: gg job (export, prepare = link), then a gb job (train)
+bash vista/submit_chain.sh [--dry-run]        # login node: job 1 (export, prepare = link), then job 2 (train); both on gb in the CGAI-gb reservation
 bash vista/run.sh [export] [prepare] [train]  # as-is on an idev node (train needs 4 GPUs)
 bash vista/submit_eval.sh [CHECKPOINT_NAME]   # rollout acceptance eval, target = the SFT model (see ../../tools/eval_acceptance/)
 ```

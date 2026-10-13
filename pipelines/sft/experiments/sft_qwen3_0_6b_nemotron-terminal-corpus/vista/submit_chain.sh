@@ -2,7 +2,7 @@
 # Submit the pipeline stages as a chain of Slurm jobs (run from a LOGIN node: sbatch is refused on compute nodes).
 #   bash submit_chain.sh [--dry-run] [job ...]     stages: export prepare convert train upload
 # Each argument is ONE Slurm job; join stages with commas to run several in the same job (one after another, one time limit). The default is `export,prepare train`:
-# one gg job (link or export the sample, then build the dataset on 144 CPU cores) followed by one gb job (train). To use the speculator
+# one job for the CPU stages (link or export the sample, then build the dataset on 144 CPU cores; on gb in the reservation by default, CPU_PARTITION=gg for gg) followed by one gb job (train). To use the speculator
 # pipeline's prepared data instead of tokenizing (minutes, not hours): `bash submit_chain.sh export,convert train`. The stages of one
 # job must use the same partition. Each job waits for the previous one (afterok; afterany between two train jobs, so a second train
 # job still starts after the first hit its time limit and resumes from its last checkpoint). Submit a subset to rerun or resume (e.g.
@@ -21,8 +21,8 @@ if [[ $DRY -eq 0 ]] && ! command -v sbatch >/dev/null; then echo "sbatch not fou
 partition() {  # the partition of a job: one stage, or comma-joined stages that all need the same one
     local st p="" q
     for st in ${1//,/ }; do
-        case "$st" in export|prepare|convert|upload) q=gg ;; train) q=gb ;; *) return 1 ;; esac
-        [[ -z "$p" || "$p" == "$q" ]] || { echo "stages '$1' need different partitions (gg and gb); make them separate jobs" >&2; return 2; }
+        case "$st" in export|prepare|convert|upload) q=$CPU_PARTITION ;; train) q=gb ;; *) return 1 ;; esac
+        [[ -z "$p" || "$p" == "$q" ]] || { echo "stages '$1' need different partitions; make them separate jobs" >&2; return 2; }
         p=$q
     done
     [[ -n "$p" ]] && echo "$p"

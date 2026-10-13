@@ -6,6 +6,11 @@
 # A job in a reservation can only run on the reservation's nodes (here two, and the jobs are --exclusive: two at a time at most).
 RESERVATION=${RESERVATION-CGAI-gb}
 
+# CPU_PARTITION: where the CPU-only stages (export, prepare, convert, upload) run. Default gb, so that every job of a chain is in the reservation (these
+# stages simply leave the GPUs idle). CPU_PARTITION=gg puts them back on the CPU partition (2-day limit, no reservation). On gb the QOS allows only 3
+# submitted jobs per user and 12 h per job, so the chains put short CPU stages in the same job as a GPU stage (comma-joined: `prepare,train`).
+CPU_PARTITION=${CPU_PARTITION:-gb}
+
 # Prints the sbatch option for a gb job, or nothing: when no reservation is wanted, or when it does not exist (expired, wrong name; a warning
 # says so and the job is submitted without it instead of being rejected).
 gb_reservation_args() {

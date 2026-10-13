@@ -2,7 +2,7 @@
 # Submit the pipeline stages as a chain of Slurm jobs (run from a LOGIN node: sbatch is refused on compute nodes).
 #   bash submit_chain.sh [--dry-run] [job ...]     stages: export prepare train
 # Each argument is ONE Slurm job; join stages with commas to run several in the same job. The default is
-# `export,prepare train`: one gg job (export only links the on-policy experiment's sample, so it is seconds of work, then
+# `export,prepare train`: one CPU-stage job (on gb in the reservation by default, CPU_PARTITION=gg for gg; export only links the on-policy experiment's sample, so it is seconds of work, then
 # prepare renders) followed by one gb job (train). The stages of one job must use the same partition. Each job waits for
 # the previous one (afterok). Submit a subset to rerun or resume (e.g. `bash submit_chain.sh train` resumes training from
 # its checkpoints; `export` and `prepare` skip when their output exists; `export prepare train` makes three jobs).
@@ -12,7 +12,7 @@
 # job: `AFTER=1056558 bash submit_chain.sh train`.
 #
 # Time limits are the maximum the partition's QOS allows (rule of thumb for all jobs: qgb 12:00:00,
-# qgg / qgh 2-00:00:00). The qgb QOS also allows only 3 submitted jobs per user: this chain uses 1 gb job (train).
+# qgg / qgh 2-00:00:00). The qgb QOS also allows only 3 submitted jobs per user: this chain uses 2 gb jobs (export,prepare and train).
 set -uo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$HERE/../../../../../common/slurm.sh"   # gb_reservation_args: the CGAI-gb reservation for gb jobs
@@ -23,8 +23,8 @@ if [[ $DRY -eq 0 ]] && ! command -v sbatch >/dev/null; then echo "sbatch not fou
 partition() {  # the partition of a job: one stage, or comma-joined stages that all need the same one
     local st p="" q
     for st in ${1//,/ }; do
-        case "$st" in export|prepare) q=gg ;; train) q=gb ;; *) return 1 ;; esac
-        [[ -z "$p" || "$p" == "$q" ]] || { echo "stages '$1' need different partitions (gg and gb); make them separate jobs" >&2; return 2; }
+        case "$st" in export|prepare) q=$CPU_PARTITION ;; train) q=gb ;; *) return 1 ;; esac
+        [[ -z "$p" || "$p" == "$q" ]] || { echo "stages '$1' need different partitions; make them separate jobs" >&2; return 2; }
         p=$q
     done
     [[ -n "$p" ]] && echo "$p"

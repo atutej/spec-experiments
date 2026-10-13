@@ -6,7 +6,7 @@
 # stage (e.g. `bash submit_chain.sh train` resumes training from its checkpoints). Overrides pass through the
 # environment of this command, e.g. REGEN_LIMIT=1000 WORK_DIR=... bash submit_chain.sh --dry-run
 #
-# AFTER=<jobid> makes the first submitted stage wait for an already queued job, e.g. when a chain broke after its
+# AFTER=<jobid> (or <jobid>?<jobid>: any of them) makes the first submitted stage wait for an already queued job, e.g. when a chain broke after its
 # first job: `AFTER=1056558 bash submit_chain.sh regen prepare train`.
 #
 # Time limits are the maximum the partition's QOS allows (rule of thumb for all jobs: qgb 12:00:00,
@@ -77,7 +77,8 @@ for s in "${STAGES[@]}"; do
         dep=""; for g in "${group[@]}"; do dep+="${dep:+?}afterok:$g"; done
         cmd+=(--dependency="$dep")
     elif [[ -n "$prev" ]]; then
-        cmd+=(--dependency="afterok:$prev")
+        # AFTER may name several jobs of which ANY must succeed, with ? between the ids (AFTER='1069270?1069271': a regen and its retry)
+        cmd+=(--dependency="afterok:${prev//\?/?afterok:}")
     fi
     # shellcheck disable=SC2206  # the comma-joined stages become separate arguments of run.sh on purpose
     cmd+=("$HERE/run.sbatch" ${s//,/ })

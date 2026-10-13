@@ -4,10 +4,12 @@
 # AFTER=<jobid> waits for a queued job first (e.g. the training job). Time limit = qgb maximum (12:00:00); qgb allows 3 submitted jobs.
 set -uo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$HERE/../../../../../common/slurm.sh"   # gb_reservation_args: the CGAI-gb reservation for gb jobs
 DRY=0; [[ "${1:-}" == "--dry-run" ]] && { DRY=1; shift; }
 CKPT_NAME=${1:-0}
 if [[ $DRY -eq 0 ]] && ! command -v sbatch >/dev/null; then echo "sbatch not found (login node?)" >&2; exit 1; fi
 cmd=(sbatch --parsable -p gb -t 12:00:00 -J sft-onpolicy-eval-$CKPT_NAME --export=ALL)
+res=$(gb_reservation_args); [[ -z "$res" ]] || cmd+=("$res")
 [[ -n "${AFTER:-}" ]] && cmd+=(--dependency="afterok:$AFTER")
 cmd+=("$HERE/eval.sbatch" "$CKPT_NAME")
 if [[ $DRY -eq 1 ]]; then echo "${cmd[*]}"; exit 0; fi

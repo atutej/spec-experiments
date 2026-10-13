@@ -13,6 +13,7 @@
 # also allows only 3 submitted jobs per user: this chain uses 1 gb job (train).
 set -uo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$HERE/../../../../../common/slurm.sh"   # gb_reservation_args: the CGAI-gb reservation for gb jobs
 DRY=0; [[ "${1:-}" == "--dry-run" ]] && { DRY=1; shift; }
 STAGES=("$@"); [[ ${#STAGES[@]} -gt 0 ]] || STAGES=(export,prepare train)
 if [[ $DRY -eq 0 ]] && ! command -v sbatch >/dev/null; then echo "sbatch not found (login node?)" >&2; exit 1; fi
@@ -43,6 +44,7 @@ prev="${AFTER:-}"; prev_stage=""; SUBMITTED=()
 for s in "${STAGES[@]}"; do
     p=$(partition "$s") || { echo "bad job '$s' (stages: export prepare convert train upload; join with commas)" >&2; exit 2; }
     cmd=(sbatch --parsable -p "$p" -t "$(maxtime "$p")" -J "$JOB_PREFIX-${s//,/-}" --export=ALL)
+    if [[ "$p" == gb ]]; then res=$(gb_reservation_args); [[ -z "$res" ]] || cmd+=("$res"); fi
     # afterok: a stage starts only if the previous job succeeded. Between two train jobs it is afterany: a train job that hits its time
     # limit counts as failed, and the next one must still start (it resumes from the last checkpoint). A crash then restarts too.
     if [[ -n "$prev" ]]; then

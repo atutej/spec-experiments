@@ -79,6 +79,8 @@ Do this whenever the project needs something new, so the next rebuild includes i
 - **Set every sbatch time limit (`-t`) to the maximum the partition's QOS allows**, so jobs aren't killed
   early (Vista: `qgb` 12:00:00, `qgg`/`qgh` 2-00:00:00; see the machine's `NOTES.md`). Restartable stages
   (`--resume`, trainer checkpoints) make a hit limit recoverable.
+- **Submit gb jobs in the `CGAI-gb` reservation** (`--reservation=CGAI-gb`, active until 2026-10-27) while it exists. The submit scripts do it through `common/slurm.sh` on the command
+  line, for gb jobs only (never an `#SBATCH` header in a `run.sbatch` that also runs gg stages); see the machine's `NOTES.md`.
 - Prefer fixing a recipe over hand-installing into an env. A hand fix is lost at the next purge.
 - If a recipe step fails, report the error and options to the user. Don't swap in a different
   package source (for example upstream vLLM instead of the Marin fork) without asking.

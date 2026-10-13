@@ -14,6 +14,7 @@
 # allows at once, so leave no other gb job queued while it runs (submit evals after).
 set -uo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$HERE/../../../../../common/slurm.sh"   # gb_reservation_args: the CGAI-gb reservation for gb jobs
 DRY=0; [[ "${1:-}" == "--dry-run" ]] && { DRY=1; shift; }
 STAGES=("$@"); [[ ${#STAGES[@]} -gt 0 ]] || STAGES=(export regen regen prepare train)   # the second regen resumes if the first hit its time limit
 if [[ $DRY -eq 0 ]] && ! command -v sbatch >/dev/null; then echo "sbatch not found (login node?)" >&2; exit 1; fi
@@ -59,6 +60,7 @@ prev="${AFTER:-}"; prev_stage=""; group=(); SUBMITTED=()
 for s in "${STAGES[@]}"; do
     p=$(partition "$s") || { echo "unknown stage '$s' (export regen prepare train)" >&2; exit 2; }
     cmd=(sbatch --parsable -p "$p" -t "$(maxtime "$p")" -J "$JOB_PREFIX-$s" --export=ALL)
+    if [[ "$p" == gb ]]; then res=$(gb_reservation_args); [[ -z "$res" ]] || cmd+=("$res"); fi
     retry=0
     if [[ -n "$prev_stage" && "$s" == "$prev_stage" && ( "$s" == regen || "$s" == train ) ]]; then
         retry=1; cmd+=(--dependency="afternotok:$prev" --kill-on-invalid-dep=yes)

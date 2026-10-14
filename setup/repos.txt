@@ -5,8 +5,8 @@
 # dir           url                                          ref                        upstream (optional)
 # grug-dspark-gate = nemotron-terminal-preset + Grug support for DFlash/DSpark: the verifier's gated final norm in the training
 # targets, and a `grug_moe` AutoConfig registration (needed to read the Grug verifier config). Its content is otherwise the upstream
-# agent/grug-verifier-head branch (already squashed into nemotron-terminal-preset). Push the branch to the fork before running
-# setup.sh on a fresh machine; an existing checkout on another branch is only reported as "expected grug-dspark-gate".
+# agent/grug-verifier-head branch (already squashed into nemotron-terminal-preset). The branch is on the fork (atutej/speculators); setup.sh never
+# switches an existing checkout, it only reports "expected grug-dspark-gate": run `git -C speculators switch grug-dspark-gate` there.
 speculators     git@github.com:atutej/speculators.git        grug-dspark-gate           https://github.com/marin-community/speculators
 # Marin vLLM fork, built from source on Vista (aarch64, sm_90 + sm_100). A 40-hex ref is a
 # pinned commit (detached checkout, never fast-forwarded). x86 genai uses a prebuilt wheel.

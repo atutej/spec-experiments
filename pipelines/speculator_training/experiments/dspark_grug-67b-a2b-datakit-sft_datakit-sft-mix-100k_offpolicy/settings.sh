@@ -3,9 +3,10 @@
 # ../dspark_grug-67b-a2b-datakit-sft_datakit-sft-mix_offpolicy (the full mixture; see its PLAN.md). Sourced after env.sh (needs PROJECT_ROOT).
 # Override from the environment, e.g.
 #   DATA_DIR=<dataset> MAX_STEPS=10 WORK_DIR=<abs path> bash vista/run.sh train
-# The speculators checkout: the worktree on branch grug-dspark-gate (gated verifier head in the DFlash/DSpark targets, grug_moe config registration, a
-# launch_vllm.py that reads the layer count from config.json). Until that branch is merged, the main checkout `speculators/` does NOT work for Grug.
-SPEC_DIR=${SPEC_DIR:-$PROJECT_ROOT/speculators-grug}
+# The speculators checkout: the main one, `speculators/`, on branch grug-dspark-gate (gated verifier head in the DFlash/DSpark targets, grug_moe config
+# registration, a launch_vllm.py that reads the layer count from config.json). The env's editable install points at it, so no PYTHONPATH is needed. On any
+# other branch (e.g. nemotron-terminal-preset) Grug does not work: run.sh checks for the patch and stops with a message.
+SPEC_DIR=${SPEC_DIR:-$PROJECT_ROOT/speculators}
 MODEL="open-athena/Grug-67B-A2B-Datakit-SFT-262K-2026.09.21"   # the target: hidden states in training, lm_head / gated final norm for the TV loss
 # ---- data: built by the Datakit command, not by this chain (see NOTES.md): select --rows 100000, write --seq-length 32768, finalize ----
 SEQ_LENGTH=${SEQ_LENGTH:-32768}                  # the dataset's clip length AND the trainer's --total-seq-len

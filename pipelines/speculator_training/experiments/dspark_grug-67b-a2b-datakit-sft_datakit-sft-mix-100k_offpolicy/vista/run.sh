@@ -123,14 +123,15 @@ stage_train() {
     [[ -d "$DATA_DIR" && -f "$DATA_DIR/state.json" && -f "$DATA_DIR/token_freq.pt" ]] || {
         echo "missing or unfinished dataset $DATA_DIR (needs state.json and token_freq.pt): build it with the Datakit command, see NOTES.md" >&2; exit 1; }
     use_env speculators
-    # The patched speculators (grug-dspark-gate) must be the one that is imported: the env's editable install points at the main checkout.
-    export PYTHONPATH="$SPEC_DIR/src${PYTHONPATH:+:$PYTHONPATH}"
-    python -c "import speculators, sys; p = speculators.__file__; print('speculators from', p); sys.exit(0 if p.startswith('$SPEC_DIR') else 'the trainer would not use $SPEC_DIR')"
+    # The checkout the env imports (its editable install points at $PROJECT_ROOT/speculators) must carry the Grug patch (branch grug-dspark-gate):
+    # speculators.utils.hf_configs exists only there. Fail here, in seconds, rather than after the server has loaded 134 GB.
+    python -c "import speculators, sys; p = speculators.__file__; print('speculators from', p); import speculators.utils.hf_configs" 2>/dev/null \
+        && python -c "import speculators, sys; sys.exit(0 if speculators.__file__.startswith('$SPEC_DIR') else 1)" \
+        || { echo "the env's speculators is not the Grug-patched checkout at $SPEC_DIR (branch grug-dspark-gate): git -C $SPEC_DIR switch grug-dspark-gate" >&2; exit 1; }
     echo "=== Step 1: Launching hidden-state vLLM server (Grug, TP=1 x DP=$NUM_VLLM_GPUS x EP) ==="
     start_hidden_state_server
     echo "=== Step 2: Training ==="
     use_env speculators
-    export PYTHONPATH="$SPEC_DIR/src${PYTHONPATH:+:$PYTHONPATH}"
     # No --save-best: with it the trainer writes NO mid-epoch checkpoints (only at the end of an epoch). --checkpoint-freq 0.1 saves every 10% of
     # the epoch and a rerun of this stage resumes from the last one.
     wandb_preflight

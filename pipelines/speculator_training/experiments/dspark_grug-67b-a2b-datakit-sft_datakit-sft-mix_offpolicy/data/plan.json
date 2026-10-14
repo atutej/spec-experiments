@@ -1,0 +1,4377 @@
+{
+  "agenttrove-glm53-compactions": {
+    "allocated_tokens": 95601464,
+    "chat_steps": [
+      "processed-chat/agenttrove-glm53-compactions",
+      "normalized-chat/agenttrove-glm53-compactions"
+    ],
+    "downloads": [
+      {
+        "bytes": 6550550,
+        "error": null,
+        "files": 1,
+        "hf_dataset_id": "open-athena/agenttrove-glm53-compactions",
+        "hf_urls_glob": [
+          "data/train-*.parquet"
+        ],
+        "revision": "6daf898de0743872e972c2bfb7c399bd052bd31f"
+      }
+    ],
+    "rough_token_count_b": 0.188537557
+  },
+  "coderforge": {
+    "allocated_tokens": 1305253275,
+    "chat_steps": [
+      "processed-chat/coderforge-preview",
+      "normalized-chat/coderforge"
+    ],
+    "downloads": [
+      {
+        "bytes": 14614437835,
+        "error": null,
+        "files": 672,
+        "hf_dataset_id": "togethercomputer/CoderForge-Preview",
+        "hf_urls_glob": [
+          "trajectories/SWE_Rebench-*.parquet",
+          "trajectories/SWE_Smith-*.parquet",
+          "trajectories/R2E_Gym-*.parquet"
+        ],
+        "revision": "060fca9"
+      }
+    ],
+    "rough_token_count_b": 10.98677653
+  },
+  "glm-5.2-kernelgym-rollouts": {
+    "allocated_tokens": 8154853,
+    "chat_steps": [
+      "processed-chat/glm-5.2-kernelgym-rollouts",
+      "normalized-chat/glm-5.2-kernelgym-rollouts"
+    ],
+    "downloads": [
+      {
+        "bytes": 106618494,
+        "error": null,
+        "files": 16,
+        "hf_dataset_id": "marin-community/glm-5.2-kernelgym-rollouts",
+        "hf_urls_glob": [
+          "data/*.jsonl.gz"
+        ],
+        "revision": "6dbe98d"
+      }
+    ],
+    "rough_token_count_b": 0.016082348
+  },
+  "massive_function_calling": {
+    "allocated_tokens": 1521205631,
+    "chat_steps": [
+      "raw/massive",
+      "processed-chat/massive_function_calling",
+      "normalized-chat/massive_function_calling"
+    ],
+    "downloads": [],
+    "rough_token_count_b": 11.183690013
+  },
+  "nemotron-terminal": {
+    "allocated_tokens": 879083437,
+    "chat_steps": [
+      "processed-chat/nemotron-terminal-corpus",
+      "normalized-chat/nemotron-terminal"
+    ],
+    "downloads": [
+      {
+        "bytes": 8198603791,
+        "error": null,
+        "files": 31,
+        "hf_dataset_id": "nvidia/Nemotron-Terminal-Corpus",
+        "hf_urls_glob": [],
+        "revision": "a1667c4"
+      }
+    ],
+    "rough_token_count_b": 1.733658
+  },
+  "nemotron_sft_v3/agentic_v1/interactive_agent": {
+    "allocated_tokens": 45810971,
+    "chat_steps": [
+      "raw/nemotron_sft_v3/agentic_v1",
+      "processed-chat/nemotron_sft_v3/agentic_v1/interactive_agent",
+      "normalized-chat/nemotron_sft_v3/agentic_v1/interactive_agent"
+    ],
+    "downloads": [
+      {
+        "bytes": 5786919062,
+        "error": null,
+        "files": 2,
+        "hf_dataset_id": "nvidia/Nemotron-Agentic-v1",
+        "hf_urls_glob": [
+          "data/interactive_agent.jsonl",
+          "data/tool_calling.jsonl"
+        ],
+        "revision": "650d590978ca35c8f1ecea2faf136e5fac421b62"
+      }
+    ],
+    "rough_token_count_b": 0.09034473
+  },
+  "nemotron_sft_v3/agentic_v1/tool_calling": {
+    "allocated_tokens": 374026476,
+    "chat_steps": [
+      "raw/nemotron_sft_v3/agentic_v1",
+      "processed-chat/nemotron_sft_v3/agentic_v1/tool_calling",
+      "normalized-chat/nemotron_sft_v3/agentic_v1/tool_calling"
+    ],
+    "downloads": [
+      {
+        "bytes": 5786919062,
+        "error": null,
+        "files": 2,
+        "hf_dataset_id": "nvidia/Nemotron-Agentic-v1",
+        "hf_urls_glob": [
+          "data/interactive_agent.jsonl",
+          "data/tool_calling.jsonl"
+        ],
+        "revision": "650d590978ca35c8f1ecea2faf136e5fac421b62"
+      }
+    ],
+    "rough_token_count_b": 0.737625081
+  },
+  "nemotron_sft_v3/agentic_v2/interactive_agent": {
+    "allocated_tokens": 686397666,
+    "chat_steps": [
+      "raw/nemotron_sft_v3/agentic_v2",
+      "processed-chat/nemotron_sft_v3/agentic_v2/interactive_agent",
+      "normalized-chat/nemotron_sft_v3/agentic_v2/interactive_agent"
+    ],
+    "downloads": [
+      {
+        "bytes": 7355350085,
+        "error": null,
+        "files": 3,
+        "hf_dataset_id": "nvidia/Nemotron-SFT-Agentic-v2",
+        "hf_urls_glob": [
+          "data/interactive_agent.jsonl",
+          "data/search.jsonl",
+          "data/tool_calling.jsonl"
+        ],
+        "revision": "49e79a3be5ab8cf7511a12958b95cfd6408cd8db"
+      }
+    ],
+    "rough_token_count_b": 1.354234222
+  },
+  "nemotron_sft_v3/agentic_v2/search": {
+    "allocated_tokens": 72754203,
+    "chat_steps": [
+      "raw/nemotron_sft_v3/agentic_v2",
+      "processed-chat/nemotron_sft_v3/agentic_v2/search",
+      "normalized-chat/nemotron_sft_v3/agentic_v2/search"
+    ],
+    "downloads": [
+      {
+        "bytes": 7355350085,
+        "error": null,
+        "files": 3,
+        "hf_dataset_id": "nvidia/Nemotron-SFT-Agentic-v2",
+        "hf_urls_glob": [
+          "data/interactive_agent.jsonl",
+          "data/search.jsonl",
+          "data/tool_calling.jsonl"
+        ],
+        "revision": "49e79a3be5ab8cf7511a12958b95cfd6408cd8db"
+      }
+    ],
+    "rough_token_count_b": 0.143480016
+  },
+  "nemotron_sft_v3/agentic_v2/tool_calling": {
+    "allocated_tokens": 21236879,
+    "chat_steps": [
+      "raw/nemotron_sft_v3/agentic_v2",
+      "processed-chat/nemotron_sft_v3/agentic_v2/tool_calling",
+      "normalized-chat/nemotron_sft_v3/agentic_v2/tool_calling"
+    ],
+    "downloads": [
+      {
+        "bytes": 7355350085,
+        "error": null,
+        "files": 3,
+        "hf_dataset_id": "nvidia/Nemotron-SFT-Agentic-v2",
+        "hf_urls_glob": [
+          "data/interactive_agent.jsonl",
+          "data/search.jsonl",
+          "data/tool_calling.jsonl"
+        ],
+        "revision": "49e79a3be5ab8cf7511a12958b95cfd6408cd8db"
+      }
+    ],
+    "rough_token_count_b": 0.041881674
+  },
+  "nemotron_sft_v3/arc_agi_v1/large_reasoning_and_tools": {
+    "allocated_tokens": 868550128,
+    "chat_steps": [
+      "raw/nemotron_sft_v3/arc_agi_v1",
+      "processed-chat/nemotron_sft_v3/arc_agi_v1/large_reasoning_and_tools",
+      "normalized-chat/nemotron_sft_v3/arc_agi_v1/large_reasoning_and_tools"
+    ],
+    "downloads": [
+      {
+        "bytes": 18432678439,
+        "error": null,
+        "files": 8,
+        "hf_dataset_id": "nvidia/Nemotron-SFT-ARC-AGI-v1",
+        "hf_urls_glob": [
+          "data/large_no_reasoning_no_tools/*.jsonl",
+          "data/large_reasoning_and_tools/*.jsonl",
+          "data/large_reasoning_no_tools/*.jsonl",
+          "data/large_tools_no_reasoning/*.jsonl",
+          "data/small_no_reasoning_no_tools/*.jsonl",
+          "data/small_reasoning_and_tools/*.jsonl",
+          "data/small_reasoning_no_tools/*.jsonl",
+          "data/small_tools_no_reasoning/*.jsonl"
+        ],
+        "revision": "92837449e198007b76830b75508cc6946795cd11"
+      }
+    ],
+    "rough_token_count_b": 1.712885051
+  },
+  "nemotron_sft_v3/arc_agi_v1/large_reasoning_no_tools": {
+    "allocated_tokens": 1014137088,
+    "chat_steps": [
+      "raw/nemotron_sft_v3/arc_agi_v1",
+      "processed-chat/nemotron_sft_v3/arc_agi_v1/large_reasoning_no_tools",
+      "normalized-chat/nemotron_sft_v3/arc_agi_v1/large_reasoning_no_tools"
+    ],
+    "downloads": [
+      {
+        "bytes": 18432678439,
+        "error": null,
+        "files": 8,
+        "hf_dataset_id": "nvidia/Nemotron-SFT-ARC-AGI-v1",
+        "hf_urls_glob": [
+          "data/large_no_reasoning_no_tools/*.jsonl",
+          "data/large_reasoning_and_tools/*.jsonl",
+          "data/large_reasoning_no_tools/*.jsonl",
+          "data/large_tools_no_reasoning/*.jsonl",
+          "data/small_no_reasoning_no_tools/*.jsonl",
+          "data/small_reasoning_and_tools/*.jsonl",
+          "data/small_reasoning_no_tools/*.jsonl",
+          "data/small_tools_no_reasoning/*.jsonl"
+        ],
+        "revision": "92837449e198007b76830b75508cc6946795cd11"
+      }
+    ],
+    "rough_token_count_b": 4.306871635
+  },
+  "nemotron_sft_v3/arc_agi_v1/large_tools_no_reasoning": {
+    "allocated_tokens": 10290047,
+    "chat_steps": [
+      "raw/nemotron_sft_v3/arc_agi_v1",
+      "processed-chat/nemotron_sft_v3/arc_agi_v1/large_tools_no_reasoning",
+      "normalized-chat/nemotron_sft_v3/arc_agi_v1/large_tools_no_reasoning"
+    ],
+    "downloads": [
+      {
+        "bytes": 18432678439,
+        "error": null,
+        "files": 8,
+        "hf_dataset_id": "nvidia/Nemotron-SFT-ARC-AGI-v1",
+        "hf_urls_glob": [
+          "data/large_no_reasoning_no_tools/*.jsonl",
+          "data/large_reasoning_and_tools/*.jsonl",
+          "data/large_reasoning_no_tools/*.jsonl",
+          "data/large_tools_no_reasoning/*.jsonl",
+          "data/small_no_reasoning_no_tools/*.jsonl",
+          "data/small_reasoning_and_tools/*.jsonl",
+          "data/small_reasoning_no_tools/*.jsonl",
+          "data/small_tools_no_reasoning/*.jsonl"
+        ],
+        "revision": "92837449e198007b76830b75508cc6946795cd11"
+      }
+    ],
+    "rough_token_count_b": 0.020293208
+  },
+  "nemotron_sft_v3/arc_agi_v1/small_tools_no_reasoning": {
+    "allocated_tokens": 1027282,
+    "chat_steps": [
+      "raw/nemotron_sft_v3/arc_agi_v1",
+      "processed-chat/nemotron_sft_v3/arc_agi_v1/small_tools_no_reasoning",
+      "normalized-chat/nemotron_sft_v3/arc_agi_v1/small_tools_no_reasoning"
+    ],
+    "downloads": [
+      {
+        "bytes": 18432678439,
+        "error": null,
+        "files": 8,
+        "hf_dataset_id": "nvidia/Nemotron-SFT-ARC-AGI-v1",
+        "hf_urls_glob": [
+          "data/large_no_reasoning_no_tools/*.jsonl",
+          "data/large_reasoning_and_tools/*.jsonl",
+          "data/large_reasoning_no_tools/*.jsonl",
+          "data/large_tools_no_reasoning/*.jsonl",
+          "data/small_no_reasoning_no_tools/*.jsonl",
+          "data/small_reasoning_and_tools/*.jsonl",
+          "data/small_reasoning_no_tools/*.jsonl",
+          "data/small_tools_no_reasoning/*.jsonl"
+        ],
+        "revision": "92837449e198007b76830b75508cc6946795cd11"
+      }
+    ],
+    "rough_token_count_b": 0.002025923
+  },
+  "nemotron_sft_v3/competitive_programming_v2/exercism": {
+    "allocated_tokens": 79125620,
+    "chat_steps": [
+      "raw/nemotron_sft_v3/competitive_programming_v2",
+      "processed-chat/nemotron_sft_v3/competitive_programming_v2/exercism",
+      "normalized-chat/nemotron_sft_v3/competitive_programming_v2/exercism"
+    ],
+    "downloads": [
+      {
+        "bytes": 97312357468,
+        "error": null,
+        "files": 6,
+        "hf_dataset_id": "nvidia/Nemotron-SFT-Competitive-Programming-v2",
+        "hf_urls_glob": [
+          "data/competitive_programming_cpp_*.jsonl",
+          "data/competitive_programming_python_*.jsonl",
+          "data/exercism.jsonl",
+          "data/text_to_sql.jsonl"
+        ],
+        "revision": "778afc98a9e027e10b3cd78020c120e93e142ef2"
+      }
+    ],
+    "rough_token_count_b": 0.156045216
+  },
+  "nemotron_sft_v3/competitive_programming_v2/text_to_sql": {
+    "allocated_tokens": 169299156,
+    "chat_steps": [
+      "raw/nemotron_sft_v3/competitive_programming_v2",
+      "processed-chat/nemotron_sft_v3/competitive_programming_v2/text_to_sql",
+      "normalized-chat/nemotron_sft_v3/competitive_programming_v2/text_to_sql"
+    ],
+    "downloads": [
+      {
+        "bytes": 97312357468,
+        "error": null,
+        "files": 6,
+        "hf_dataset_id": "nvidia/Nemotron-SFT-Competitive-Programming-v2",
+        "hf_urls_glob": [
+          "data/competitive_programming_cpp_*.jsonl",
+          "data/competitive_programming_python_*.jsonl",
+          "data/exercism.jsonl",
+          "data/text_to_sql.jsonl"
+        ],
+        "revision": "778afc98a9e027e10b3cd78020c120e93e142ef2"
+      }
+    ],
+    "rough_token_count_b": 0.334121757
+  },
+  "nemotron_sft_v3/cuda_v1/train": {
+    "allocated_tokens": 10793318,
+    "chat_steps": [
+      "raw/nemotron_sft_v3/cuda_v1",
+      "processed-chat/nemotron_sft_v3/cuda_v1/train",
+      "normalized-chat/nemotron_sft_v3/cuda_v1/train"
+    ],
+    "downloads": [
+      {
+        "bytes": 82831035,
+        "error": null,
+        "files": 1,
+        "hf_dataset_id": "nvidia/Nemotron-SFT-CUDA-v1",
+        "hf_urls_glob": [
+          "data/train.jsonl"
+        ],
+        "revision": "1a06167a6e1e90d928094184173898cbb9bf42de"
+      }
+    ],
+    "rough_token_count_b": 0.021285717
+  },
+  "nemotron_sft_v3/finance_v1/train": {
+    "allocated_tokens": 9430845042,
+    "chat_steps": [
+      "raw/nemotron_sft_v3/finance_v1",
+      "processed-chat/nemotron_sft_v3/finance_v1/train",
+      "normalized-chat/nemotron_sft_v3/finance_v1/train"
+    ],
+    "downloads": [
+      {
+        "bytes": 31922902434,
+        "error": null,
+        "files": 1,
+        "hf_dataset_id": "nvidia/Nemotron-SpecializedDomains-Finance-v1",
+        "hf_urls_glob": [
+          "data/train.jsonl"
+        ],
+        "revision": "5a21b106168facb96ced11b883c2a9b4788ee939"
+      }
+    ],
+    "rough_token_count_b": 9.430845042
+  },
+  "nemotron_sft_v3/instruction_following_chat_v2/reasoning_off": {
+    "allocated_tokens": 1371617196,
+    "chat_steps": [
+      "raw/nemotron_sft_v3/instruction_following_chat_v2",
+      "processed-chat/nemotron_sft_v3/instruction_following_chat_v2/reasoning_off",
+      "normalized-chat/nemotron_sft_v3/instruction_following_chat_v2/reasoning_off"
+    ],
+    "downloads": [
+      {
+        "bytes": 16019283510,
+        "error": null,
+        "files": 2,
+        "hf_dataset_id": "nvidia/Nemotron-SFT-Instruction-Following-Chat-v2",
+        "hf_urls_glob": [
+          "data/reasoning_off.jsonl",
+          "data/reasoning_on.jsonl"
+        ],
+        "revision": "1a9454ed054b8544503ab8d8c0a519d141a44c5b"
+      }
+    ],
+    "rough_token_count_b": 1.371617196
+  },
+  "nemotron_sft_v3/instruction_following_chat_v2/reasoning_on": {
+    "allocated_tokens": 1194295135,
+    "chat_steps": [
+      "raw/nemotron_sft_v3/instruction_following_chat_v2",
+      "processed-chat/nemotron_sft_v3/instruction_following_chat_v2/reasoning_on",
+      "normalized-chat/nemotron_sft_v3/instruction_following_chat_v2/reasoning_on"
+    ],
+    "downloads": [
+      {
+        "bytes": 16019283510,
+        "error": null,
+        "files": 2,
+        "hf_dataset_id": "nvidia/Nemotron-SFT-Instruction-Following-Chat-v2",
+        "hf_urls_glob": [
+          "data/reasoning_off.jsonl",
+          "data/reasoning_on.jsonl"
+        ],
+        "revision": "1a9454ed054b8544503ab8d8c0a519d141a44c5b"
+      }
+    ],
+    "rough_token_count_b": 2.360933725
+  },
+  "nemotron_sft_v3/instruction_following_chat_v3/chat": {
+    "allocated_tokens": 1014137088,
+    "chat_steps": [
+      "raw/nemotron_sft_v3/instruction_following_chat_v3",
+      "restored-chat/nemotron_sft_v3/instruction_following_chat_v3",
+      "processed-chat/nemotron_sft_v3/instruction_following_chat_v3/chat",
+      "normalized-chat/nemotron_sft_v3/instruction_following_chat_v3/chat"
+    ],
+    "downloads": [
+      {
+        "bytes": 20250303823,
+        "error": null,
+        "files": 2,
+        "hf_dataset_id": "nvidia/Nemotron-SFT-Instruction-Following-Chat-v3",
+        "hf_urls_glob": [
+          "data/chat.jsonl",
+          "data/instruction_following.jsonl"
+        ],
+        "revision": "be3b3e04ef605ac9d3f8f35b9d5a632f4a3a3402"
+      }
+    ],
+    "rough_token_count_b": 3.5504148
+  },
+  "nemotron_sft_v3/instruction_following_chat_v3/instruction_following": {
+    "allocated_tokens": 365964605,
+    "chat_steps": [
+      "raw/nemotron_sft_v3/instruction_following_chat_v3",
+      "processed-chat/nemotron_sft_v3/instruction_following_chat_v3/instruction_following",
+      "normalized-chat/nemotron_sft_v3/instruction_following_chat_v3/instruction_following"
+    ],
+    "downloads": [
+      {
+        "bytes": 20250303823,
+        "error": null,
+        "files": 2,
+        "hf_dataset_id": "nvidia/Nemotron-SFT-Instruction-Following-Chat-v3",
+        "hf_urls_glob": [
+          "data/chat.jsonl",
+          "data/instruction_following.jsonl"
+        ],
+        "revision": "be3b3e04ef605ac9d3f8f35b9d5a632f4a3a3402"
+      }
+    ],
+    "rough_token_count_b": 0.721726105
+  },
+  "nemotron_sft_v3/math_proofs_v1/lean": {
+    "allocated_tokens": 2028274175,
+    "chat_steps": [
+      "raw/nemotron_sft_v3/math_proofs_v1",
+      "processed-chat/nemotron_sft_v3/math_proofs_v1/lean",
+      "normalized-chat/nemotron_sft_v3/math_proofs_v1/lean"
+    ],
+    "downloads": [
+      {
+        "bytes": 29525155225,
+        "error": null,
+        "files": 1,
+        "hf_dataset_id": "nvidia/Nemotron-Math-Proofs-v1",
+        "hf_urls_glob": [
+          "data/lean.jsonl"
+        ],
+        "revision": "97229c590831adfe96202f5cd071d444d535bf91"
+      }
+    ],
+    "rough_token_count_b": 9.91551052
+  },
+  "nemotron_sft_v3/math_proofs_v2/train": {
+    "allocated_tokens": 253534272,
+    "chat_steps": [
+      "raw/nemotron_sft_v3/math_proofs_v2",
+      "processed-chat/nemotron_sft_v3/math_proofs_v2/train",
+      "normalized-chat/nemotron_sft_v3/math_proofs_v2/train"
+    ],
+    "downloads": [
+      {
+        "bytes": 17131378160,
+        "error": null,
+        "files": 1,
+        "hf_dataset_id": "nvidia/Nemotron-Math-Proofs-v2",
+        "hf_urls_glob": [
+          "data/train.jsonl"
+        ],
+        "revision": "7665d7f1d006fd89aa852a9dab8060c60b63f814"
+      }
+    ],
+    "rough_token_count_b": 5.196848645
+  },
+  "nemotron_sft_v3/math_v4/train": {
+    "allocated_tokens": 2028274175,
+    "chat_steps": [
+      "raw/nemotron_sft_v3/math_v4",
+      "processed-chat/nemotron_sft_v3/math_v4/train",
+      "normalized-chat/nemotron_sft_v3/math_v4/train"
+    ],
+    "downloads": [
+      {
+        "bytes": 19790505789,
+        "error": null,
+        "files": 1,
+        "hf_dataset_id": "nvidia/Nemotron-SFT-Math-v4",
+        "hf_urls_glob": [
+          "data/train.jsonl"
+        ],
+        "revision": "a94e56aeddcf6e75d28c8bd210f40fa62309288d"
+      }
+    ],
+    "rough_token_count_b": 6.587456753
+  },
+  "nemotron_sft_v3/multilingual_v1/code_de": {
+    "allocated_tokens": 253534272,
+    "chat_steps": [
+      "raw/nemotron_sft_v3/multilingual_v1",
+      "processed-chat/nemotron_sft_v3/multilingual_v1/code_de",
+      "normalized-chat/nemotron_sft_v3/multilingual_v1/code_de"
+    ],
+    "downloads": [
+      {
+        "bytes": 94570407930,
+        "error": null,
+        "files": 18,
+        "hf_dataset_id": "nvidia/Nemotron-SFT-Multilingual-v1",
+        "hf_urls_glob": [
+          "data/super-v3_code_de_translated_final.jsonl",
+          "data/super-v3_code_es_translated_final.jsonl",
+          "data/super-v3_code_fr_translated_final.jsonl",
+          "data/super-v3_code_it_translated_final.jsonl",
+          "data/super-v3_code_ja_translated_final.jsonl",
+          "data/super-v3_code_zh_translated_final.jsonl",
+          "data/super-v3_math_de_translated_final.jsonl",
+          "data/super-v3_math_es_translated_final.jsonl",
+          "data/super-v3_math_fr_translated_final.jsonl",
+          "data/super-v3_math_it_translated_final.jsonl",
+          "data/super-v3_math_ja_translated_final.jsonl",
+          "data/super-v3_math_zh_translated_final.jsonl",
+          "data/super-v3_stem_de_translated_postedit_final.jsonl",
+          "data/super-v3_stem_es_translated_postedit_final.jsonl",
+          "data/super-v3_stem_fr_translated_postedit_final.jsonl",
+          "data/super-v3_stem_it_translated_postedit_final.jsonl",
+          "data/super-v3_stem_ja_translated_postedit_final.jsonl",
+          "data/super-v3_stem_zh_translated_postedit_final.jsonl"
+        ],
+        "revision": "22c86505762a7c595abee309d720084351c9f4ba"
+      }
+    ],
+    "rough_token_count_b": 1.711805655
+  },
+  "nemotron_sft_v3/multilingual_v1/code_es": {
+    "allocated_tokens": 253534272,
+    "chat_steps": [
+      "raw/nemotron_sft_v3/multilingual_v1",
+      "processed-chat/nemotron_sft_v3/multilingual_v1/code_es",
+      "normalized-chat/nemotron_sft_v3/multilingual_v1/code_es"
+    ],
+    "downloads": [
+      {
+        "bytes": 94570407930,
+        "error": null,
+        "files": 18,
+        "hf_dataset_id": "nvidia/Nemotron-SFT-Multilingual-v1",
+        "hf_urls_glob": [
+          "data/super-v3_code_de_translated_final.jsonl",
+          "data/super-v3_code_es_translated_final.jsonl",
+          "data/super-v3_code_fr_translated_final.jsonl",
+          "data/super-v3_code_it_translated_final.jsonl",
+          "data/super-v3_code_ja_translated_final.jsonl",
+          "data/super-v3_code_zh_translated_final.jsonl",
+          "data/super-v3_math_de_translated_final.jsonl",
+          "data/super-v3_math_es_translated_final.jsonl",
+          "data/super-v3_math_fr_translated_final.jsonl",
+          "data/super-v3_math_it_translated_final.jsonl",
+          "data/super-v3_math_ja_translated_final.jsonl",
+          "data/super-v3_math_zh_translated_final.jsonl",
+          "data/super-v3_stem_de_translated_postedit_final.jsonl",
+          "data/super-v3_stem_es_translated_postedit_final.jsonl",
+          "data/super-v3_stem_fr_translated_postedit_final.jsonl",
+          "data/super-v3_stem_it_translated_postedit_final.jsonl",
+          "data/super-v3_stem_ja_translated_postedit_final.jsonl",
+          "data/super-v3_stem_zh_translated_postedit_final.jsonl"
+        ],
+        "revision": "22c86505762a7c595abee309d720084351c9f4ba"
+      }
+    ],
+    "rough_token_count_b": 1.680588999
+  },
+  "nemotron_sft_v3/multilingual_v1/code_fr": {
+    "allocated_tokens": 253534272,
+    "chat_steps": [
+      "raw/nemotron_sft_v3/multilingual_v1",
+      "processed-chat/nemotron_sft_v3/multilingual_v1/code_fr",
+      "normalized-chat/nemotron_sft_v3/multilingual_v1/code_fr"
+    ],
+    "downloads": [
+      {
+        "bytes": 94570407930,
+        "error": null,
+        "files": 18,
+        "hf_dataset_id": "nvidia/Nemotron-SFT-Multilingual-v1",
+        "hf_urls_glob": [
+          "data/super-v3_code_de_translated_final.jsonl",
+          "data/super-v3_code_es_translated_final.jsonl",
+          "data/super-v3_code_fr_translated_final.jsonl",
+          "data/super-v3_code_it_translated_final.jsonl",
+          "data/super-v3_code_ja_translated_final.jsonl",
+          "data/super-v3_code_zh_translated_final.jsonl",
+          "data/super-v3_math_de_translated_final.jsonl",
+          "data/super-v3_math_es_translated_final.jsonl",
+          "data/super-v3_math_fr_translated_final.jsonl",
+          "data/super-v3_math_it_translated_final.jsonl",
+          "data/super-v3_math_ja_translated_final.jsonl",
+          "data/super-v3_math_zh_translated_final.jsonl",
+          "data/super-v3_stem_de_translated_postedit_final.jsonl",
+          "data/super-v3_stem_es_translated_postedit_final.jsonl",
+          "data/super-v3_stem_fr_translated_postedit_final.jsonl",
+          "data/super-v3_stem_it_translated_postedit_final.jsonl",
+          "data/super-v3_stem_ja_translated_postedit_final.jsonl",
+          "data/super-v3_stem_zh_translated_postedit_final.jsonl"
+        ],
+        "revision": "22c86505762a7c595abee309d720084351c9f4ba"
+      }
+    ],
+    "rough_token_count_b": 1.747907034
+  },
+  "nemotron_sft_v3/multilingual_v1/code_it": {
+    "allocated_tokens": 253534272,
+    "chat_steps": [
+      "raw/nemotron_sft_v3/multilingual_v1",
+      "processed-chat/nemotron_sft_v3/multilingual_v1/code_it",
+      "normalized-chat/nemotron_sft_v3/multilingual_v1/code_it"
+    ],
+    "downloads": [
+      {
+        "bytes": 94570407930,
+        "error": null,
+        "files": 18,
+        "hf_dataset_id": "nvidia/Nemotron-SFT-Multilingual-v1",
+        "hf_urls_glob": [
+          "data/super-v3_code_de_translated_final.jsonl",
+          "data/super-v3_code_es_translated_final.jsonl",
+          "data/super-v3_code_fr_translated_final.jsonl",
+          "data/super-v3_code_it_translated_final.jsonl",
+          "data/super-v3_code_ja_translated_final.jsonl",
+          "data/super-v3_code_zh_translated_final.jsonl",
+          "data/super-v3_math_de_translated_final.jsonl",
+          "data/super-v3_math_es_translated_final.jsonl",
+          "data/super-v3_math_fr_translated_final.jsonl",
+          "data/super-v3_math_it_translated_final.jsonl",
+          "data/super-v3_math_ja_translated_final.jsonl",
+          "data/super-v3_math_zh_translated_final.jsonl",
+          "data/super-v3_stem_de_translated_postedit_final.jsonl",
+          "data/super-v3_stem_es_translated_postedit_final.jsonl",
+          "data/super-v3_stem_fr_translated_postedit_final.jsonl",
+          "data/super-v3_stem_it_translated_postedit_final.jsonl",
+          "data/super-v3_stem_ja_translated_postedit_final.jsonl",
+          "data/super-v3_stem_zh_translated_postedit_final.jsonl"
+        ],
+        "revision": "22c86505762a7c595abee309d720084351c9f4ba"
+      }
+    ],
+    "rough_token_count_b": 1.828054555
+  },
+  "nemotron_sft_v3/multilingual_v1/code_zh": {
+    "allocated_tokens": 253534272,
+    "chat_steps": [
+      "raw/nemotron_sft_v3/multilingual_v1",
+      "processed-chat/nemotron_sft_v3/multilingual_v1/code_zh",
+      "normalized-chat/nemotron_sft_v3/multilingual_v1/code_zh"
+    ],
+    "downloads": [
+      {
+        "bytes": 94570407930,
+        "error": null,
+        "files": 18,
+        "hf_dataset_id": "nvidia/Nemotron-SFT-Multilingual-v1",
+        "hf_urls_glob": [
+          "data/super-v3_code_de_translated_final.jsonl",
+          "data/super-v3_code_es_translated_final.jsonl",
+          "data/super-v3_code_fr_translated_final.jsonl",
+          "data/super-v3_code_it_translated_final.jsonl",
+          "data/super-v3_code_ja_translated_final.jsonl",
+          "data/super-v3_code_zh_translated_final.jsonl",
+          "data/super-v3_math_de_translated_final.jsonl",
+          "data/super-v3_math_es_translated_final.jsonl",
+          "data/super-v3_math_fr_translated_final.jsonl",
+          "data/super-v3_math_it_translated_final.jsonl",
+          "data/super-v3_math_ja_translated_final.jsonl",
+          "data/super-v3_math_zh_translated_final.jsonl",
+          "data/super-v3_stem_de_translated_postedit_final.jsonl",
+          "data/super-v3_stem_es_translated_postedit_final.jsonl",
+          "data/super-v3_stem_fr_translated_postedit_final.jsonl",
+          "data/super-v3_stem_it_translated_postedit_final.jsonl",
+          "data/super-v3_stem_ja_translated_postedit_final.jsonl",
+          "data/super-v3_stem_zh_translated_postedit_final.jsonl"
+        ],
+        "revision": "22c86505762a7c595abee309d720084351c9f4ba"
+      }
+    ],
+    "rough_token_count_b": 1.941448441
+  },
+  "nemotron_sft_v3/multilingual_v1/math_de": {
+    "allocated_tokens": 253534272,
+    "chat_steps": [
+      "raw/nemotron_sft_v3/multilingual_v1",
+      "processed-chat/nemotron_sft_v3/multilingual_v1/math_de",
+      "normalized-chat/nemotron_sft_v3/multilingual_v1/math_de"
+    ],
+    "downloads": [
+      {
+        "bytes": 94570407930,
+        "error": null,
+        "files": 18,
+        "hf_dataset_id": "nvidia/Nemotron-SFT-Multilingual-v1",
+        "hf_urls_glob": [
+          "data/super-v3_code_de_translated_final.jsonl",
+          "data/super-v3_code_es_translated_final.jsonl",
+          "data/super-v3_code_fr_translated_final.jsonl",
+          "data/super-v3_code_it_translated_final.jsonl",
+          "data/super-v3_code_ja_translated_final.jsonl",
+          "data/super-v3_code_zh_translated_final.jsonl",
+          "data/super-v3_math_de_translated_final.jsonl",
+          "data/super-v3_math_es_translated_final.jsonl",
+          "data/super-v3_math_fr_translated_final.jsonl",
+          "data/super-v3_math_it_translated_final.jsonl",
+          "data/super-v3_math_ja_translated_final.jsonl",
+          "data/super-v3_math_zh_translated_final.jsonl",
+          "data/super-v3_stem_de_translated_postedit_final.jsonl",
+          "data/super-v3_stem_es_translated_postedit_final.jsonl",
+          "data/super-v3_stem_fr_translated_postedit_final.jsonl",
+          "data/super-v3_stem_it_translated_postedit_final.jsonl",
+          "data/super-v3_stem_ja_translated_postedit_final.jsonl",
+          "data/super-v3_stem_zh_translated_postedit_final.jsonl"
+        ],
+        "revision": "22c86505762a7c595abee309d720084351c9f4ba"
+      }
+    ],
+    "rough_token_count_b": 2.462788745
+  },
+  "nemotron_sft_v3/multilingual_v1/math_es": {
+    "allocated_tokens": 253534272,
+    "chat_steps": [
+      "raw/nemotron_sft_v3/multilingual_v1",
+      "processed-chat/nemotron_sft_v3/multilingual_v1/math_es",
+      "normalized-chat/nemotron_sft_v3/multilingual_v1/math_es"
+    ],
+    "downloads": [
+      {
+        "bytes": 94570407930,
+        "error": null,
+        "files": 18,
+        "hf_dataset_id": "nvidia/Nemotron-SFT-Multilingual-v1",
+        "hf_urls_glob": [
+          "data/super-v3_code_de_translated_final.jsonl",
+          "data/super-v3_code_es_translated_final.jsonl",
+          "data/super-v3_code_fr_translated_final.jsonl",
+          "data/super-v3_code_it_translated_final.jsonl",
+          "data/super-v3_code_ja_translated_final.jsonl",
+          "data/super-v3_code_zh_translated_final.jsonl",
+          "data/super-v3_math_de_translated_final.jsonl",
+          "data/super-v3_math_es_translated_final.jsonl",
+          "data/super-v3_math_fr_translated_final.jsonl",
+          "data/super-v3_math_it_translated_final.jsonl",
+          "data/super-v3_math_ja_translated_final.jsonl",
+          "data/super-v3_math_zh_translated_final.jsonl",
+          "data/super-v3_stem_de_translated_postedit_final.jsonl",
+          "data/super-v3_stem_es_translated_postedit_final.jsonl",
+          "data/super-v3_stem_fr_translated_postedit_final.jsonl",
+          "data/super-v3_stem_it_translated_postedit_final.jsonl",
+          "data/super-v3_stem_ja_translated_postedit_final.jsonl",
+          "data/super-v3_stem_zh_translated_postedit_final.jsonl"
+        ],
+        "revision": "22c86505762a7c595abee309d720084351c9f4ba"
+      }
+    ],
+    "rough_token_count_b": 1.942946328
+  },
+  "nemotron_sft_v3/multilingual_v1/math_fr": {
+    "allocated_tokens": 253534272,
+    "chat_steps": [
+      "raw/nemotron_sft_v3/multilingual_v1",
+      "processed-chat/nemotron_sft_v3/multilingual_v1/math_fr",
+      "normalized-chat/nemotron_sft_v3/multilingual_v1/math_fr"
+    ],
+    "downloads": [
+      {
+        "bytes": 94570407930,
+        "error": null,
+        "files": 18,
+        "hf_dataset_id": "nvidia/Nemotron-SFT-Multilingual-v1",
+        "hf_urls_glob": [
+          "data/super-v3_code_de_translated_final.jsonl",
+          "data/super-v3_code_es_translated_final.jsonl",
+          "data/super-v3_code_fr_translated_final.jsonl",
+          "data/super-v3_code_it_translated_final.jsonl",
+          "data/super-v3_code_ja_translated_final.jsonl",
+          "data/super-v3_code_zh_translated_final.jsonl",
+          "data/super-v3_math_de_translated_final.jsonl",
+          "data/super-v3_math_es_translated_final.jsonl",
+          "data/super-v3_math_fr_translated_final.jsonl",
+          "data/super-v3_math_it_translated_final.jsonl",
+          "data/super-v3_math_ja_translated_final.jsonl",
+          "data/super-v3_math_zh_translated_final.jsonl",
+          "data/super-v3_stem_de_translated_postedit_final.jsonl",
+          "data/super-v3_stem_es_translated_postedit_final.jsonl",
+          "data/super-v3_stem_fr_translated_postedit_final.jsonl",
+          "data/super-v3_stem_it_translated_postedit_final.jsonl",
+          "data/super-v3_stem_ja_translated_postedit_final.jsonl",
+          "data/super-v3_stem_zh_translated_postedit_final.jsonl"
+        ],
+        "revision": "22c86505762a7c595abee309d720084351c9f4ba"
+      }
+    ],
+    "rough_token_count_b": 2.196381081
+  },
+  "nemotron_sft_v3/multilingual_v1/math_it": {
+    "allocated_tokens": 253534272,
+    "chat_steps": [
+      "raw/nemotron_sft_v3/multilingual_v1",
+      "processed-chat/nemotron_sft_v3/multilingual_v1/math_it",
+      "normalized-chat/nemotron_sft_v3/multilingual_v1/math_it"
+    ],
+    "downloads": [
+      {
+        "bytes": 94570407930,
+        "error": null,
+        "files": 18,
+        "hf_dataset_id": "nvidia/Nemotron-SFT-Multilingual-v1",
+        "hf_urls_glob": [
+          "data/super-v3_code_de_translated_final.jsonl",
+          "data/super-v3_code_es_translated_final.jsonl",
+          "data/super-v3_code_fr_translated_final.jsonl",
+          "data/super-v3_code_it_translated_final.jsonl",
+          "data/super-v3_code_ja_translated_final.jsonl",
+          "data/super-v3_code_zh_translated_final.jsonl",
+          "data/super-v3_math_de_translated_final.jsonl",
+          "data/super-v3_math_es_translated_final.jsonl",
+          "data/super-v3_math_fr_translated_final.jsonl",
+          "data/super-v3_math_it_translated_final.jsonl",
+          "data/super-v3_math_ja_translated_final.jsonl",
+          "data/super-v3_math_zh_translated_final.jsonl",
+          "data/super-v3_stem_de_translated_postedit_final.jsonl",
+          "data/super-v3_stem_es_translated_postedit_final.jsonl",
+          "data/super-v3_stem_fr_translated_postedit_final.jsonl",
+          "data/super-v3_stem_it_translated_postedit_final.jsonl",
+          "data/super-v3_stem_ja_translated_postedit_final.jsonl",
+          "data/super-v3_stem_zh_translated_postedit_final.jsonl"
+        ],
+        "revision": "22c86505762a7c595abee309d720084351c9f4ba"
+      }
+    ],
+    "rough_token_count_b": 2.516674311
+  },
+  "nemotron_sft_v3/multilingual_v1/math_ja": {
+    "allocated_tokens": 253534272,
+    "chat_steps": [
+      "raw/nemotron_sft_v3/multilingual_v1",
+      "processed-chat/nemotron_sft_v3/multilingual_v1/math_ja",
+      "normalized-chat/nemotron_sft_v3/multilingual_v1/math_ja"
+    ],
+    "downloads": [
+      {
+        "bytes": 94570407930,
+        "error": null,
+        "files": 18,
+        "hf_dataset_id": "nvidia/Nemotron-SFT-Multilingual-v1",
+        "hf_urls_glob": [
+          "data/super-v3_code_de_translated_final.jsonl",
+          "data/super-v3_code_es_translated_final.jsonl",
+          "data/super-v3_code_fr_translated_final.jsonl",
+          "data/super-v3_code_it_translated_final.jsonl",
+          "data/super-v3_code_ja_translated_final.jsonl",
+          "data/super-v3_code_zh_translated_final.jsonl",
+          "data/super-v3_math_de_translated_final.jsonl",
+          "data/super-v3_math_es_translated_final.jsonl",
+          "data/super-v3_math_fr_translated_final.jsonl",
+          "data/super-v3_math_it_translated_final.jsonl",
+          "data/super-v3_math_ja_translated_final.jsonl",
+          "data/super-v3_math_zh_translated_final.jsonl",
+          "data/super-v3_stem_de_translated_postedit_final.jsonl",
+          "data/super-v3_stem_es_translated_postedit_final.jsonl",
+          "data/super-v3_stem_fr_translated_postedit_final.jsonl",
+          "data/super-v3_stem_it_translated_postedit_final.jsonl",
+          "data/super-v3_stem_ja_translated_postedit_final.jsonl",
+          "data/super-v3_stem_zh_translated_postedit_final.jsonl"
+        ],
+        "revision": "22c86505762a7c595abee309d720084351c9f4ba"
+      }
+    ],
+    "rough_token_count_b": 1.856858377
+  },
+  "nemotron_sft_v3/multilingual_v1/math_zh": {
+    "allocated_tokens": 253534272,
+    "chat_steps": [
+      "raw/nemotron_sft_v3/multilingual_v1",
+      "processed-chat/nemotron_sft_v3/multilingual_v1/math_zh",
+      "normalized-chat/nemotron_sft_v3/multilingual_v1/math_zh"
+    ],
+    "downloads": [
+      {
+        "bytes": 94570407930,
+        "error": null,
+        "files": 18,
+        "hf_dataset_id": "nvidia/Nemotron-SFT-Multilingual-v1",
+        "hf_urls_glob": [
+          "data/super-v3_code_de_translated_final.jsonl",
+          "data/super-v3_code_es_translated_final.jsonl",
+          "data/super-v3_code_fr_translated_final.jsonl",
+          "data/super-v3_code_it_translated_final.jsonl",
+          "data/super-v3_code_ja_translated_final.jsonl",
+          "data/super-v3_code_zh_translated_final.jsonl",
+          "data/super-v3_math_de_translated_final.jsonl",
+          "data/super-v3_math_es_translated_final.jsonl",
+          "data/super-v3_math_fr_translated_final.jsonl",
+          "data/super-v3_math_it_translated_final.jsonl",
+          "data/super-v3_math_ja_translated_final.jsonl",
+          "data/super-v3_math_zh_translated_final.jsonl",
+          "data/super-v3_stem_de_translated_postedit_final.jsonl",
+          "data/super-v3_stem_es_translated_postedit_final.jsonl",
+          "data/super-v3_stem_fr_translated_postedit_final.jsonl",
+          "data/super-v3_stem_it_translated_postedit_final.jsonl",
+          "data/super-v3_stem_ja_translated_postedit_final.jsonl",
+          "data/super-v3_stem_zh_translated_postedit_final.jsonl"
+        ],
+        "revision": "22c86505762a7c595abee309d720084351c9f4ba"
+      }
+    ],
+    "rough_token_count_b": 1.668189501
+  },
+  "nemotron_sft_v3/multilingual_v1/stem_de": {
+    "allocated_tokens": 369048954,
+    "chat_steps": [
+      "raw/nemotron_sft_v3/multilingual_v1",
+      "processed-chat/nemotron_sft_v3/multilingual_v1/stem_de",
+      "normalized-chat/nemotron_sft_v3/multilingual_v1/stem_de"
+    ],
+    "downloads": [
+      {
+        "bytes": 94570407930,
+        "error": null,
+        "files": 18,
+        "hf_dataset_id": "nvidia/Nemotron-SFT-Multilingual-v1",
+        "hf_urls_glob": [
+          "data/super-v3_code_de_translated_final.jsonl",
+          "data/super-v3_code_es_translated_final.jsonl",
+          "data/super-v3_code_fr_translated_final.jsonl",
+          "data/super-v3_code_it_translated_final.jsonl",
+          "data/super-v3_code_ja_translated_final.jsonl",
+          "data/super-v3_code_zh_translated_final.jsonl",
+          "data/super-v3_math_de_translated_final.jsonl",
+          "data/super-v3_math_es_translated_final.jsonl",
+          "data/super-v3_math_fr_translated_final.jsonl",
+          "data/super-v3_math_it_translated_final.jsonl",
+          "data/super-v3_math_ja_translated_final.jsonl",
+          "data/super-v3_math_zh_translated_final.jsonl",
+          "data/super-v3_stem_de_translated_postedit_final.jsonl",
+          "data/super-v3_stem_es_translated_postedit_final.jsonl",
+          "data/super-v3_stem_fr_translated_postedit_final.jsonl",
+          "data/super-v3_stem_it_translated_postedit_final.jsonl",
+          "data/super-v3_stem_ja_translated_postedit_final.jsonl",
+          "data/super-v3_stem_zh_translated_postedit_final.jsonl"
+        ],
+        "revision": "22c86505762a7c595abee309d720084351c9f4ba"
+      }
+    ],
+    "rough_token_count_b": 0.727808812
+  },
+  "nemotron_sft_v3/multilingual_v1/stem_es": {
+    "allocated_tokens": 369993222,
+    "chat_steps": [
+      "raw/nemotron_sft_v3/multilingual_v1",
+      "processed-chat/nemotron_sft_v3/multilingual_v1/stem_es",
+      "normalized-chat/nemotron_sft_v3/multilingual_v1/stem_es"
+    ],
+    "downloads": [
+      {
+        "bytes": 94570407930,
+        "error": null,
+        "files": 18,
+        "hf_dataset_id": "nvidia/Nemotron-SFT-Multilingual-v1",
+        "hf_urls_glob": [
+          "data/super-v3_code_de_translated_final.jsonl",
+          "data/super-v3_code_es_translated_final.jsonl",
+          "data/super-v3_code_fr_translated_final.jsonl",
+          "data/super-v3_code_it_translated_final.jsonl",
+          "data/super-v3_code_ja_translated_final.jsonl",
+          "data/super-v3_code_zh_translated_final.jsonl",
+          "data/super-v3_math_de_translated_final.jsonl",
+          "data/super-v3_math_es_translated_final.jsonl",
+          "data/super-v3_math_fr_translated_final.jsonl",
+          "data/super-v3_math_it_translated_final.jsonl",
+          "data/super-v3_math_ja_translated_final.jsonl",
+          "data/super-v3_math_zh_translated_final.jsonl",
+          "data/super-v3_stem_de_translated_postedit_final.jsonl",
+          "data/super-v3_stem_es_translated_postedit_final.jsonl",
+          "data/super-v3_stem_fr_translated_postedit_final.jsonl",
+          "data/super-v3_stem_it_translated_postedit_final.jsonl",
+          "data/super-v3_stem_ja_translated_postedit_final.jsonl",
+          "data/super-v3_stem_zh_translated_postedit_final.jsonl"
+        ],
+        "revision": "22c86505762a7c595abee309d720084351c9f4ba"
+      }
+    ],
+    "rough_token_count_b": 0.72967102
+  },
+  "nemotron_sft_v3/multilingual_v1/stem_fr": {
+    "allocated_tokens": 373874005,
+    "chat_steps": [
+      "raw/nemotron_sft_v3/multilingual_v1",
+      "processed-chat/nemotron_sft_v3/multilingual_v1/stem_fr",
+      "normalized-chat/nemotron_sft_v3/multilingual_v1/stem_fr"
+    ],
+    "downloads": [
+      {
+        "bytes": 94570407930,
+        "error": null,
+        "files": 18,
+        "hf_dataset_id": "nvidia/Nemotron-SFT-Multilingual-v1",
+        "hf_urls_glob": [
+          "data/super-v3_code_de_translated_final.jsonl",
+          "data/super-v3_code_es_translated_final.jsonl",
+          "data/super-v3_code_fr_translated_final.jsonl",
+          "data/super-v3_code_it_translated_final.jsonl",
+          "data/super-v3_code_ja_translated_final.jsonl",
+          "data/super-v3_code_zh_translated_final.jsonl",
+          "data/super-v3_math_de_translated_final.jsonl",
+          "data/super-v3_math_es_translated_final.jsonl",
+          "data/super-v3_math_fr_translated_final.jsonl",
+          "data/super-v3_math_it_translated_final.jsonl",
+          "data/super-v3_math_ja_translated_final.jsonl",
+          "data/super-v3_math_zh_translated_final.jsonl",
+          "data/super-v3_stem_de_translated_postedit_final.jsonl",
+          "data/super-v3_stem_es_translated_postedit_final.jsonl",
+          "data/super-v3_stem_fr_translated_postedit_final.jsonl",
+          "data/super-v3_stem_it_translated_postedit_final.jsonl",
+          "data/super-v3_stem_ja_translated_postedit_final.jsonl",
+          "data/super-v3_stem_zh_translated_postedit_final.jsonl"
+        ],
+        "revision": "22c86505762a7c595abee309d720084351c9f4ba"
+      }
+    ],
+    "rough_token_count_b": 0.737324391
+  },
+  "nemotron_sft_v3/multilingual_v1/stem_it": {
+    "allocated_tokens": 376381383,
+    "chat_steps": [
+      "raw/nemotron_sft_v3/multilingual_v1",
+      "processed-chat/nemotron_sft_v3/multilingual_v1/stem_it",
+      "normalized-chat/nemotron_sft_v3/multilingual_v1/stem_it"
+    ],
+    "downloads": [
+      {
+        "bytes": 94570407930,
+        "error": null,
+        "files": 18,
+        "hf_dataset_id": "nvidia/Nemotron-SFT-Multilingual-v1",
+        "hf_urls_glob": [
+          "data/super-v3_code_de_translated_final.jsonl",
+          "data/super-v3_code_es_translated_final.jsonl",
+          "data/super-v3_code_fr_translated_final.jsonl",
+          "data/super-v3_code_it_translated_final.jsonl",
+          "data/super-v3_code_ja_translated_final.jsonl",
+          "data/super-v3_code_zh_translated_final.jsonl",
+          "data/super-v3_math_de_translated_final.jsonl",
+          "data/super-v3_math_es_translated_final.jsonl",
+          "data/super-v3_math_fr_translated_final.jsonl",
+          "data/super-v3_math_it_translated_final.jsonl",
+          "data/super-v3_math_ja_translated_final.jsonl",
+          "data/super-v3_math_zh_translated_final.jsonl",
+          "data/super-v3_stem_de_translated_postedit_final.jsonl",
+          "data/super-v3_stem_es_translated_postedit_final.jsonl",
+          "data/super-v3_stem_fr_translated_postedit_final.jsonl",
+          "data/super-v3_stem_it_translated_postedit_final.jsonl",
+          "data/super-v3_stem_ja_translated_postedit_final.jsonl",
+          "data/super-v3_stem_zh_translated_postedit_final.jsonl"
+        ],
+        "revision": "22c86505762a7c595abee309d720084351c9f4ba"
+      }
+    ],
+    "rough_token_count_b": 0.742269241
+  },
+  "nemotron_sft_v3/multilingual_v1/stem_ja": {
+    "allocated_tokens": 360560970,
+    "chat_steps": [
+      "raw/nemotron_sft_v3/multilingual_v1",
+      "processed-chat/nemotron_sft_v3/multilingual_v1/stem_ja",
+      "normalized-chat/nemotron_sft_v3/multilingual_v1/stem_ja"
+    ],
+    "downloads": [
+      {
+        "bytes": 94570407930,
+        "error": null,
+        "files": 18,
+        "hf_dataset_id": "nvidia/Nemotron-SFT-Multilingual-v1",
+        "hf_urls_glob": [
+          "data/super-v3_code_de_translated_final.jsonl",
+          "data/super-v3_code_es_translated_final.jsonl",
+          "data/super-v3_code_fr_translated_final.jsonl",
+          "data/super-v3_code_it_translated_final.jsonl",
+          "data/super-v3_code_ja_translated_final.jsonl",
+          "data/super-v3_code_zh_translated_final.jsonl",
+          "data/super-v3_math_de_translated_final.jsonl",
+          "data/super-v3_math_es_translated_final.jsonl",
+          "data/super-v3_math_fr_translated_final.jsonl",
+          "data/super-v3_math_it_translated_final.jsonl",
+          "data/super-v3_math_ja_translated_final.jsonl",
+          "data/super-v3_math_zh_translated_final.jsonl",
+          "data/super-v3_stem_de_translated_postedit_final.jsonl",
+          "data/super-v3_stem_es_translated_postedit_final.jsonl",
+          "data/super-v3_stem_fr_translated_postedit_final.jsonl",
+          "data/super-v3_stem_it_translated_postedit_final.jsonl",
+          "data/super-v3_stem_ja_translated_postedit_final.jsonl",
+          "data/super-v3_stem_zh_translated_postedit_final.jsonl"
+        ],
+        "revision": "22c86505762a7c595abee309d720084351c9f4ba"
+      }
+    ],
+    "rough_token_count_b": 0.711069489
+  },
+  "nemotron_sft_v3/multilingual_v1/stem_zh": {
+    "allocated_tokens": 356646089,
+    "chat_steps": [
+      "raw/nemotron_sft_v3/multilingual_v1",
+      "processed-chat/nemotron_sft_v3/multilingual_v1/stem_zh",
+      "normalized-chat/nemotron_sft_v3/multilingual_v1/stem_zh"
+    ],
+    "downloads": [
+      {
+        "bytes": 94570407930,
+        "error": null,
+        "files": 18,
+        "hf_dataset_id": "nvidia/Nemotron-SFT-Multilingual-v1",
+        "hf_urls_glob": [
+          "data/super-v3_code_de_translated_final.jsonl",
+          "data/super-v3_code_es_translated_final.jsonl",
+          "data/super-v3_code_fr_translated_final.jsonl",
+          "data/super-v3_code_it_translated_final.jsonl",
+          "data/super-v3_code_ja_translated_final.jsonl",
+          "data/super-v3_code_zh_translated_final.jsonl",
+          "data/super-v3_math_de_translated_final.jsonl",
+          "data/super-v3_math_es_translated_final.jsonl",
+          "data/super-v3_math_fr_translated_final.jsonl",
+          "data/super-v3_math_it_translated_final.jsonl",
+          "data/super-v3_math_ja_translated_final.jsonl",
+          "data/super-v3_math_zh_translated_final.jsonl",
+          "data/super-v3_stem_de_translated_postedit_final.jsonl",
+          "data/super-v3_stem_es_translated_postedit_final.jsonl",
+          "data/super-v3_stem_fr_translated_postedit_final.jsonl",
+          "data/super-v3_stem_it_translated_postedit_final.jsonl",
+          "data/super-v3_stem_ja_translated_postedit_final.jsonl",
+          "data/super-v3_stem_zh_translated_postedit_final.jsonl"
+        ],
+        "revision": "22c86505762a7c595abee309d720084351c9f4ba"
+      }
+    ],
+    "rough_token_count_b": 0.703348874
+  },
+  "nemotron_sft_v3/multilingual_v2/code_hi": {
+    "allocated_tokens": 221639813,
+    "chat_steps": [
+      "raw/nemotron_sft_v3/multilingual_v2",
+      "processed-chat/nemotron_sft_v3/multilingual_v2/code_hi",
+      "normalized-chat/nemotron_sft_v3/multilingual_v2/code_hi"
+    ],
+    "downloads": [
+      {
+        "bytes": 12460641142,
+        "error": null,
+        "files": 12,
+        "hf_dataset_id": "nvidia/Nemotron-SFT-Multilingual-v2",
+        "hf_urls_glob": [
+          "ultra-v3_code_hi_translated_final.jsonl",
+          "ultra-v3_code_ja_translated_final.jsonl",
+          "ultra-v3_code_ko_translated_final.jsonl",
+          "ultra-v3_code_pt_translated_final.jsonl",
+          "ultra-v3_math_hi_translated_final.jsonl",
+          "ultra-v3_math_ja_translated_final.jsonl",
+          "ultra-v3_math_ko_translated_final.jsonl",
+          "ultra-v3_math_pt_translated_final.jsonl",
+          "ultra-v3_stem_hi_translated_postedit_final.jsonl",
+          "ultra-v3_stem_ja_translated_postedit_final.jsonl",
+          "ultra-v3_stem_ko_translated_postedit_final.jsonl",
+          "ultra-v3_stem_pt_translated_postedit_final.jsonl"
+        ],
+        "revision": "971a252224b75414b1b67c55dbe0446d8b6606a0"
+      }
+    ],
+    "rough_token_count_b": 0.437100301
+  },
+  "nemotron_sft_v3/multilingual_v2/code_ja": {
+    "allocated_tokens": 206748141,
+    "chat_steps": [
+      "raw/nemotron_sft_v3/multilingual_v2",
+      "processed-chat/nemotron_sft_v3/multilingual_v2/code_ja",
+      "normalized-chat/nemotron_sft_v3/multilingual_v2/code_ja"
+    ],
+    "downloads": [
+      {
+        "bytes": 12460641142,
+        "error": null,
+        "files": 12,
+        "hf_dataset_id": "nvidia/Nemotron-SFT-Multilingual-v2",
+        "hf_urls_glob": [
+          "ultra-v3_code_hi_translated_final.jsonl",
+          "ultra-v3_code_ja_translated_final.jsonl",
+          "ultra-v3_code_ko_translated_final.jsonl",
+          "ultra-v3_code_pt_translated_final.jsonl",
+          "ultra-v3_math_hi_translated_final.jsonl",
+          "ultra-v3_math_ja_translated_final.jsonl",
+          "ultra-v3_math_ko_translated_final.jsonl",
+          "ultra-v3_math_pt_translated_final.jsonl",
+          "ultra-v3_stem_hi_translated_postedit_final.jsonl",
+          "ultra-v3_stem_ja_translated_postedit_final.jsonl",
+          "ultra-v3_stem_ko_translated_postedit_final.jsonl",
+          "ultra-v3_stem_pt_translated_postedit_final.jsonl"
+        ],
+        "revision": "971a252224b75414b1b67c55dbe0446d8b6606a0"
+      }
+    ],
+    "rough_token_count_b": 0.407732137
+  },
+  "nemotron_sft_v3/multilingual_v2/code_ko": {
+    "allocated_tokens": 209641492,
+    "chat_steps": [
+      "raw/nemotron_sft_v3/multilingual_v2",
+      "processed-chat/nemotron_sft_v3/multilingual_v2/code_ko",
+      "normalized-chat/nemotron_sft_v3/multilingual_v2/code_ko"
+    ],
+    "downloads": [
+      {
+        "bytes": 12460641142,
+        "error": null,
+        "files": 12,
+        "hf_dataset_id": "nvidia/Nemotron-SFT-Multilingual-v2",
+        "hf_urls_glob": [
+          "ultra-v3_code_hi_translated_final.jsonl",
+          "ultra-v3_code_ja_translated_final.jsonl",
+          "ultra-v3_code_ko_translated_final.jsonl",
+          "ultra-v3_code_pt_translated_final.jsonl",
+          "ultra-v3_math_hi_translated_final.jsonl",
+          "ultra-v3_math_ja_translated_final.jsonl",
+          "ultra-v3_math_ko_translated_final.jsonl",
+          "ultra-v3_math_pt_translated_final.jsonl",
+          "ultra-v3_stem_hi_translated_postedit_final.jsonl",
+          "ultra-v3_stem_ja_translated_postedit_final.jsonl",
+          "ultra-v3_stem_ko_translated_postedit_final.jsonl",
+          "ultra-v3_stem_pt_translated_postedit_final.jsonl"
+        ],
+        "revision": "971a252224b75414b1b67c55dbe0446d8b6606a0"
+      }
+    ],
+    "rough_token_count_b": 0.413438172
+  },
+  "nemotron_sft_v3/multilingual_v2/code_pt": {
+    "allocated_tokens": 212945082,
+    "chat_steps": [
+      "raw/nemotron_sft_v3/multilingual_v2",
+      "processed-chat/nemotron_sft_v3/multilingual_v2/code_pt",
+      "normalized-chat/nemotron_sft_v3/multilingual_v2/code_pt"
+    ],
+    "downloads": [
+      {
+        "bytes": 12460641142,
+        "error": null,
+        "files": 12,
+        "hf_dataset_id": "nvidia/Nemotron-SFT-Multilingual-v2",
+        "hf_urls_glob": [
+          "ultra-v3_code_hi_translated_final.jsonl",
+          "ultra-v3_code_ja_translated_final.jsonl",
+          "ultra-v3_code_ko_translated_final.jsonl",
+          "ultra-v3_code_pt_translated_final.jsonl",
+          "ultra-v3_math_hi_translated_final.jsonl",
+          "ultra-v3_math_ja_translated_final.jsonl",
+          "ultra-v3_math_ko_translated_final.jsonl",
+          "ultra-v3_math_pt_translated_final.jsonl",
+          "ultra-v3_stem_hi_translated_postedit_final.jsonl",
+          "ultra-v3_stem_ja_translated_postedit_final.jsonl",
+          "ultra-v3_stem_ko_translated_postedit_final.jsonl",
+          "ultra-v3_stem_pt_translated_postedit_final.jsonl"
+        ],
+        "revision": "971a252224b75414b1b67c55dbe0446d8b6606a0"
+      }
+    ],
+    "rough_token_count_b": 0.419953248
+  },
+  "nemotron_sft_v3/multilingual_v2/math_hi": {
+    "allocated_tokens": 145054540,
+    "chat_steps": [
+      "raw/nemotron_sft_v3/multilingual_v2",
+      "processed-chat/nemotron_sft_v3/multilingual_v2/math_hi",
+      "normalized-chat/nemotron_sft_v3/multilingual_v2/math_hi"
+    ],
+    "downloads": [
+      {
+        "bytes": 12460641142,
+        "error": null,
+        "files": 12,
+        "hf_dataset_id": "nvidia/Nemotron-SFT-Multilingual-v2",
+        "hf_urls_glob": [
+          "ultra-v3_code_hi_translated_final.jsonl",
+          "ultra-v3_code_ja_translated_final.jsonl",
+          "ultra-v3_code_ko_translated_final.jsonl",
+          "ultra-v3_code_pt_translated_final.jsonl",
+          "ultra-v3_math_hi_translated_final.jsonl",
+          "ultra-v3_math_ja_translated_final.jsonl",
+          "ultra-v3_math_ko_translated_final.jsonl",
+          "ultra-v3_math_pt_translated_final.jsonl",
+          "ultra-v3_stem_hi_translated_postedit_final.jsonl",
+          "ultra-v3_stem_ja_translated_postedit_final.jsonl",
+          "ultra-v3_stem_ko_translated_postedit_final.jsonl",
+          "ultra-v3_stem_pt_translated_postedit_final.jsonl"
+        ],
+        "revision": "971a252224b75414b1b67c55dbe0446d8b6606a0"
+      }
+    ],
+    "rough_token_count_b": 0.286064954
+  },
+  "nemotron_sft_v3/multilingual_v2/math_ko": {
+    "allocated_tokens": 210447906,
+    "chat_steps": [
+      "raw/nemotron_sft_v3/multilingual_v2",
+      "processed-chat/nemotron_sft_v3/multilingual_v2/math_ko",
+      "normalized-chat/nemotron_sft_v3/multilingual_v2/math_ko"
+    ],
+    "downloads": [
+      {
+        "bytes": 12460641142,
+        "error": null,
+        "files": 12,
+        "hf_dataset_id": "nvidia/Nemotron-SFT-Multilingual-v2",
+        "hf_urls_glob": [
+          "ultra-v3_code_hi_translated_final.jsonl",
+          "ultra-v3_code_ja_translated_final.jsonl",
+          "ultra-v3_code_ko_translated_final.jsonl",
+          "ultra-v3_code_pt_translated_final.jsonl",
+          "ultra-v3_math_hi_translated_final.jsonl",
+          "ultra-v3_math_ja_translated_final.jsonl",
+          "ultra-v3_math_ko_translated_final.jsonl",
+          "ultra-v3_math_pt_translated_final.jsonl",
+          "ultra-v3_stem_hi_translated_postedit_final.jsonl",
+          "ultra-v3_stem_ja_translated_postedit_final.jsonl",
+          "ultra-v3_stem_ko_translated_postedit_final.jsonl",
+          "ultra-v3_stem_pt_translated_postedit_final.jsonl"
+        ],
+        "revision": "971a252224b75414b1b67c55dbe0446d8b6606a0"
+      }
+    ],
+    "rough_token_count_b": 0.415028518
+  },
+  "nemotron_sft_v3/multilingual_v2/math_pt": {
+    "allocated_tokens": 174791383,
+    "chat_steps": [
+      "raw/nemotron_sft_v3/multilingual_v2",
+      "processed-chat/nemotron_sft_v3/multilingual_v2/math_pt",
+      "normalized-chat/nemotron_sft_v3/multilingual_v2/math_pt"
+    ],
+    "downloads": [
+      {
+        "bytes": 12460641142,
+        "error": null,
+        "files": 12,
+        "hf_dataset_id": "nvidia/Nemotron-SFT-Multilingual-v2",
+        "hf_urls_glob": [
+          "ultra-v3_code_hi_translated_final.jsonl",
+          "ultra-v3_code_ja_translated_final.jsonl",
+          "ultra-v3_code_ko_translated_final.jsonl",
+          "ultra-v3_code_pt_translated_final.jsonl",
+          "ultra-v3_math_hi_translated_final.jsonl",
+          "ultra-v3_math_ja_translated_final.jsonl",
+          "ultra-v3_math_ko_translated_final.jsonl",
+          "ultra-v3_math_pt_translated_final.jsonl",
+          "ultra-v3_stem_hi_translated_postedit_final.jsonl",
+          "ultra-v3_stem_ja_translated_postedit_final.jsonl",
+          "ultra-v3_stem_ko_translated_postedit_final.jsonl",
+          "ultra-v3_stem_pt_translated_postedit_final.jsonl"
+        ],
+        "revision": "971a252224b75414b1b67c55dbe0446d8b6606a0"
+      }
+    ],
+    "rough_token_count_b": 0.344709576
+  },
+  "nemotron_sft_v3/multilingual_v2/stem_hi": {
+    "allocated_tokens": 31959193,
+    "chat_steps": [
+      "raw/nemotron_sft_v3/multilingual_v2",
+      "processed-chat/nemotron_sft_v3/multilingual_v2/stem_hi",
+      "normalized-chat/nemotron_sft_v3/multilingual_v2/stem_hi"
+    ],
+    "downloads": [
+      {
+        "bytes": 12460641142,
+        "error": null,
+        "files": 12,
+        "hf_dataset_id": "nvidia/Nemotron-SFT-Multilingual-v2",
+        "hf_urls_glob": [
+          "ultra-v3_code_hi_translated_final.jsonl",
+          "ultra-v3_code_ja_translated_final.jsonl",
+          "ultra-v3_code_ko_translated_final.jsonl",
+          "ultra-v3_code_pt_translated_final.jsonl",
+          "ultra-v3_math_hi_translated_final.jsonl",
+          "ultra-v3_math_ja_translated_final.jsonl",
+          "ultra-v3_math_ko_translated_final.jsonl",
+          "ultra-v3_math_pt_translated_final.jsonl",
+          "ultra-v3_stem_hi_translated_postedit_final.jsonl",
+          "ultra-v3_stem_ja_translated_postedit_final.jsonl",
+          "ultra-v3_stem_ko_translated_postedit_final.jsonl",
+          "ultra-v3_stem_pt_translated_postedit_final.jsonl"
+        ],
+        "revision": "971a252224b75414b1b67c55dbe0446d8b6606a0"
+      }
+    ],
+    "rough_token_count_b": 0.063027363
+  },
+  "nemotron_sft_v3/multilingual_v2/stem_ja": {
+    "allocated_tokens": 7948265,
+    "chat_steps": [
+      "raw/nemotron_sft_v3/multilingual_v2",
+      "processed-chat/nemotron_sft_v3/multilingual_v2/stem_ja",
+      "normalized-chat/nemotron_sft_v3/multilingual_v2/stem_ja"
+    ],
+    "downloads": [
+      {
+        "bytes": 12460641142,
+        "error": null,
+        "files": 12,
+        "hf_dataset_id": "nvidia/Nemotron-SFT-Multilingual-v2",
+        "hf_urls_glob": [
+          "ultra-v3_code_hi_translated_final.jsonl",
+          "ultra-v3_code_ja_translated_final.jsonl",
+          "ultra-v3_code_ko_translated_final.jsonl",
+          "ultra-v3_code_pt_translated_final.jsonl",
+          "ultra-v3_math_hi_translated_final.jsonl",
+          "ultra-v3_math_ja_translated_final.jsonl",
+          "ultra-v3_math_ko_translated_final.jsonl",
+          "ultra-v3_math_pt_translated_final.jsonl",
+          "ultra-v3_stem_hi_translated_postedit_final.jsonl",
+          "ultra-v3_stem_ja_translated_postedit_final.jsonl",
+          "ultra-v3_stem_ko_translated_postedit_final.jsonl",
+          "ultra-v3_stem_pt_translated_postedit_final.jsonl"
+        ],
+        "revision": "971a252224b75414b1b67c55dbe0446d8b6606a0"
+      }
+    ],
+    "rough_token_count_b": 0.015674932
+  },
+  "nemotron_sft_v3/multilingual_v2/stem_ko": {
+    "allocated_tokens": 21008348,
+    "chat_steps": [
+      "raw/nemotron_sft_v3/multilingual_v2",
+      "processed-chat/nemotron_sft_v3/multilingual_v2/stem_ko",
+      "normalized-chat/nemotron_sft_v3/multilingual_v2/stem_ko"
+    ],
+    "downloads": [
+      {
+        "bytes": 12460641142,
+        "error": null,
+        "files": 12,
+        "hf_dataset_id": "nvidia/Nemotron-SFT-Multilingual-v2",
+        "hf_urls_glob": [
+          "ultra-v3_code_hi_translated_final.jsonl",
+          "ultra-v3_code_ja_translated_final.jsonl",
+          "ultra-v3_code_ko_translated_final.jsonl",
+          "ultra-v3_code_pt_translated_final.jsonl",
+          "ultra-v3_math_hi_translated_final.jsonl",
+          "ultra-v3_math_ja_translated_final.jsonl",
+          "ultra-v3_math_ko_translated_final.jsonl",
+          "ultra-v3_math_pt_translated_final.jsonl",
+          "ultra-v3_stem_hi_translated_postedit_final.jsonl",
+          "ultra-v3_stem_ja_translated_postedit_final.jsonl",
+          "ultra-v3_stem_ko_translated_postedit_final.jsonl",
+          "ultra-v3_stem_pt_translated_postedit_final.jsonl"
+        ],
+        "revision": "971a252224b75414b1b67c55dbe0446d8b6606a0"
+      }
+    ],
+    "rough_token_count_b": 0.041430982
+  },
+  "nemotron_sft_v3/multilingual_v2/stem_pt": {
+    "allocated_tokens": 142170176,
+    "chat_steps": [
+      "raw/nemotron_sft_v3/multilingual_v2",
+      "processed-chat/nemotron_sft_v3/multilingual_v2/stem_pt",
+      "normalized-chat/nemotron_sft_v3/multilingual_v2/stem_pt"
+    ],
+    "downloads": [
+      {
+        "bytes": 12460641142,
+        "error": null,
+        "files": 12,
+        "hf_dataset_id": "nvidia/Nemotron-SFT-Multilingual-v2",
+        "hf_urls_glob": [
+          "ultra-v3_code_hi_translated_final.jsonl",
+          "ultra-v3_code_ja_translated_final.jsonl",
+          "ultra-v3_code_ko_translated_final.jsonl",
+          "ultra-v3_code_pt_translated_final.jsonl",
+          "ultra-v3_math_hi_translated_final.jsonl",
+          "ultra-v3_math_ja_translated_final.jsonl",
+          "ultra-v3_math_ko_translated_final.jsonl",
+          "ultra-v3_math_pt_translated_final.jsonl",
+          "ultra-v3_stem_hi_translated_postedit_final.jsonl",
+          "ultra-v3_stem_ja_translated_postedit_final.jsonl",
+          "ultra-v3_stem_ko_translated_postedit_final.jsonl",
+          "ultra-v3_stem_pt_translated_postedit_final.jsonl"
+        ],
+        "revision": "971a252224b75414b1b67c55dbe0446d8b6606a0"
+      }
+    ],
+    "rough_token_count_b": 0.280376643
+  },
+  "nemotron_sft_v3/opencode_v1/agent_skills": {
+    "allocated_tokens": 588751477,
+    "chat_steps": [
+      "raw/nemotron_sft_v3/opencode_v1",
+      "processed-chat/nemotron_sft_v3/opencode_v1/agent_skills",
+      "normalized-chat/nemotron_sft_v3/opencode_v1/agent_skills"
+    ],
+    "downloads": [
+      {
+        "bytes": 32693541127,
+        "error": null,
+        "files": 6,
+        "hf_dataset_id": "nvidia/Nemotron-SFT-OpenCode-v1",
+        "hf_urls_glob": [
+          "agent_skills/data.jsonl",
+          "agent_skills_question_tool/data.jsonl",
+          "bash_only_tool/data.jsonl",
+          "bash_only_tool_skills/data.jsonl",
+          "general/data.jsonl",
+          "question_tool/data.jsonl"
+        ],
+        "revision": "556d5237acff203f3e1a0be49428634c3606cda2"
+      }
+    ],
+    "rough_token_count_b": 1.161088544
+  },
+  "nemotron_sft_v3/opencode_v1/agent_skills_question_tool": {
+    "allocated_tokens": 355209727,
+    "chat_steps": [
+      "raw/nemotron_sft_v3/opencode_v1",
+      "processed-chat/nemotron_sft_v3/opencode_v1/agent_skills_question_tool",
+      "normalized-chat/nemotron_sft_v3/opencode_v1/agent_skills_question_tool"
+    ],
+    "downloads": [
+      {
+        "bytes": 32693541127,
+        "error": null,
+        "files": 6,
+        "hf_dataset_id": "nvidia/Nemotron-SFT-OpenCode-v1",
+        "hf_urls_glob": [
+          "agent_skills/data.jsonl",
+          "agent_skills_question_tool/data.jsonl",
+          "bash_only_tool/data.jsonl",
+          "bash_only_tool_skills/data.jsonl",
+          "general/data.jsonl",
+          "question_tool/data.jsonl"
+        ],
+        "revision": "556d5237acff203f3e1a0be49428634c3606cda2"
+      }
+    ],
+    "rough_token_count_b": 0.700516195
+  },
+  "nemotron_sft_v3/opencode_v1/bash_only_tool": {
+    "allocated_tokens": 694393806,
+    "chat_steps": [
+      "raw/nemotron_sft_v3/opencode_v1",
+      "processed-chat/nemotron_sft_v3/opencode_v1/bash_only_tool",
+      "normalized-chat/nemotron_sft_v3/opencode_v1/bash_only_tool"
+    ],
+    "downloads": [
+      {
+        "bytes": 32693541127,
+        "error": null,
+        "files": 6,
+        "hf_dataset_id": "nvidia/Nemotron-SFT-OpenCode-v1",
+        "hf_urls_glob": [
+          "agent_skills/data.jsonl",
+          "agent_skills_question_tool/data.jsonl",
+          "bash_only_tool/data.jsonl",
+          "bash_only_tool_skills/data.jsonl",
+          "general/data.jsonl",
+          "question_tool/data.jsonl"
+        ],
+        "revision": "556d5237acff203f3e1a0be49428634c3606cda2"
+      }
+    ],
+    "rough_token_count_b": 1.369427891
+  },
+  "nemotron_sft_v3/opencode_v1/bash_only_tool_skills": {
+    "allocated_tokens": 636155520,
+    "chat_steps": [
+      "raw/nemotron_sft_v3/opencode_v1",
+      "processed-chat/nemotron_sft_v3/opencode_v1/bash_only_tool_skills",
+      "normalized-chat/nemotron_sft_v3/opencode_v1/bash_only_tool_skills"
+    ],
+    "downloads": [
+      {
+        "bytes": 32693541127,
+        "error": null,
+        "files": 6,
+        "hf_dataset_id": "nvidia/Nemotron-SFT-OpenCode-v1",
+        "hf_urls_glob": [
+          "agent_skills/data.jsonl",
+          "agent_skills_question_tool/data.jsonl",
+          "bash_only_tool/data.jsonl",
+          "bash_only_tool_skills/data.jsonl",
+          "general/data.jsonl",
+          "question_tool/data.jsonl"
+        ],
+        "revision": "556d5237acff203f3e1a0be49428634c3606cda2"
+      }
+    ],
+    "rough_token_count_b": 1.254575003
+  },
+  "nemotron_sft_v3/opencode_v1/general": {
+    "allocated_tokens": 581372511,
+    "chat_steps": [
+      "raw/nemotron_sft_v3/opencode_v1",
+      "processed-chat/nemotron_sft_v3/opencode_v1/general",
+      "normalized-chat/nemotron_sft_v3/opencode_v1/general"
+    ],
+    "downloads": [
+      {
+        "bytes": 32693541127,
+        "error": null,
+        "files": 6,
+        "hf_dataset_id": "nvidia/Nemotron-SFT-OpenCode-v1",
+        "hf_urls_glob": [
+          "agent_skills/data.jsonl",
+          "agent_skills_question_tool/data.jsonl",
+          "bash_only_tool/data.jsonl",
+          "bash_only_tool_skills/data.jsonl",
+          "general/data.jsonl",
+          "question_tool/data.jsonl"
+        ],
+        "revision": "556d5237acff203f3e1a0be49428634c3606cda2"
+      }
+    ],
+    "rough_token_count_b": 1.146536337
+  },
+  "nemotron_sft_v3/safety_v1/train": {
+    "allocated_tokens": 29529220,
+    "chat_steps": [
+      "raw/nemotron_sft_v3/safety_v1",
+      "processed-chat/nemotron_sft_v3/safety_v1/train",
+      "normalized-chat/nemotron_sft_v3/safety_v1/train"
+    ],
+    "downloads": [
+      {
+        "bytes": 155118424,
+        "error": null,
+        "files": 1,
+        "hf_dataset_id": "nvidia/Nemotron-SFT-Safety-v1",
+        "hf_urls_glob": [
+          "data/train.jsonl"
+        ],
+        "revision": "913fd7c803a9378dab0ce4fef80297ce115781f6"
+      }
+    ],
+    "rough_token_count_b": 0.02952922
+  },
+  "nemotron_sft_v3/safety_v2/train": {
+    "allocated_tokens": 104927031,
+    "chat_steps": [
+      "raw/nemotron_sft_v3/safety_v2",
+      "processed-chat/nemotron_sft_v3/safety_v2/train",
+      "normalized-chat/nemotron_sft_v3/safety_v2/train"
+    ],
+    "downloads": [
+      {
+        "bytes": 576026618,
+        "error": null,
+        "files": 1,
+        "hf_dataset_id": "nvidia/Nemotron-SFT-Safety-v2",
+        "hf_urls_glob": [
+          "data/train.jsonl"
+        ],
+        "revision": "8a40a63c9a1a340874b874f980953be53bff0a07"
+      }
+    ],
+    "rough_token_count_b": 0.104927031
+  },
+  "nemotron_sft_v3/science_v2/rqa": {
+    "allocated_tokens": 96585137,
+    "chat_steps": [
+      "raw/nemotron_sft_v3/science_v2",
+      "processed-chat/nemotron_sft_v3/science_v2/rqa",
+      "normalized-chat/nemotron_sft_v3/science_v2/rqa"
+    ],
+    "downloads": [
+      {
+        "bytes": 52685434022,
+        "error": null,
+        "files": 4,
+        "hf_dataset_id": "nvidia/Nemotron-SFT-Science-v2",
+        "hf_urls_glob": [
+          "rqa.jsonl",
+          "so.jsonl",
+          "syn_mcq.jsonl",
+          "vendor.jsonl"
+        ],
+        "revision": "6536a5021222a94126968e8c92f29ee47fc8a7df"
+      }
+    ],
+    "rough_token_count_b": 0.096585137
+  },
+  "nemotron_sft_v3/science_v2/so": {
+    "allocated_tokens": 33062435,
+    "chat_steps": [
+      "raw/nemotron_sft_v3/science_v2",
+      "processed-chat/nemotron_sft_v3/science_v2/so",
+      "normalized-chat/nemotron_sft_v3/science_v2/so"
+    ],
+    "downloads": [
+      {
+        "bytes": 52685434022,
+        "error": null,
+        "files": 4,
+        "hf_dataset_id": "nvidia/Nemotron-SFT-Science-v2",
+        "hf_urls_glob": [
+          "rqa.jsonl",
+          "so.jsonl",
+          "syn_mcq.jsonl",
+          "vendor.jsonl"
+        ],
+        "revision": "6536a5021222a94126968e8c92f29ee47fc8a7df"
+      }
+    ],
+    "rough_token_count_b": 0.065203089
+  },
+  "nemotron_sft_v3/science_v2/syn_mcq": {
+    "allocated_tokens": 1377415,
+    "chat_steps": [
+      "raw/nemotron_sft_v3/science_v2",
+      "processed-chat/nemotron_sft_v3/science_v2/syn_mcq",
+      "normalized-chat/nemotron_sft_v3/science_v2/syn_mcq"
+    ],
+    "downloads": [
+      {
+        "bytes": 52685434022,
+        "error": null,
+        "files": 4,
+        "hf_dataset_id": "nvidia/Nemotron-SFT-Science-v2",
+        "hf_urls_glob": [
+          "rqa.jsonl",
+          "so.jsonl",
+          "syn_mcq.jsonl",
+          "vendor.jsonl"
+        ],
+        "revision": "6536a5021222a94126968e8c92f29ee47fc8a7df"
+      }
+    ],
+    "rough_token_count_b": 0.002716428
+  },
+  "nemotron_sft_v3/science_v2/vendor": {
+    "allocated_tokens": 3042411263,
+    "chat_steps": [
+      "raw/nemotron_sft_v3/science_v2",
+      "processed-chat/nemotron_sft_v3/science_v2/vendor",
+      "normalized-chat/nemotron_sft_v3/science_v2/vendor"
+    ],
+    "downloads": [
+      {
+        "bytes": 52685434022,
+        "error": null,
+        "files": 4,
+        "hf_dataset_id": "nvidia/Nemotron-SFT-Science-v2",
+        "hf_urls_glob": [
+          "rqa.jsonl",
+          "so.jsonl",
+          "syn_mcq.jsonl",
+          "vendor.jsonl"
+        ],
+        "revision": "6536a5021222a94126968e8c92f29ee47fc8a7df"
+      }
+    ],
+    "rough_token_count_b": 8.221738516
+  },
+  "nemotron_sft_v3/swe_v1/r2e_gym": {
+    "allocated_tokens": 1189750956,
+    "chat_steps": [
+      "raw/nemotron_sft_v3/swe_v1",
+      "processed-chat/nemotron_sft_v3/swe_v1/r2e_gym",
+      "normalized-chat/nemotron_sft_v3/swe_v1/r2e_gym"
+    ],
+    "downloads": [
+      {
+        "bytes": 11141242062,
+        "error": null,
+        "files": 1,
+        "hf_dataset_id": "nvidia/Nemotron-SWE-v1",
+        "hf_urls_glob": [
+          "data/r2e_gym.jsonl"
+        ],
+        "revision": "0fe17a965b297a9c943a59050a14c42d5f0083ce"
+      }
+    ],
+    "rough_token_count_b": 2.346331616
+  },
+  "nemotron_sft_v3/swe_v2/agentless": {
+    "allocated_tokens": 745669105,
+    "chat_steps": [
+      "raw/nemotron_sft_v3/swe_v2",
+      "processed-chat/nemotron_sft_v3/swe_v2/agentless",
+      "normalized-chat/nemotron_sft_v3/swe_v2/agentless"
+    ],
+    "downloads": [
+      {
+        "bytes": 18083651721,
+        "error": null,
+        "files": 2,
+        "hf_dataset_id": "nvidia/Nemotron-SFT-SWE-v2",
+        "hf_urls_glob": [
+          "data/agentless.jsonl",
+          "data/swe.jsonl"
+        ],
+        "revision": "bd151f3f2d89c4804dda0083d912bd9f6a0a9fb7"
+      }
+    ],
+    "rough_token_count_b": 1.470548931
+  },
+  "nemotron_sft_v3/swe_v2/openhands_swe": {
+    "allocated_tokens": 1074749365,
+    "chat_steps": [
+      "raw/nemotron_sft_v3/swe_v2",
+      "processed-chat/nemotron_sft_v3/swe_v2/openhands_swe",
+      "normalized-chat/nemotron_sft_v3/swe_v2/openhands_swe"
+    ],
+    "downloads": [
+      {
+        "bytes": 18083651721,
+        "error": null,
+        "files": 2,
+        "hf_dataset_id": "nvidia/Nemotron-SFT-SWE-v2",
+        "hf_urls_glob": [
+          "data/agentless.jsonl",
+          "data/swe.jsonl"
+        ],
+        "revision": "bd151f3f2d89c4804dda0083d912bd9f6a0a9fb7"
+      }
+    ],
+    "rough_token_count_b": 2.119534682
+  },
+  "numinamath-1.5": {
+    "allocated_tokens": 179420301,
+    "chat_steps": [
+      "processed-chat/numinamath-1.5",
+      "normalized-chat/numinamath-1.5"
+    ],
+    "downloads": [
+      {
+        "bytes": 531355727,
+        "error": null,
+        "files": 3,
+        "hf_dataset_id": "AI-MO/NuminaMath-1.5",
+        "hf_urls_glob": [
+          "data/train-*.parquet"
+        ],
+        "revision": "1b05109"
+      }
+    ],
+    "rough_token_count_b": 0.356560802
+  },
+  "open_swe_traces/v1_1/openhands/qwen36_27b/scale_swe": {
+    "allocated_tokens": 760602816,
+    "chat_steps": [
+      "processed-chat/open_swe_traces/v1_1/openhands/qwen36_27b/scale_swe",
+      "normalized-chat/open_swe_traces/v1_1/openhands/qwen36_27b/scale_swe"
+    ],
+    "downloads": [
+      {
+        "bytes": 3390065828,
+        "error": null,
+        "files": 13,
+        "hf_dataset_id": "nvidia/Open-SWE-Traces",
+        "hf_urls_glob": [
+          "data/openhands/qwen36_27b/scale-swe/*.parquet"
+        ],
+        "revision": "f967cba3312573981a47fd7a7b80029b53909b5f"
+      }
+    ],
+    "rough_token_count_b": 1.985336125
+  },
+  "open_swe_traces/v1_1/openhands/qwen36_27b/swe_rebench_v2": {
+    "allocated_tokens": 760602816,
+    "chat_steps": [
+      "processed-chat/open_swe_traces/v1_1/openhands/qwen36_27b/swe_rebench_v2",
+      "normalized-chat/open_swe_traces/v1_1/openhands/qwen36_27b/swe_rebench_v2"
+    ],
+    "downloads": [
+      {
+        "bytes": 2715936825,
+        "error": null,
+        "files": 12,
+        "hf_dataset_id": "nvidia/Open-SWE-Traces",
+        "hf_urls_glob": [
+          "data/openhands/qwen36_27b/swe-rebench-v2/*.parquet"
+        ],
+        "revision": "f967cba3312573981a47fd7a7b80029b53909b5f"
+      }
+    ],
+    "rough_token_count_b": 1.845476368
+  },
+  "open_swe_traces/v1_1/sweagent/qwen36_27b/scale_swe": {
+    "allocated_tokens": 760602816,
+    "chat_steps": [
+      "processed-chat/open_swe_traces/v1_1/sweagent/qwen36_27b/scale_swe",
+      "normalized-chat/open_swe_traces/v1_1/sweagent/qwen36_27b/scale_swe"
+    ],
+    "downloads": [
+      {
+        "bytes": 3322293093,
+        "error": null,
+        "files": 17,
+        "hf_dataset_id": "nvidia/Open-SWE-Traces",
+        "hf_urls_glob": [
+          "data/sweagent/qwen36_27b/scale-swe/*.parquet"
+        ],
+        "revision": "f967cba3312573981a47fd7a7b80029b53909b5f"
+      }
+    ],
+    "rough_token_count_b": 2.450594544
+  },
+  "open_swe_traces/v1_1/sweagent/qwen36_27b/swe_rebench_v2": {
+    "allocated_tokens": 760602816,
+    "chat_steps": [
+      "processed-chat/open_swe_traces/v1_1/sweagent/qwen36_27b/swe_rebench_v2",
+      "normalized-chat/open_swe_traces/v1_1/sweagent/qwen36_27b/swe_rebench_v2"
+    ],
+    "downloads": [
+      {
+        "bytes": 2970291272,
+        "error": null,
+        "files": 15,
+        "hf_dataset_id": "nvidia/Open-SWE-Traces",
+        "hf_urls_glob": [
+          "data/sweagent/qwen36_27b/swe-rebench-v2/*.parquet"
+        ],
+        "revision": "f967cba3312573981a47fd7a7b80029b53909b5f"
+      }
+    ],
+    "rough_token_count_b": 2.461787471
+  },
+  "open_swe_traces/v1_2/minisweagent/qwen38_27b/scale_swe": {
+    "allocated_tokens": 1014137088,
+    "chat_steps": [
+      "processed-chat/open_swe_traces/v1_2/minisweagent/qwen38_27b/scale_swe",
+      "normalized-chat/open_swe_traces/v1_2/minisweagent/qwen38_27b/scale_swe"
+    ],
+    "downloads": [
+      {
+        "bytes": 5210345143,
+        "error": null,
+        "files": 22,
+        "hf_dataset_id": "nvidia/Open-SWE-Traces",
+        "hf_urls_glob": [
+          "data/minisweagent/qwen38_27b/scale-swe/*.parquet"
+        ],
+        "revision": "f967cba3312573981a47fd7a7b80029b53909b5f"
+      }
+    ],
+    "rough_token_count_b": 3.30632988
+  },
+  "open_swe_traces/v1_2/minisweagent/qwen38_27b/swe_rebench_v2": {
+    "allocated_tokens": 1014137088,
+    "chat_steps": [
+      "processed-chat/open_swe_traces/v1_2/minisweagent/qwen38_27b/swe_rebench_v2",
+      "normalized-chat/open_swe_traces/v1_2/minisweagent/qwen38_27b/swe_rebench_v2"
+    ],
+    "downloads": [
+      {
+        "bytes": 5477571992,
+        "error": null,
+        "files": 22,
+        "hf_dataset_id": "nvidia/Open-SWE-Traces",
+        "hf_urls_glob": [
+          "data/minisweagent/qwen38_27b/swe-rebench-v2/*.parquet"
+        ],
+        "revision": "f967cba3312573981a47fd7a7b80029b53909b5f"
+      }
+    ],
+    "rough_token_count_b": 3.761200521
+  },
+  "openthoughts4-code-glm-5.2-n4": {
+    "allocated_tokens": 1014137088,
+    "chat_steps": [
+      "processed-chat/openthoughts4-code-glm-5.2-n4",
+      "normalized-chat/openthoughts4-code-glm-5.2-n4"
+    ],
+    "downloads": [
+      {
+        "bytes": 4434095979,
+        "error": null,
+        "files": 144,
+        "hf_dataset_id": "marin-community/openthoughts4-code-9168-prompts-glm-5.2-n4",
+        "hf_urls_glob": [
+          "data/train-*.parquet"
+        ],
+        "revision": "91f275562e041d798254122a7d50632e9d27badb"
+      }
+    ],
+    "rough_token_count_b": 3.353670934
+  },
+  "penfever-traces/glm52-terminus2/exp_rpt_crosscodeeval-csharp-v4": {
+    "allocated_tokens": 3936647,
+    "chat_steps": [
+      "processed-chat/penfever-traces/glm52-terminus2/exp_rpt_crosscodeeval-csharp-v4",
+      "normalized-chat/penfever-traces/glm52-terminus2/exp_rpt_crosscodeeval-csharp-v4"
+    ],
+    "downloads": [
+      {
+        "bytes": 35284776,
+        "error": null,
+        "files": 10,
+        "hf_dataset_id": "penfever/glm52-datagen-r11-18-crosscodeeval-csharp-traces",
+        "hf_urls_glob": [],
+        "revision": "e9a20ea"
+      }
+    ],
+    "rough_token_count_b": 0.00776354
+  },
+  "penfever-traces/glm52-terminus2/exp_rpt_curriculum-easy": {
+    "allocated_tokens": 1381747,
+    "chat_steps": [
+      "processed-chat/penfever-traces/glm52-terminus2/exp_rpt_curriculum-easy",
+      "normalized-chat/penfever-traces/glm52-terminus2/exp_rpt_curriculum-easy"
+    ],
+    "downloads": [
+      {
+        "bytes": 12154924,
+        "error": null,
+        "files": 4,
+        "hf_dataset_id": "penfever/glm52-datagen-r11-08-curriculum-easy-traces",
+        "hf_urls_glob": [],
+        "revision": "20f5f65"
+      }
+    ],
+    "rough_token_count_b": 0.00272497
+  },
+  "penfever-traces/glm52-terminus2/exp_rpt_curriculum-medium": {
+    "allocated_tokens": 1732174,
+    "chat_steps": [
+      "processed-chat/penfever-traces/glm52-terminus2/exp_rpt_curriculum-medium",
+      "normalized-chat/penfever-traces/glm52-terminus2/exp_rpt_curriculum-medium"
+    ],
+    "downloads": [
+      {
+        "bytes": 15487696,
+        "error": null,
+        "files": 4,
+        "hf_dataset_id": "penfever/glm52-datagen-r11-35-curriculum-medium-traces",
+        "hf_urls_glob": [],
+        "revision": "19f2e1d"
+      }
+    ],
+    "rough_token_count_b": 0.003416055
+  },
+  "penfever-traces/glm52-terminus2/exp_rpt_e2egit-large": {
+    "allocated_tokens": 6217625,
+    "chat_steps": [
+      "processed-chat/penfever-traces/glm52-terminus2/exp_rpt_e2egit-large",
+      "normalized-chat/penfever-traces/glm52-terminus2/exp_rpt_e2egit-large"
+    ],
+    "downloads": [
+      {
+        "bytes": 54877810,
+        "error": null,
+        "files": 26,
+        "hf_dataset_id": "penfever/glm52-datagen-r11-10-e2egit-large-traces",
+        "hf_urls_glob": [],
+        "revision": "3dc4fd2"
+      }
+    ],
+    "rough_token_count_b": 0.012261902
+  },
+  "penfever-traces/glm52-terminus2/exp_rpt_e2egit-v2": {
+    "allocated_tokens": 953918,
+    "chat_steps": [
+      "processed-chat/penfever-traces/glm52-terminus2/exp_rpt_e2egit-v2",
+      "normalized-chat/penfever-traces/glm52-terminus2/exp_rpt_e2egit-v2"
+    ],
+    "downloads": [
+      {
+        "bytes": 8243960,
+        "error": null,
+        "files": 6,
+        "hf_dataset_id": "penfever/glm52-datagen-r11-09-e2egit-traces",
+        "hf_urls_glob": [],
+        "revision": "2c51fab"
+      }
+    ],
+    "rough_token_count_b": 0.001881241
+  },
+  "penfever-traces/glm52-terminus2/exp_rpt_nemotron-cpp-v2": {
+    "allocated_tokens": 2911541,
+    "chat_steps": [
+      "processed-chat/penfever-traces/glm52-terminus2/exp_rpt_nemotron-cpp-v2",
+      "normalized-chat/penfever-traces/glm52-terminus2/exp_rpt_nemotron-cpp-v2"
+    ],
+    "downloads": [
+      {
+        "bytes": 24377162,
+        "error": null,
+        "files": 5,
+        "hf_dataset_id": "penfever/glm52-datagen-r11-36-nemotron-cpp-traces",
+        "hf_urls_glob": [],
+        "revision": "2c05b57"
+      }
+    ],
+    "rough_token_count_b": 0.005741909
+  },
+  "penfever-traces/glm52-terminus2/exp_rpt_stack-pytest-large-v2": {
+    "allocated_tokens": 7260683,
+    "chat_steps": [
+      "processed-chat/penfever-traces/glm52-terminus2/exp_rpt_stack-pytest-large-v2",
+      "normalized-chat/penfever-traces/glm52-terminus2/exp_rpt_stack-pytest-large-v2"
+    ],
+    "downloads": [
+      {
+        "bytes": 61608157,
+        "error": null,
+        "files": 14,
+        "hf_dataset_id": "penfever/glm52-datagen-r11-38-stack-pytest-large-v2-traces",
+        "hf_urls_glob": [],
+        "revision": "d485d89"
+      }
+    ],
+    "rough_token_count_b": 0.014318938
+  },
+  "penfever-traces/glm52-terminus2/exp_rpt_stack-pytest-v2": {
+    "allocated_tokens": 1668740,
+    "chat_steps": [
+      "processed-chat/penfever-traces/glm52-terminus2/exp_rpt_stack-pytest-v2",
+      "normalized-chat/penfever-traces/glm52-terminus2/exp_rpt_stack-pytest-v2"
+    ],
+    "downloads": [
+      {
+        "bytes": 14495193,
+        "error": null,
+        "files": 4,
+        "hf_dataset_id": "penfever/glm52-datagen-r11-39-stack-pytest-v2-traces",
+        "hf_urls_glob": [],
+        "revision": "d241909"
+      }
+    ],
+    "rough_token_count_b": 0.003290955
+  },
+  "penfever-traces/glm52-terminus2/exp_rpt_unitsyn-python-v3": {
+    "allocated_tokens": 708224,
+    "chat_steps": [
+      "processed-chat/penfever-traces/glm52-terminus2/exp_rpt_unitsyn-python-v3",
+      "normalized-chat/penfever-traces/glm52-terminus2/exp_rpt_unitsyn-python-v3"
+    ],
+    "downloads": [
+      {
+        "bytes": 6176557,
+        "error": null,
+        "files": 6,
+        "hf_dataset_id": "penfever/glm52-datagen-r11-13-unitsyn-traces",
+        "hf_urls_glob": [],
+        "revision": "00faddb"
+      }
+    ],
+    "rough_token_count_b": 0.001396703
+  },
+  "penfever-traces/glm52-terminus2/nemotron-gym-agent-calendar": {
+    "allocated_tokens": 5152740,
+    "chat_steps": [
+      "processed-chat/penfever-traces/glm52-terminus2/nemotron-gym-agent-calendar",
+      "normalized-chat/penfever-traces/glm52-terminus2/nemotron-gym-agent-calendar"
+    ],
+    "downloads": [
+      {
+        "bytes": 48229834,
+        "error": null,
+        "files": 18,
+        "hf_dataset_id": "penfever/glm52-datagen-r11-17-agent-calendar-traces",
+        "hf_urls_glob": [],
+        "revision": "f75ec2a"
+      }
+    ],
+    "rough_token_count_b": 0.010161822
+  },
+  "penfever-traces/glm52-terminus2/nemotron-gym-instruction-following-structured": {
+    "allocated_tokens": 22528133,
+    "chat_steps": [
+      "processed-chat/penfever-traces/glm52-terminus2/nemotron-gym-instruction-following-structured",
+      "normalized-chat/penfever-traces/glm52-terminus2/nemotron-gym-instruction-following-structured"
+    ],
+    "downloads": [
+      {
+        "bytes": 213893708,
+        "error": null,
+        "files": 49,
+        "hf_dataset_id": "penfever/glm52-datagen-r11-16-nemotron-instruction-traces",
+        "hf_urls_glob": [],
+        "revision": "b33e975"
+      }
+    ],
+    "rough_token_count_b": 0.04442818
+  },
+  "penfever-traces/glm52-terminus2/nemotron-gym-knowledge-web-search-mcqa": {
+    "allocated_tokens": 1554164,
+    "chat_steps": [
+      "processed-chat/penfever-traces/glm52-terminus2/nemotron-gym-knowledge-web-search-mcqa",
+      "normalized-chat/penfever-traces/glm52-terminus2/nemotron-gym-knowledge-web-search-mcqa"
+    ],
+    "downloads": [
+      {
+        "bytes": 18981420,
+        "error": null,
+        "files": 16,
+        "hf_dataset_id": "penfever/glm52-datagen-r11-19-knowledge-web-search-mcqa-traces",
+        "hf_urls_glob": [],
+        "revision": "d2eb25c"
+      }
+    ],
+    "rough_token_count_b": 0.003064997
+  },
+  "penfever-traces/glm52-terminus2/nl2bash-tasks-cleaned-oracle": {
+    "allocated_tokens": 2635577,
+    "chat_steps": [
+      "processed-chat/penfever-traces/glm52-terminus2/nl2bash-tasks-cleaned-oracle",
+      "normalized-chat/penfever-traces/glm52-terminus2/nl2bash-tasks-cleaned-oracle"
+    ],
+    "downloads": [
+      {
+        "bytes": 20478188,
+        "error": null,
+        "files": 17,
+        "hf_dataset_id": "penfever/glm52-datagen-r11-07-nl2bash-traces",
+        "hf_urls_glob": [],
+        "revision": "602c6ec"
+      }
+    ],
+    "rough_token_count_b": 0.005197675
+  },
+  "penfever-traces/minimax-m27-131k/code-contests-noblock": {
+    "allocated_tokens": 11532115,
+    "chat_steps": [
+      "processed-chat/penfever-traces/minimax-m27-131k/code-contests-noblock",
+      "normalized-chat/penfever-traces/minimax-m27-131k/code-contests-noblock"
+    ],
+    "downloads": [
+      {
+        "bytes": 178193898,
+        "error": null,
+        "files": 3,
+        "hf_dataset_id": "penfever/code-contests-noblock-minimax-m27-131k-traces",
+        "hf_urls_glob": [],
+        "revision": "375639a"
+      }
+    ],
+    "rough_token_count_b": 0.022742715
+  },
+  "penfever-traces/minimax-m27-131k/exp_rle_minimal_instructions-v3": {
+    "allocated_tokens": 1520684,
+    "chat_steps": [
+      "processed-chat/penfever-traces/minimax-m27-131k/exp_rle_minimal_instructions-v3",
+      "normalized-chat/penfever-traces/minimax-m27-131k/exp_rle_minimal_instructions-v3"
+    ],
+    "downloads": [
+      {
+        "bytes": 13259032,
+        "error": null,
+        "files": 3,
+        "hf_dataset_id": "penfever/exp_rle_minimal_instructions-v3-minimax-m27-131k-traces",
+        "hf_urls_glob": [],
+        "revision": "289b0cc"
+      }
+    ],
+    "rough_token_count_b": 0.002998972
+  },
+  "penfever-traces/minimax-m27-131k/exp_rpt_crosscodeeval-csharp-v4": {
+    "allocated_tokens": 2452871,
+    "chat_steps": [
+      "processed-chat/penfever-traces/minimax-m27-131k/exp_rpt_crosscodeeval-csharp-v4",
+      "normalized-chat/penfever-traces/minimax-m27-131k/exp_rpt_crosscodeeval-csharp-v4"
+    ],
+    "downloads": [
+      {
+        "bytes": 28909036,
+        "error": null,
+        "files": 3,
+        "hf_dataset_id": "penfever/exp_rpt_crosscodeeval-csharp-v4-minimax-m27-131k-traces",
+        "hf_urls_glob": [],
+        "revision": "092d1aa"
+      }
+    ],
+    "rough_token_count_b": 0.004837355
+  },
+  "penfever-traces/minimax-m27-131k/exp_rpt_curriculum-easy": {
+    "allocated_tokens": 2172740,
+    "chat_steps": [
+      "processed-chat/penfever-traces/minimax-m27-131k/exp_rpt_curriculum-easy",
+      "normalized-chat/penfever-traces/minimax-m27-131k/exp_rpt_curriculum-easy"
+    ],
+    "downloads": [
+      {
+        "bytes": 19147143,
+        "error": null,
+        "files": 3,
+        "hf_dataset_id": "penfever/exp_rpt_curriculum-easy-minimax-m27-131k-traces",
+        "hf_urls_glob": [],
+        "revision": "92957da"
+      }
+    ],
+    "rough_token_count_b": 0.004284903
+  },
+  "penfever-traces/minimax-m27-131k/exp_rpt_curriculum-medium": {
+    "allocated_tokens": 2898810,
+    "chat_steps": [
+      "processed-chat/penfever-traces/minimax-m27-131k/exp_rpt_curriculum-medium",
+      "normalized-chat/penfever-traces/minimax-m27-131k/exp_rpt_curriculum-medium"
+    ],
+    "downloads": [
+      {
+        "bytes": 25178561,
+        "error": null,
+        "files": 3,
+        "hf_dataset_id": "penfever/exp_rpt_curriculum-medium-minimax-m27-131k-traces",
+        "hf_urls_glob": [],
+        "revision": "38a5cc5"
+      }
+    ],
+    "rough_token_count_b": 0.005716801
+  },
+  "penfever-traces/minimax-m27-131k/exp_rpt_e2egit-large": {
+    "allocated_tokens": 8569483,
+    "chat_steps": [
+      "processed-chat/penfever-traces/minimax-m27-131k/exp_rpt_e2egit-large",
+      "normalized-chat/penfever-traces/minimax-m27-131k/exp_rpt_e2egit-large"
+    ],
+    "downloads": [
+      {
+        "bytes": 78407809,
+        "error": null,
+        "files": 3,
+        "hf_dataset_id": "penfever/exp_rpt_e2egit-large-minimax-m27-131k-traces",
+        "hf_urls_glob": [],
+        "revision": "a7f3b86"
+      }
+    ],
+    "rough_token_count_b": 0.016900048
+  },
+  "penfever-traces/minimax-m27-131k/exp_rpt_e2egit-v2": {
+    "allocated_tokens": 1238649,
+    "chat_steps": [
+      "processed-chat/penfever-traces/minimax-m27-131k/exp_rpt_e2egit-v2",
+      "normalized-chat/penfever-traces/minimax-m27-131k/exp_rpt_e2egit-v2"
+    ],
+    "downloads": [
+      {
+        "bytes": 11523887,
+        "error": null,
+        "files": 3,
+        "hf_dataset_id": "penfever/exp_rpt_e2egit-v2-minimax-m27-131k-traces",
+        "hf_urls_glob": [],
+        "revision": "af182d6"
+      }
+    ],
+    "rough_token_count_b": 0.002442765
+  },
+  "penfever-traces/minimax-m27-131k/exp_rpt_ghactions-v3": {
+    "allocated_tokens": 26071084,
+    "chat_steps": [
+      "processed-chat/penfever-traces/minimax-m27-131k/exp_rpt_ghactions-v3",
+      "normalized-chat/penfever-traces/minimax-m27-131k/exp_rpt_ghactions-v3"
+    ],
+    "downloads": [
+      {
+        "bytes": 243641981,
+        "error": null,
+        "files": 3,
+        "hf_dataset_id": "penfever/exp_rpt_ghactions-v3-minimax-m27-131k-traces",
+        "hf_urls_glob": [],
+        "revision": "cb935e9"
+      }
+    ],
+    "rough_token_count_b": 0.051415305
+  },
+  "penfever-traces/minimax-m27-131k/exp_rpt_methods2test-large-v2": {
+    "allocated_tokens": 45016451,
+    "chat_steps": [
+      "processed-chat/penfever-traces/minimax-m27-131k/exp_rpt_methods2test-large-v2",
+      "normalized-chat/penfever-traces/minimax-m27-131k/exp_rpt_methods2test-large-v2"
+    ],
+    "downloads": [
+      {
+        "bytes": 418215676,
+        "error": null,
+        "files": 3,
+        "hf_dataset_id": "penfever/exp_rpt_methods2test-large-v2-minimax-m27-131k-traces",
+        "hf_urls_glob": [],
+        "revision": "e7760f2"
+      }
+    ],
+    "rough_token_count_b": 0.088777841
+  },
+  "penfever-traces/minimax-m27-131k/exp_rpt_methods2test-large-v3": {
+    "allocated_tokens": 44892263,
+    "chat_steps": [
+      "processed-chat/penfever-traces/minimax-m27-131k/exp_rpt_methods2test-large-v3",
+      "normalized-chat/penfever-traces/minimax-m27-131k/exp_rpt_methods2test-large-v3"
+    ],
+    "downloads": [
+      {
+        "bytes": 412209224,
+        "error": null,
+        "files": 3,
+        "hf_dataset_id": "penfever/exp_rpt_methods2test-large-v3-minimax-m27-131k-traces",
+        "hf_urls_glob": [],
+        "revision": "7d1d3c8"
+      }
+    ],
+    "rough_token_count_b": 0.088532928
+  },
+  "penfever-traces/minimax-m27-131k/exp_rpt_nemotron-cpp": {
+    "allocated_tokens": 32077648,
+    "chat_steps": [
+      "processed-chat/penfever-traces/minimax-m27-131k/exp_rpt_nemotron-cpp",
+      "normalized-chat/penfever-traces/minimax-m27-131k/exp_rpt_nemotron-cpp"
+    ],
+    "downloads": [
+      {
+        "bytes": 279513498,
+        "error": null,
+        "files": 3,
+        "hf_dataset_id": "penfever/exp_rpt_nemotron-cpp-minimax-m27-131k-traces",
+        "hf_urls_glob": [],
+        "revision": "57234a0"
+      }
+    ],
+    "rough_token_count_b": 0.06326097
+  },
+  "penfever-traces/minimax-m27-131k/exp_rpt_nemotron-junit": {
+    "allocated_tokens": 25013461,
+    "chat_steps": [
+      "processed-chat/penfever-traces/minimax-m27-131k/exp_rpt_nemotron-junit",
+      "normalized-chat/penfever-traces/minimax-m27-131k/exp_rpt_nemotron-junit"
+    ],
+    "downloads": [
+      {
+        "bytes": 227084012,
+        "error": null,
+        "files": 3,
+        "hf_dataset_id": "penfever/exp_rpt_nemotron-junit-minimax-m27-131k-traces",
+        "hf_urls_glob": [],
+        "revision": "58bc65f"
+      }
+    ],
+    "rough_token_count_b": 0.049329546
+  },
+  "penfever-traces/minimax-m27-131k/exp_rpt_pr": {
+    "allocated_tokens": 34193314,
+    "chat_steps": [
+      "processed-chat/penfever-traces/minimax-m27-131k/exp_rpt_pr",
+      "normalized-chat/penfever-traces/minimax-m27-131k/exp_rpt_pr"
+    ],
+    "downloads": [
+      {
+        "bytes": 289562836,
+        "error": null,
+        "files": 3,
+        "hf_dataset_id": "penfever/exp_rpt_pr-minimax-m27-131k-traces",
+        "hf_urls_glob": [],
+        "revision": "339038c"
+      }
+    ],
+    "rough_token_count_b": 0.067433317
+  },
+  "penfever-traces/minimax-m27-131k/exp_rpt_pymethods2test-large": {
+    "allocated_tokens": 11505282,
+    "chat_steps": [
+      "processed-chat/penfever-traces/minimax-m27-131k/exp_rpt_pymethods2test-large",
+      "normalized-chat/penfever-traces/minimax-m27-131k/exp_rpt_pymethods2test-large"
+    ],
+    "downloads": [
+      {
+        "bytes": 140547531,
+        "error": null,
+        "files": 3,
+        "hf_dataset_id": "penfever/exp_rpt_pymethods2test-large-minimax-m27-131k-traces",
+        "hf_urls_glob": [],
+        "revision": "265256e"
+      }
+    ],
+    "rough_token_count_b": 0.022689797
+  },
+  "penfever-traces/minimax-m27-131k/exp_rpt_pymethods2test-v3": {
+    "allocated_tokens": 936305,
+    "chat_steps": [
+      "processed-chat/penfever-traces/minimax-m27-131k/exp_rpt_pymethods2test-v3",
+      "normalized-chat/penfever-traces/minimax-m27-131k/exp_rpt_pymethods2test-v3"
+    ],
+    "downloads": [
+      {
+        "bytes": 17109535,
+        "error": null,
+        "files": 3,
+        "hf_dataset_id": "penfever/exp_rpt_pymethods2test-v3-minimax-m27-131k-traces",
+        "hf_urls_glob": [],
+        "revision": "7c657fc"
+      }
+    ],
+    "rough_token_count_b": 0.001846505
+  },
+  "penfever-traces/minimax-m27-131k/exp_rpt_stack-bash-v3": {
+    "allocated_tokens": 50330290,
+    "chat_steps": [
+      "processed-chat/penfever-traces/minimax-m27-131k/exp_rpt_stack-bash-v3",
+      "normalized-chat/penfever-traces/minimax-m27-131k/exp_rpt_stack-bash-v3"
+    ],
+    "downloads": [
+      {
+        "bytes": 432111289,
+        "error": null,
+        "files": 3,
+        "hf_dataset_id": "penfever/exp_rpt_stack-bash-v3-minimax-m27-131k-traces",
+        "hf_urls_glob": [],
+        "revision": "43cf228"
+      }
+    ],
+    "rough_token_count_b": 0.099257369
+  },
+  "penfever-traces/minimax-m27-131k/exp_rpt_stack-junit-v6": {
+    "allocated_tokens": 5565916,
+    "chat_steps": [
+      "processed-chat/penfever-traces/minimax-m27-131k/exp_rpt_stack-junit-v6",
+      "normalized-chat/penfever-traces/minimax-m27-131k/exp_rpt_stack-junit-v6"
+    ],
+    "downloads": [
+      {
+        "bytes": 51453987,
+        "error": null,
+        "files": 3,
+        "hf_dataset_id": "penfever/exp_rpt_stack-junit-v6-minimax-m27-131k-traces",
+        "hf_urls_glob": [],
+        "revision": "93ef44a"
+      }
+    ],
+    "rough_token_count_b": 0.010976655
+  },
+  "penfever-traces/minimax-m27-131k/exp_rpt_stack-pytest-large": {
+    "allocated_tokens": 27432456,
+    "chat_steps": [
+      "processed-chat/penfever-traces/minimax-m27-131k/exp_rpt_stack-pytest-large",
+      "normalized-chat/penfever-traces/minimax-m27-131k/exp_rpt_stack-pytest-large"
+    ],
+    "downloads": [
+      {
+        "bytes": 238638659,
+        "error": null,
+        "files": 3,
+        "hf_dataset_id": "penfever/exp_rpt_stack-pytest-large-minimax-m27-131k-traces",
+        "hf_urls_glob": [],
+        "revision": "dc6dd41"
+      }
+    ],
+    "rough_token_count_b": 0.054100095
+  },
+  "penfever-traces/minimax-m27-131k/exp_rpt_stack-pytest-v2": {
+    "allocated_tokens": 2825595,
+    "chat_steps": [
+      "processed-chat/penfever-traces/minimax-m27-131k/exp_rpt_stack-pytest-v2",
+      "normalized-chat/penfever-traces/minimax-m27-131k/exp_rpt_stack-pytest-v2"
+    ],
+    "downloads": [
+      {
+        "bytes": 24703757,
+        "error": null,
+        "files": 3,
+        "hf_dataset_id": "penfever/exp_rpt_stack-pytest-v2-minimax-m27-131k-traces",
+        "hf_urls_glob": [],
+        "revision": "615dc24"
+      }
+    ],
+    "rough_token_count_b": 0.005572412
+  },
+  "penfever-traces/minimax-m27-131k/exp_rpt_unitsyn-python-large": {
+    "allocated_tokens": 11458708,
+    "chat_steps": [
+      "processed-chat/penfever-traces/minimax-m27-131k/exp_rpt_unitsyn-python-large",
+      "normalized-chat/penfever-traces/minimax-m27-131k/exp_rpt_unitsyn-python-large"
+    ],
+    "downloads": [
+      {
+        "bytes": 130014489,
+        "error": null,
+        "files": 3,
+        "hf_dataset_id": "penfever/exp_rpt_unitsyn-python-large-minimax-m27-131k-traces",
+        "hf_urls_glob": [],
+        "revision": "8715b38"
+      }
+    ],
+    "rough_token_count_b": 0.022597946
+  },
+  "penfever-traces/minimax-m27-131k/exp_rpt_unitsyn-python-v3": {
+    "allocated_tokens": 1117251,
+    "chat_steps": [
+      "processed-chat/penfever-traces/minimax-m27-131k/exp_rpt_unitsyn-python-v3",
+      "normalized-chat/penfever-traces/minimax-m27-131k/exp_rpt_unitsyn-python-v3"
+    ],
+    "downloads": [
+      {
+        "bytes": 13264924,
+        "error": null,
+        "files": 3,
+        "hf_dataset_id": "penfever/exp_rpt_unitsyn-python-v3-minimax-m27-131k-traces",
+        "hf_urls_glob": [],
+        "revision": "8813f1d"
+      }
+    ],
+    "rough_token_count_b": 0.002203354
+  },
+  "penfever-traces/minimax-m27-131k/llm-verifier-freelancer": {
+    "allocated_tokens": 36692658,
+    "chat_steps": [
+      "processed-chat/penfever-traces/minimax-m27-131k/llm-verifier-freelancer",
+      "normalized-chat/penfever-traces/minimax-m27-131k/llm-verifier-freelancer"
+    ],
+    "downloads": [
+      {
+        "bytes": 1010739977,
+        "error": null,
+        "files": 6,
+        "hf_dataset_id": "penfever/llm-verifier-freelancer-minimax-m27-131k-traces",
+        "hf_urls_glob": [],
+        "revision": "841748d"
+      }
+    ],
+    "rough_token_count_b": 0.072362323
+  },
+  "penfever-traces/minimax-m27-131k/mix_h10_reward_binary-v2": {
+    "allocated_tokens": 11156898,
+    "chat_steps": [
+      "processed-chat/penfever-traces/minimax-m27-131k/mix_h10_reward_binary-v2",
+      "normalized-chat/penfever-traces/minimax-m27-131k/mix_h10_reward_binary-v2"
+    ],
+    "downloads": [
+      {
+        "bytes": 107382473,
+        "error": null,
+        "files": 3,
+        "hf_dataset_id": "penfever/mix_h10_reward_binary-v2-minimax-m27-131k-traces",
+        "hf_urls_glob": [],
+        "revision": "03c9d7f"
+      }
+    ],
+    "rough_token_count_b": 0.022002742
+  },
+  "penfever-traces/minimax-m27-131k/mix_h10_reward_proportional-v2": {
+    "allocated_tokens": 11218577,
+    "chat_steps": [
+      "processed-chat/penfever-traces/minimax-m27-131k/mix_h10_reward_proportional-v2",
+      "normalized-chat/penfever-traces/minimax-m27-131k/mix_h10_reward_proportional-v2"
+    ],
+    "downloads": [
+      {
+        "bytes": 103830354,
+        "error": null,
+        "files": 3,
+        "hf_dataset_id": "penfever/mix_h10_reward_proportional-v2-minimax-m27-131k-traces",
+        "hf_urls_glob": [],
+        "revision": "78883c8"
+      }
+    ],
+    "rough_token_count_b": 0.02212438
+  },
+  "penfever-traces/minimax-m27-131k/mix_h10_reward_staged-v2": {
+    "allocated_tokens": 12504750,
+    "chat_steps": [
+      "processed-chat/penfever-traces/minimax-m27-131k/mix_h10_reward_staged-v2",
+      "normalized-chat/penfever-traces/minimax-m27-131k/mix_h10_reward_staged-v2"
+    ],
+    "downloads": [
+      {
+        "bytes": 119084348,
+        "error": null,
+        "files": 3,
+        "hf_dataset_id": "penfever/mix_h10_reward_staged-v2-minimax-m27-131k-traces",
+        "hf_urls_glob": [],
+        "revision": "4b89950"
+      }
+    ],
+    "rough_token_count_b": 0.024660867
+  },
+  "penfever-traces/minimax-m27-131k/mix_h11_single_skill_only-v2": {
+    "allocated_tokens": 11176942,
+    "chat_steps": [
+      "processed-chat/penfever-traces/minimax-m27-131k/mix_h11_single_skill_only-v2",
+      "normalized-chat/penfever-traces/minimax-m27-131k/mix_h11_single_skill_only-v2"
+    ],
+    "downloads": [
+      {
+        "bytes": 105847417,
+        "error": null,
+        "files": 3,
+        "hf_dataset_id": "penfever/mix_h11_single_skill_only-v2-minimax-m27-131k-traces",
+        "hf_urls_glob": [],
+        "revision": "5a3775b"
+      }
+    ],
+    "rough_token_count_b": 0.022042271
+  },
+  "penfever-traces/minimax-m27-131k/mix_h1_struggle_zone-v2": {
+    "allocated_tokens": 12951390,
+    "chat_steps": [
+      "processed-chat/penfever-traces/minimax-m27-131k/mix_h1_struggle_zone-v2",
+      "normalized-chat/penfever-traces/minimax-m27-131k/mix_h1_struggle_zone-v2"
+    ],
+    "downloads": [
+      {
+        "bytes": 122527882,
+        "error": null,
+        "files": 3,
+        "hf_dataset_id": "penfever/mix_h1_struggle_zone-v2-minimax-m27-131k-traces",
+        "hf_urls_glob": [],
+        "revision": "ad756f3"
+      }
+    ],
+    "rough_token_count_b": 0.025541695
+  },
+  "penfever-traces/minimax-m27-131k/mix_h2_language_balanced-v2": {
+    "allocated_tokens": 31048320,
+    "chat_steps": [
+      "processed-chat/penfever-traces/minimax-m27-131k/mix_h2_language_balanced-v2",
+      "normalized-chat/penfever-traces/minimax-m27-131k/mix_h2_language_balanced-v2"
+    ],
+    "downloads": [
+      {
+        "bytes": 269837043,
+        "error": null,
+        "files": 3,
+        "hf_dataset_id": "penfever/mix_h2_language_balanced-v2-minimax-m27-131k-traces",
+        "hf_urls_glob": [],
+        "revision": "8839260"
+      }
+    ],
+    "rough_token_count_b": 0.061231012
+  },
+  "penfever-traces/minimax-m27-131k/mix_h2_language_proportional": {
+    "allocated_tokens": 28869792,
+    "chat_steps": [
+      "processed-chat/penfever-traces/minimax-m27-131k/mix_h2_language_proportional",
+      "normalized-chat/penfever-traces/minimax-m27-131k/mix_h2_language_proportional"
+    ],
+    "downloads": [
+      {
+        "bytes": 252793309,
+        "error": null,
+        "files": 3,
+        "hf_dataset_id": "penfever/mix_h2_language_proportional-minimax-m27-131k-traces",
+        "hf_urls_glob": [],
+        "revision": "1d03a7c"
+      }
+    ],
+    "rough_token_count_b": 0.056934693
+  },
+  "penfever-traces/minimax-m27-131k/mix_h4_binary_easy": {
+    "allocated_tokens": 8872358,
+    "chat_steps": [
+      "processed-chat/penfever-traces/minimax-m27-131k/mix_h4_binary_easy",
+      "normalized-chat/penfever-traces/minimax-m27-131k/mix_h4_binary_easy"
+    ],
+    "downloads": [
+      {
+        "bytes": 80923217,
+        "error": null,
+        "files": 3,
+        "hf_dataset_id": "penfever/mix_h4_binary_easy-minimax-m27-131k-traces",
+        "hf_urls_glob": [],
+        "revision": "2578eed"
+      }
+    ],
+    "rough_token_count_b": 0.017497355
+  },
+  "penfever-traces/minimax-m27-131k/mix_h8_original_tests-v2": {
+    "allocated_tokens": 11057451,
+    "chat_steps": [
+      "processed-chat/penfever-traces/minimax-m27-131k/mix_h8_original_tests-v2",
+      "normalized-chat/penfever-traces/minimax-m27-131k/mix_h8_original_tests-v2"
+    ],
+    "downloads": [
+      {
+        "bytes": 104270773,
+        "error": null,
+        "files": 3,
+        "hf_dataset_id": "penfever/mix_h8_original_tests-v2-minimax-m27-131k-traces",
+        "hf_urls_glob": [],
+        "revision": "f3f1dbf"
+      }
+    ],
+    "rough_token_count_b": 0.02180662
+  },
+  "penfever-traces/minimax-m27-131k/nemotron-code-oracle-filtered": {
+    "allocated_tokens": 17970527,
+    "chat_steps": [
+      "processed-chat/penfever-traces/minimax-m27-131k/nemotron-code-oracle-filtered",
+      "normalized-chat/penfever-traces/minimax-m27-131k/nemotron-code-oracle-filtered"
+    ],
+    "downloads": [
+      {
+        "bytes": 243936720,
+        "error": null,
+        "files": 3,
+        "hf_dataset_id": "penfever/nemotron-code-oracle-filtered-minimax-m27-131k-traces",
+        "hf_urls_glob": [],
+        "revision": "1825365"
+      }
+    ],
+    "rough_token_count_b": 0.035440035
+  },
+  "penfever-traces/minimax-m27-131k/nemotron-gym-agent-calendar": {
+    "allocated_tokens": 8793840,
+    "chat_steps": [
+      "processed-chat/penfever-traces/minimax-m27-131k/nemotron-gym-agent-calendar",
+      "normalized-chat/penfever-traces/minimax-m27-131k/nemotron-gym-agent-calendar"
+    ],
+    "downloads": [
+      {
+        "bytes": 97267068,
+        "error": null,
+        "files": 3,
+        "hf_dataset_id": "penfever/nemotron-gym-agent-calendar-minimax-m27-131k-traces",
+        "hf_urls_glob": [],
+        "revision": "f654032"
+      }
+    ],
+    "rough_token_count_b": 0.017342507
+  },
+  "penfever-traces/minimax-m27-131k/nemotron-gym-agent-workplace-v2": {
+    "allocated_tokens": 684838,
+    "chat_steps": [
+      "processed-chat/penfever-traces/minimax-m27-131k/nemotron-gym-agent-workplace-v2",
+      "normalized-chat/penfever-traces/minimax-m27-131k/nemotron-gym-agent-workplace-v2"
+    ],
+    "downloads": [
+      {
+        "bytes": 6934450,
+        "error": null,
+        "files": 3,
+        "hf_dataset_id": "penfever/nemotron-gym-agent-workplace-v2-minimax-m27-131k-traces",
+        "hf_urls_glob": [],
+        "revision": "455ca74"
+      }
+    ],
+    "rough_token_count_b": 0.001350582
+  },
+  "penfever-traces/minimax-m27-131k/nemotron-gym-identity-following-v2": {
+    "allocated_tokens": 18249006,
+    "chat_steps": [
+      "processed-chat/penfever-traces/minimax-m27-131k/nemotron-gym-identity-following-v2",
+      "normalized-chat/penfever-traces/minimax-m27-131k/nemotron-gym-identity-following-v2"
+    ],
+    "downloads": [
+      {
+        "bytes": 185179230,
+        "error": null,
+        "files": 3,
+        "hf_dataset_id": "penfever/nemotron-gym-identity-following-v2-minimax-m27-131k-traces",
+        "hf_urls_glob": [],
+        "revision": "dad95bb"
+      }
+    ],
+    "rough_token_count_b": 0.03598923
+  },
+  "penfever-traces/minimax-m27-131k/nemotron-gym-instruction-following-calendar": {
+    "allocated_tokens": 26957589,
+    "chat_steps": [
+      "processed-chat/penfever-traces/minimax-m27-131k/nemotron-gym-instruction-following-calendar",
+      "normalized-chat/penfever-traces/minimax-m27-131k/nemotron-gym-instruction-following-calendar"
+    ],
+    "downloads": [
+      {
+        "bytes": 309632365,
+        "error": null,
+        "files": 3,
+        "hf_dataset_id": "penfever/nemotron-gym-instruction-following-calendar-minimax-m27-131k-traces",
+        "hf_urls_glob": [],
+        "revision": "2ea6c45"
+      }
+    ],
+    "rough_token_count_b": 0.0531636
+  },
+  "penfever-traces/minimax-m27-131k/nemotron-gym-instruction-following-structured": {
+    "allocated_tokens": 34873726,
+    "chat_steps": [
+      "processed-chat/penfever-traces/minimax-m27-131k/nemotron-gym-instruction-following-structured",
+      "normalized-chat/penfever-traces/minimax-m27-131k/nemotron-gym-instruction-following-structured"
+    ],
+    "downloads": [
+      {
+        "bytes": 339264644,
+        "error": null,
+        "files": 3,
+        "hf_dataset_id": "penfever/nemotron-gym-instruction-following-structured-minimax-m27-131k-traces",
+        "hf_urls_glob": [],
+        "revision": "a749979"
+      }
+    ],
+    "rough_token_count_b": 0.068775172
+  },
+  "penfever-traces/minimax-m27-131k/nemotron-gym-knowledge-web-search-mcqa": {
+    "allocated_tokens": 2187947,
+    "chat_steps": [
+      "processed-chat/penfever-traces/minimax-m27-131k/nemotron-gym-knowledge-web-search-mcqa",
+      "normalized-chat/penfever-traces/minimax-m27-131k/nemotron-gym-knowledge-web-search-mcqa"
+    ],
+    "downloads": [
+      {
+        "bytes": 36435882,
+        "error": null,
+        "files": 3,
+        "hf_dataset_id": "penfever/nemotron-gym-knowledge-web-search-mcqa-minimax-m27-131k-traces",
+        "hf_urls_glob": [],
+        "revision": "8d4d22d"
+      }
+    ],
+    "rough_token_count_b": 0.004314894
+  },
+  "penfever-traces/minimax-m27-131k/nemotron-gym-math-advanced-calculations-v3": {
+    "allocated_tokens": 7602737,
+    "chat_steps": [
+      "processed-chat/penfever-traces/minimax-m27-131k/nemotron-gym-math-advanced-calculations-v3",
+      "normalized-chat/penfever-traces/minimax-m27-131k/nemotron-gym-math-advanced-calculations-v3"
+    ],
+    "downloads": [
+      {
+        "bytes": 68422245,
+        "error": null,
+        "files": 3,
+        "hf_dataset_id": "penfever/nemotron-gym-math-advanced-calculations-v3-minimax-m27-131k-traces",
+        "hf_urls_glob": [],
+        "revision": "35343a8"
+      }
+    ],
+    "rough_token_count_b": 0.01499351
+  },
+  "penfever-traces/minimax-m27-131k/nl2bash-tasks-cleaned-oracle": {
+    "allocated_tokens": 2670373,
+    "chat_steps": [
+      "processed-chat/penfever-traces/minimax-m27-131k/nl2bash-tasks-cleaned-oracle",
+      "normalized-chat/penfever-traces/minimax-m27-131k/nl2bash-tasks-cleaned-oracle"
+    ],
+    "downloads": [
+      {
+        "bytes": 26616680,
+        "error": null,
+        "files": 3,
+        "hf_dataset_id": "penfever/nl2bash-tasks-cleaned-oracle-minimax-m27-131k-traces",
+        "hf_urls_glob": [],
+        "revision": "85ce2ff"
+      }
+    ],
+    "rough_token_count_b": 0.005266295
+  },
+  "penfever-traces/minimax-m27-131k/selfinstruct-naive-sandboxes-2-verified": {
+    "allocated_tokens": 30237571,
+    "chat_steps": [
+      "processed-chat/penfever-traces/minimax-m27-131k/selfinstruct-naive-sandboxes-2-verified",
+      "normalized-chat/penfever-traces/minimax-m27-131k/selfinstruct-naive-sandboxes-2-verified"
+    ],
+    "downloads": [
+      {
+        "bytes": 350383715,
+        "error": null,
+        "files": 4,
+        "hf_dataset_id": "penfever/selfinstruct-naive-sandboxes-2-verified-minimax-m27-131k-traces",
+        "hf_urls_glob": [],
+        "revision": "64ca0a3"
+      }
+    ],
+    "rough_token_count_b": 0.059632117
+  },
+  "penfever-traces/qwen35-122b-131k-opencode/code-contests-noblock": {
+    "allocated_tokens": 22546250,
+    "chat_steps": [
+      "processed-chat/penfever-traces/qwen35-122b-131k-opencode/code-contests-noblock",
+      "normalized-chat/penfever-traces/qwen35-122b-131k-opencode/code-contests-noblock"
+    ],
+    "downloads": [
+      {
+        "bytes": 1825050205,
+        "error": null,
+        "files": 30,
+        "hf_dataset_id": "penfever/code-contests-noblock-qwen3.5-122b-131k-opencode-traces",
+        "hf_urls_glob": [],
+        "revision": "42a75fe"
+      }
+    ],
+    "rough_token_count_b": 0.04446391
+  },
+  "penfever-traces/qwen35-122b-131k-opencode/exp_rpt_crosscodeeval-csharp-v4": {
+    "allocated_tokens": 7215028,
+    "chat_steps": [
+      "processed-chat/penfever-traces/qwen35-122b-131k-opencode/exp_rpt_crosscodeeval-csharp-v4",
+      "normalized-chat/penfever-traces/qwen35-122b-131k-opencode/exp_rpt_crosscodeeval-csharp-v4"
+    ],
+    "downloads": [
+      {
+        "bytes": 438873299,
+        "error": null,
+        "files": 12,
+        "hf_dataset_id": "penfever/exp_rpt_crosscodeeval-csharp-v4-qwen3.5-122b-131k-opencode-traces",
+        "hf_urls_glob": [],
+        "revision": "3337d73"
+      }
+    ],
+    "rough_token_count_b": 0.014228901
+  },
+  "penfever-traces/qwen35-122b-131k-opencode/exp_rpt_crosscodeeval-java": {
+    "allocated_tokens": 810809,
+    "chat_steps": [
+      "processed-chat/penfever-traces/qwen35-122b-131k-opencode/exp_rpt_crosscodeeval-java",
+      "normalized-chat/penfever-traces/qwen35-122b-131k-opencode/exp_rpt_crosscodeeval-java"
+    ],
+    "downloads": [
+      {
+        "bytes": 764620195,
+        "error": null,
+        "files": 14,
+        "hf_dataset_id": "penfever/exp_rpt_crosscodeeval-java-qwen3.5-122b-131k-opencode-traces",
+        "hf_urls_glob": [],
+        "revision": "353bba9"
+      }
+    ],
+    "rough_token_count_b": 0.001599013
+  },
+  "penfever-traces/qwen35-122b-131k-opencode/exp_rpt_curriculum-easy": {
+    "allocated_tokens": 1295454,
+    "chat_steps": [
+      "processed-chat/penfever-traces/qwen35-122b-131k-opencode/exp_rpt_curriculum-easy",
+      "normalized-chat/penfever-traces/qwen35-122b-131k-opencode/exp_rpt_curriculum-easy"
+    ],
+    "downloads": [
+      {
+        "bytes": 195905709,
+        "error": null,
+        "files": 6,
+        "hf_dataset_id": "penfever/exp_rpt_curriculum-easy-qwen3.5-122b-131k-opencode-traces",
+        "hf_urls_glob": [],
+        "revision": "9038e1c"
+      }
+    ],
+    "rough_token_count_b": 0.00255479
+  },
+  "penfever-traces/qwen35-122b-131k-opencode/exp_rpt_curriculum-hard": {
+    "allocated_tokens": 93857,
+    "chat_steps": [
+      "processed-chat/penfever-traces/qwen35-122b-131k-opencode/exp_rpt_curriculum-hard",
+      "normalized-chat/penfever-traces/qwen35-122b-131k-opencode/exp_rpt_curriculum-hard"
+    ],
+    "downloads": [
+      {
+        "bytes": 14626793,
+        "error": null,
+        "files": 4,
+        "hf_dataset_id": "penfever/exp_rpt_curriculum-hard-qwen3.5-122b-131k-opencode-traces",
+        "hf_urls_glob": [],
+        "revision": "404f3fc"
+      }
+    ],
+    "rough_token_count_b": 0.000185097
+  },
+  "penfever-traces/qwen35-122b-131k-opencode/exp_rpt_curriculum-medium": {
+    "allocated_tokens": 1572338,
+    "chat_steps": [
+      "processed-chat/penfever-traces/qwen35-122b-131k-opencode/exp_rpt_curriculum-medium",
+      "normalized-chat/penfever-traces/qwen35-122b-131k-opencode/exp_rpt_curriculum-medium"
+    ],
+    "downloads": [
+      {
+        "bytes": 302044060,
+        "error": null,
+        "files": 6,
+        "hf_dataset_id": "penfever/exp_rpt_curriculum-medium-qwen3.5-122b-131k-opencode-traces",
+        "hf_urls_glob": [],
+        "revision": "d298515"
+      }
+    ],
+    "rough_token_count_b": 0.00310084
+  },
+  "penfever-traces/qwen35-122b-131k-opencode/exp_rpt_e2egit-large": {
+    "allocated_tokens": 8775788,
+    "chat_steps": [
+      "processed-chat/penfever-traces/qwen35-122b-131k-opencode/exp_rpt_e2egit-large",
+      "normalized-chat/penfever-traces/qwen35-122b-131k-opencode/exp_rpt_e2egit-large"
+    ],
+    "downloads": [
+      {
+        "bytes": 830251845,
+        "error": null,
+        "files": 24,
+        "hf_dataset_id": "penfever/exp_rpt_e2egit-large-qwen3.5-122b-131k-opencode-traces",
+        "hf_urls_glob": [],
+        "revision": "3a72d7f"
+      }
+    ],
+    "rough_token_count_b": 0.017306906
+  },
+  "penfever-traces/qwen35-122b-131k-opencode/exp_rpt_e2egit-v2": {
+    "allocated_tokens": 873985,
+    "chat_steps": [
+      "processed-chat/penfever-traces/qwen35-122b-131k-opencode/exp_rpt_e2egit-v2",
+      "normalized-chat/penfever-traces/qwen35-122b-131k-opencode/exp_rpt_e2egit-v2"
+    ],
+    "downloads": [
+      {
+        "bytes": 156928776,
+        "error": null,
+        "files": 6,
+        "hf_dataset_id": "penfever/exp_rpt_e2egit-v2-qwen3.5-122b-131k-opencode-traces",
+        "hf_urls_glob": [],
+        "revision": "8d6994e"
+      }
+    ],
+    "rough_token_count_b": 0.001723603
+  },
+  "penfever-traces/qwen35-122b-131k-opencode/exp_rpt_ghactions-v3": {
+    "allocated_tokens": 31641117,
+    "chat_steps": [
+      "processed-chat/penfever-traces/qwen35-122b-131k-opencode/exp_rpt_ghactions-v3",
+      "normalized-chat/penfever-traces/qwen35-122b-131k-opencode/exp_rpt_ghactions-v3"
+    ],
+    "downloads": [
+      {
+        "bytes": 2729749474,
+        "error": null,
+        "files": 31,
+        "hf_dataset_id": "penfever/exp_rpt_ghactions-v3-qwen3.5-122b-131k-opencode-traces",
+        "hf_urls_glob": [],
+        "revision": "9693178"
+      }
+    ],
+    "rough_token_count_b": 0.062400079
+  },
+  "penfever-traces/qwen35-122b-131k-opencode/exp_rpt_issue": {
+    "allocated_tokens": 604716,
+    "chat_steps": [
+      "processed-chat/penfever-traces/qwen35-122b-131k-opencode/exp_rpt_issue",
+      "normalized-chat/penfever-traces/qwen35-122b-131k-opencode/exp_rpt_issue"
+    ],
+    "downloads": [
+      {
+        "bytes": 340769829,
+        "error": null,
+        "files": 5,
+        "hf_dataset_id": "penfever/exp_rpt_issue-qwen3.5-122b-131k-opencode-traces",
+        "hf_urls_glob": [],
+        "revision": "2feab9d"
+      }
+    ],
+    "rough_token_count_b": 0.001192573
+  },
+  "penfever-traces/qwen35-122b-131k-opencode/exp_rpt_nemotron-cpp-v2": {
+    "allocated_tokens": 63393,
+    "chat_steps": [
+      "processed-chat/penfever-traces/qwen35-122b-131k-opencode/exp_rpt_nemotron-cpp-v2",
+      "normalized-chat/penfever-traces/qwen35-122b-131k-opencode/exp_rpt_nemotron-cpp-v2"
+    ],
+    "downloads": [
+      {
+        "bytes": 628269026,
+        "error": null,
+        "files": 7,
+        "hf_dataset_id": "penfever/exp_rpt_nemotron-cpp-v2-qwen3.5-122b-131k-opencode-traces",
+        "hf_urls_glob": [],
+        "revision": "b980f2e"
+      }
+    ],
+    "rough_token_count_b": 0.000125018
+  },
+  "penfever-traces/qwen35-122b-131k-opencode/exp_rpt_nemotron-junit": {
+    "allocated_tokens": 480529,
+    "chat_steps": [
+      "processed-chat/penfever-traces/qwen35-122b-131k-opencode/exp_rpt_nemotron-junit",
+      "normalized-chat/penfever-traces/qwen35-122b-131k-opencode/exp_rpt_nemotron-junit"
+    ],
+    "downloads": [
+      {
+        "bytes": 374978285,
+        "error": null,
+        "files": 5,
+        "hf_dataset_id": "penfever/exp_rpt_nemotron-junit-qwen3.5-122b-131k-opencode-traces",
+        "hf_urls_glob": [],
+        "revision": "9825ba3"
+      }
+    ],
+    "rough_token_count_b": 0.00094766
+  },
+  "penfever-traces/qwen35-122b-131k-opencode/exp_rpt_pymethods2test-large": {
+    "allocated_tokens": 20559546,
+    "chat_steps": [
+      "processed-chat/penfever-traces/qwen35-122b-131k-opencode/exp_rpt_pymethods2test-large",
+      "normalized-chat/penfever-traces/qwen35-122b-131k-opencode/exp_rpt_pymethods2test-large"
+    ],
+    "downloads": [
+      {
+        "bytes": 1828343521,
+        "error": null,
+        "files": 28,
+        "hf_dataset_id": "penfever/exp_rpt_pymethods2test-large-qwen3.5-122b-131k-opencode-traces",
+        "hf_urls_glob": [],
+        "revision": "6884b45"
+      }
+    ],
+    "rough_token_count_b": 0.040545891
+  },
+  "penfever-traces/qwen35-122b-131k-opencode/exp_rpt_pymethods2test-v3": {
+    "allocated_tokens": 1949910,
+    "chat_steps": [
+      "processed-chat/penfever-traces/qwen35-122b-131k-opencode/exp_rpt_pymethods2test-v3",
+      "normalized-chat/penfever-traces/qwen35-122b-131k-opencode/exp_rpt_pymethods2test-v3"
+    ],
+    "downloads": [
+      {
+        "bytes": 128284879,
+        "error": null,
+        "files": 6,
+        "hf_dataset_id": "penfever/exp_rpt_pymethods2test-v3-qwen3.5-122b-131k-opencode-traces",
+        "hf_urls_glob": [],
+        "revision": "b3e7eaa"
+      }
+    ],
+    "rough_token_count_b": 0.003845456
+  },
+  "penfever-traces/qwen35-122b-131k-opencode/exp_rpt_stack-pytest-large": {
+    "allocated_tokens": 2464543,
+    "chat_steps": [
+      "processed-chat/penfever-traces/qwen35-122b-131k-opencode/exp_rpt_stack-pytest-large",
+      "normalized-chat/penfever-traces/qwen35-122b-131k-opencode/exp_rpt_stack-pytest-large"
+    ],
+    "downloads": [
+      {
+        "bytes": 923377989,
+        "error": null,
+        "files": 10,
+        "hf_dataset_id": "penfever/exp_rpt_stack-pytest-large-qwen3.5-122b-131k-opencode-traces",
+        "hf_urls_glob": [],
+        "revision": "6a55d43"
+      }
+    ],
+    "rough_token_count_b": 0.004860374
+  },
+  "penfever-traces/qwen35-122b-131k-opencode/exp_rpt_stack-pytest-v2": {
+    "allocated_tokens": 893382,
+    "chat_steps": [
+      "processed-chat/penfever-traces/qwen35-122b-131k-opencode/exp_rpt_stack-pytest-v2",
+      "normalized-chat/penfever-traces/qwen35-122b-131k-opencode/exp_rpt_stack-pytest-v2"
+    ],
+    "downloads": [
+      {
+        "bytes": 378723704,
+        "error": null,
+        "files": 6,
+        "hf_dataset_id": "penfever/exp_rpt_stack-pytest-v2-qwen3.5-122b-131k-opencode-traces",
+        "hf_urls_glob": [],
+        "revision": "6272346"
+      }
+    ],
+    "rough_token_count_b": 0.001761856
+  },
+  "penfever-traces/qwen35-122b-131k-opencode/exp_rpt_unitsyn-python-large": {
+    "allocated_tokens": 8860447,
+    "chat_steps": [
+      "processed-chat/penfever-traces/qwen35-122b-131k-opencode/exp_rpt_unitsyn-python-large",
+      "normalized-chat/penfever-traces/qwen35-122b-131k-opencode/exp_rpt_unitsyn-python-large"
+    ],
+    "downloads": [
+      {
+        "bytes": 630435826,
+        "error": null,
+        "files": 15,
+        "hf_dataset_id": "penfever/exp_rpt_unitsyn-python-large-qwen3.5-122b-131k-opencode-traces",
+        "hf_urls_glob": [],
+        "revision": "ca48ec8"
+      }
+    ],
+    "rough_token_count_b": 0.017473865
+  },
+  "penfever-traces/qwen35-122b-131k-opencode/exp_rpt_unitsyn-python-v3": {
+    "allocated_tokens": 532705,
+    "chat_steps": [
+      "processed-chat/penfever-traces/qwen35-122b-131k-opencode/exp_rpt_unitsyn-python-v3",
+      "normalized-chat/penfever-traces/qwen35-122b-131k-opencode/exp_rpt_unitsyn-python-v3"
+    ],
+    "downloads": [
+      {
+        "bytes": 34279408,
+        "error": null,
+        "files": 4,
+        "hf_dataset_id": "penfever/exp_rpt_unitsyn-python-v3-qwen3.5-122b-131k-opencode-traces",
+        "hf_urls_glob": [],
+        "revision": "1f7fbc7"
+      }
+    ],
+    "rough_token_count_b": 0.001050559
+  },
+  "penfever-traces/qwen35-122b-131k-opencode/inferredbugs-sandboxes-verifier": {
+    "allocated_tokens": 4622465,
+    "chat_steps": [
+      "processed-chat/penfever-traces/qwen35-122b-131k-opencode/inferredbugs-sandboxes-verifier",
+      "normalized-chat/penfever-traces/qwen35-122b-131k-opencode/inferredbugs-sandboxes-verifier"
+    ],
+    "downloads": [
+      {
+        "bytes": 2749077139,
+        "error": null,
+        "files": 33,
+        "hf_dataset_id": "penfever/inferredbugs-sandboxes-verifier-qwen3.5-122b-131k-opencode-traces",
+        "hf_urls_glob": [],
+        "revision": "682909a"
+      }
+    ],
+    "rough_token_count_b": 0.009116056
+  },
+  "penfever-traces/qwen35-122b-131k-opencode/llm-verifier-freelancer": {
+    "allocated_tokens": 1481315,
+    "chat_steps": [
+      "processed-chat/penfever-traces/qwen35-122b-131k-opencode/llm-verifier-freelancer",
+      "normalized-chat/penfever-traces/qwen35-122b-131k-opencode/llm-verifier-freelancer"
+    ],
+    "downloads": [
+      {
+        "bytes": 135316864,
+        "error": null,
+        "files": 53,
+        "hf_dataset_id": "penfever/llm-verifier-freelancer-qwen3.5-122b-131k-opencode-traces",
+        "hf_urls_glob": [],
+        "revision": "5c5f51e"
+      }
+    ],
+    "rough_token_count_b": 0.00292133
+  },
+  "penfever-traces/qwen35-122b-131k-opencode/mix_h4_binary_easy": {
+    "allocated_tokens": 3964143,
+    "chat_steps": [
+      "processed-chat/penfever-traces/qwen35-122b-131k-opencode/mix_h4_binary_easy",
+      "normalized-chat/penfever-traces/qwen35-122b-131k-opencode/mix_h4_binary_easy"
+    ],
+    "downloads": [
+      {
+        "bytes": 1160854379,
+        "error": null,
+        "files": 14,
+        "hf_dataset_id": "penfever/mix_h4_binary_easy-qwen3.5-122b-131k-opencode-traces",
+        "hf_urls_glob": [],
+        "revision": "13e4577"
+      }
+    ],
+    "rough_token_count_b": 0.007817765
+  },
+  "penfever-traces/qwen35-122b-131k-opencode/nemotron-gym-agent-calendar": {
+    "allocated_tokens": 16968770,
+    "chat_steps": [
+      "processed-chat/penfever-traces/qwen35-122b-131k-opencode/nemotron-gym-agent-calendar",
+      "normalized-chat/penfever-traces/qwen35-122b-131k-opencode/nemotron-gym-agent-calendar"
+    ],
+    "downloads": [
+      {
+        "bytes": 485705554,
+        "error": null,
+        "files": 20,
+        "hf_dataset_id": "penfever/nemotron-gym-agent-calendar-qwen3.5-122b-131k-opencode-traces",
+        "hf_urls_glob": [],
+        "revision": "c02c70f"
+      }
+    ],
+    "rough_token_count_b": 0.033464451
+  },
+  "penfever-traces/qwen35-122b-131k-opencode/nemotron-gym-identity-following-v2": {
+    "allocated_tokens": 30412201,
+    "chat_steps": [
+      "processed-chat/penfever-traces/qwen35-122b-131k-opencode/nemotron-gym-identity-following-v2",
+      "normalized-chat/penfever-traces/qwen35-122b-131k-opencode/nemotron-gym-identity-following-v2"
+    ],
+    "downloads": [
+      {
+        "bytes": 2832674095,
+        "error": null,
+        "files": 47,
+        "hf_dataset_id": "penfever/nemotron-gym-identity-following-v2-qwen3.5-122b-131k-opencode-traces",
+        "hf_urls_glob": [],
+        "revision": "150f9df"
+      }
+    ],
+    "rough_token_count_b": 0.059976508
+  },
+  "penfever-traces/qwen35-122b-131k-opencode/nemotron-gym-instruction-following-structured": {
+    "allocated_tokens": 45120495,
+    "chat_steps": [
+      "processed-chat/penfever-traces/qwen35-122b-131k-opencode/nemotron-gym-instruction-following-structured",
+      "normalized-chat/penfever-traces/qwen35-122b-131k-opencode/nemotron-gym-instruction-following-structured"
+    ],
+    "downloads": [
+      {
+        "bytes": 1794467489,
+        "error": null,
+        "files": 51,
+        "hf_dataset_id": "penfever/nemotron-gym-instruction-following-structured-qwen3.5-122b-131k-opencode-traces",
+        "hf_urls_glob": [],
+        "revision": "283fcd5"
+      }
+    ],
+    "rough_token_count_b": 0.088983029
+  },
+  "penfever-traces/qwen35-122b-131k-opencode/nemotron-gym-knowledge-web-search-mcqa": {
+    "allocated_tokens": 11504157,
+    "chat_steps": [
+      "processed-chat/penfever-traces/qwen35-122b-131k-opencode/nemotron-gym-knowledge-web-search-mcqa",
+      "normalized-chat/penfever-traces/qwen35-122b-131k-opencode/nemotron-gym-knowledge-web-search-mcqa"
+    ],
+    "downloads": [
+      {
+        "bytes": 398799776,
+        "error": null,
+        "files": 18,
+        "hf_dataset_id": "penfever/nemotron-gym-knowledge-web-search-mcqa-qwen3.5-122b-131k-opencode-traces",
+        "hf_urls_glob": [],
+        "revision": "50ac63c"
+      }
+    ],
+    "rough_token_count_b": 0.022687578
+  },
+  "penfever-traces/qwen35-122b-131k-opencode/nemotron-gym-math-advanced-calculations-v3": {
+    "allocated_tokens": 21351958,
+    "chat_steps": [
+      "processed-chat/penfever-traces/qwen35-122b-131k-opencode/nemotron-gym-math-advanced-calculations-v3",
+      "normalized-chat/penfever-traces/qwen35-122b-131k-opencode/nemotron-gym-math-advanced-calculations-v3"
+    ],
+    "downloads": [
+      {
+        "bytes": 1050457174,
+        "error": null,
+        "files": 30,
+        "hf_dataset_id": "penfever/nemotron-gym-math-advanced-calculations-v3-qwen3.5-122b-131k-opencode-traces",
+        "hf_urls_glob": [],
+        "revision": "9c52619"
+      }
+    ],
+    "rough_token_count_b": 0.042108623
+  },
+  "penfever-traces/qwen35-122b-131k-opencode/nl2bash-tasks-cleaned-oracle": {
+    "allocated_tokens": 2137257,
+    "chat_steps": [
+      "processed-chat/penfever-traces/qwen35-122b-131k-opencode/nl2bash-tasks-cleaned-oracle",
+      "normalized-chat/penfever-traces/qwen35-122b-131k-opencode/nl2bash-tasks-cleaned-oracle"
+    ],
+    "downloads": [
+      {
+        "bytes": 388488386,
+        "error": null,
+        "files": 11,
+        "hf_dataset_id": "penfever/nl2bash-tasks-cleaned-oracle-qwen3.5-122b-131k-opencode-traces",
+        "hf_urls_glob": [],
+        "revision": "863e49b"
+      }
+    ],
+    "rough_token_count_b": 0.004214928
+  },
+  "penfever-traces/qwen35-122b-32k/code-contests-noblock": {
+    "allocated_tokens": 12608280,
+    "chat_steps": [
+      "processed-chat/penfever-traces/qwen35-122b-32k/code-contests-noblock",
+      "normalized-chat/penfever-traces/qwen35-122b-32k/code-contests-noblock"
+    ],
+    "downloads": [
+      {
+        "bytes": 232511796,
+        "error": null,
+        "files": 36,
+        "hf_dataset_id": "penfever/code-contests-noblock-qwen3.5-122b-32k-traces",
+        "hf_urls_glob": [],
+        "revision": "7d80f16"
+      }
+    ],
+    "rough_token_count_b": 0.024865041
+  },
+  "penfever-traces/qwen35-122b-32k/exp_rle_minimal_instructions-v3": {
+    "allocated_tokens": 1552633,
+    "chat_steps": [
+      "processed-chat/penfever-traces/qwen35-122b-32k/exp_rle_minimal_instructions-v3",
+      "normalized-chat/penfever-traces/qwen35-122b-32k/exp_rle_minimal_instructions-v3"
+    ],
+    "downloads": [
+      {
+        "bytes": 16591164,
+        "error": null,
+        "files": 3,
+        "hf_dataset_id": "penfever/exp-rle-minimal-instructions-v3-qwen3.5-122b-32k-traces",
+        "hf_urls_glob": [],
+        "revision": "69f7ed2"
+      }
+    ],
+    "rough_token_count_b": 0.003061979
+  },
+  "penfever-traces/qwen35-122b-32k/exp_rpt_codenet-python-v2": {
+    "allocated_tokens": 13782063,
+    "chat_steps": [
+      "processed-chat/penfever-traces/qwen35-122b-32k/exp_rpt_codenet-python-v2",
+      "normalized-chat/penfever-traces/qwen35-122b-32k/exp_rpt_codenet-python-v2"
+    ],
+    "downloads": [
+      {
+        "bytes": 210212104,
+        "error": null,
+        "files": 3,
+        "hf_dataset_id": "penfever/codenet-python-v2-qwen3.5-122b-32k-traces",
+        "hf_urls_glob": [],
+        "revision": "c35ad19"
+      }
+    ],
+    "rough_token_count_b": 0.027179882
+  },
+  "penfever-traces/qwen35-122b-32k/exp_rpt_crosscodeeval-csharp-v4": {
+    "allocated_tokens": 2453856,
+    "chat_steps": [
+      "processed-chat/penfever-traces/qwen35-122b-32k/exp_rpt_crosscodeeval-csharp-v4",
+      "normalized-chat/penfever-traces/qwen35-122b-32k/exp_rpt_crosscodeeval-csharp-v4"
+    ],
+    "downloads": [
+      {
+        "bytes": 30506469,
+        "error": null,
+        "files": 3,
+        "hf_dataset_id": "penfever/crosscodeeval-csharp-v4-qwen3.5-122b-32k-traces",
+        "hf_urls_glob": [],
+        "revision": "bac9785"
+      }
+    ],
+    "rough_token_count_b": 0.004839298
+  },
+  "penfever-traces/qwen35-122b-32k/exp_rpt_curriculum-easy": {
+    "allocated_tokens": 1926195,
+    "chat_steps": [
+      "processed-chat/penfever-traces/qwen35-122b-32k/exp_rpt_curriculum-easy",
+      "normalized-chat/penfever-traces/qwen35-122b-32k/exp_rpt_curriculum-easy"
+    ],
+    "downloads": [
+      {
+        "bytes": 20028350,
+        "error": null,
+        "files": 4,
+        "hf_dataset_id": "penfever/curriculum-easy-qwen3.5-122b-32k-traces",
+        "hf_urls_glob": [],
+        "revision": "d017422"
+      }
+    ],
+    "rough_token_count_b": 0.003798688
+  },
+  "penfever-traces/qwen35-122b-32k/exp_rpt_e2egit-large": {
+    "allocated_tokens": 8744190,
+    "chat_steps": [
+      "processed-chat/penfever-traces/qwen35-122b-32k/exp_rpt_e2egit-large",
+      "normalized-chat/penfever-traces/qwen35-122b-32k/exp_rpt_e2egit-large"
+    ],
+    "downloads": [
+      {
+        "bytes": 86877150,
+        "error": null,
+        "files": 26,
+        "hf_dataset_id": "penfever/e2egit-large-qwen3.5-122b-32k-traces",
+        "hf_urls_glob": [],
+        "revision": "239a1a0"
+      }
+    ],
+    "rough_token_count_b": 0.017244591
+  },
+  "penfever-traces/qwen35-122b-32k/exp_rpt_e2egit-v2": {
+    "allocated_tokens": 1333191,
+    "chat_steps": [
+      "processed-chat/penfever-traces/qwen35-122b-32k/exp_rpt_e2egit-v2",
+      "normalized-chat/penfever-traces/qwen35-122b-32k/exp_rpt_e2egit-v2"
+    ],
+    "downloads": [
+      {
+        "bytes": 12893417,
+        "error": null,
+        "files": 4,
+        "hf_dataset_id": "penfever/e2egit-v2-qwen3.5-122b-32k-traces",
+        "hf_urls_glob": [],
+        "revision": "59c08fc"
+      }
+    ],
+    "rough_token_count_b": 0.002629213
+  },
+  "penfever-traces/qwen35-122b-32k/exp_rpt_ghactions-v3": {
+    "allocated_tokens": 28800927,
+    "chat_steps": [
+      "processed-chat/penfever-traces/qwen35-122b-32k/exp_rpt_ghactions-v3",
+      "normalized-chat/penfever-traces/qwen35-122b-32k/exp_rpt_ghactions-v3"
+    ],
+    "downloads": [
+      {
+        "bytes": 286584408,
+        "error": null,
+        "files": 3,
+        "hf_dataset_id": "penfever/ghactions-v3-qwen3.5-122b-32k-traces",
+        "hf_urls_glob": [],
+        "revision": "bfe8956"
+      }
+    ],
+    "rough_token_count_b": 0.056798884
+  },
+  "penfever-traces/qwen35-122b-32k/exp_rpt_methods2test-large-v2": {
+    "allocated_tokens": 33695160,
+    "chat_steps": [
+      "processed-chat/penfever-traces/qwen35-122b-32k/exp_rpt_methods2test-large-v2",
+      "normalized-chat/penfever-traces/qwen35-122b-32k/exp_rpt_methods2test-large-v2"
+    ],
+    "downloads": [
+      {
+        "bytes": 375672786,
+        "error": null,
+        "files": 3,
+        "hf_dataset_id": "penfever/methods2test-large-v2-qwen3.5-122b-32k-traces",
+        "hf_urls_glob": [],
+        "revision": "14bab0e"
+      }
+    ],
+    "rough_token_count_b": 0.066450897
+  },
+  "penfever-traces/qwen35-122b-32k/exp_rpt_nemotron-junit": {
+    "allocated_tokens": 26279229,
+    "chat_steps": [
+      "processed-chat/penfever-traces/qwen35-122b-32k/exp_rpt_nemotron-junit",
+      "normalized-chat/penfever-traces/qwen35-122b-32k/exp_rpt_nemotron-junit"
+    ],
+    "downloads": [
+      {
+        "bytes": 264076393,
+        "error": null,
+        "files": 26,
+        "hf_dataset_id": "penfever/nemotron-junit-qwen3.5-122b-32k-traces",
+        "hf_urls_glob": [],
+        "revision": "8ed80b3"
+      }
+    ],
+    "rough_token_count_b": 0.051825793
+  },
+  "penfever-traces/qwen35-122b-32k/exp_rpt_pymethods2test-large": {
+    "allocated_tokens": 10381679,
+    "chat_steps": [
+      "processed-chat/penfever-traces/qwen35-122b-32k/exp_rpt_pymethods2test-large",
+      "normalized-chat/penfever-traces/qwen35-122b-32k/exp_rpt_pymethods2test-large"
+    ],
+    "downloads": [
+      {
+        "bytes": 142392415,
+        "error": null,
+        "files": 3,
+        "hf_dataset_id": "penfever/pymethods2test-large-qwen3.5-122b-32k-traces",
+        "hf_urls_glob": [],
+        "revision": "1d110ac"
+      }
+    ],
+    "rough_token_count_b": 0.020473916
+  },
+  "penfever-traces/qwen35-122b-32k/exp_rpt_pymethods2test-v3": {
+    "allocated_tokens": 1047516,
+    "chat_steps": [
+      "processed-chat/penfever-traces/qwen35-122b-32k/exp_rpt_pymethods2test-v3",
+      "normalized-chat/penfever-traces/qwen35-122b-32k/exp_rpt_pymethods2test-v3"
+    ],
+    "downloads": [
+      {
+        "bytes": 14537751,
+        "error": null,
+        "files": 3,
+        "hf_dataset_id": "penfever/pymethods2test-v3-qwen3.5-122b-32k-traces",
+        "hf_urls_glob": [],
+        "revision": "223fe71"
+      }
+    ],
+    "rough_token_count_b": 0.002065828
+  },
+  "penfever-traces/qwen35-122b-32k/exp_rpt_stack-bash-v3": {
+    "allocated_tokens": 52865154,
+    "chat_steps": [
+      "processed-chat/penfever-traces/qwen35-122b-32k/exp_rpt_stack-bash-v3",
+      "normalized-chat/penfever-traces/qwen35-122b-32k/exp_rpt_stack-bash-v3"
+    ],
+    "downloads": [
+      {
+        "bytes": 496596903,
+        "error": null,
+        "files": 4,
+        "hf_dataset_id": "penfever/stack-bash-v3-qwen3.5-122b-32k-traces",
+        "hf_urls_glob": [],
+        "revision": "aaff562"
+      }
+    ],
+    "rough_token_count_b": 0.104256426
+  },
+  "penfever-traces/qwen35-122b-32k/exp_rpt_stack-junit-v6": {
+    "allocated_tokens": 1893758,
+    "chat_steps": [
+      "processed-chat/penfever-traces/qwen35-122b-32k/exp_rpt_stack-junit-v6",
+      "normalized-chat/penfever-traces/qwen35-122b-32k/exp_rpt_stack-junit-v6"
+    ],
+    "downloads": [
+      {
+        "bytes": 18771716,
+        "error": null,
+        "files": 3,
+        "hf_dataset_id": "penfever/stack-junit-v6-qwen3.5-122b-32k-traces",
+        "hf_urls_glob": [],
+        "revision": "1f86e0f"
+      }
+    ],
+    "rough_token_count_b": 0.003734717
+  },
+  "penfever-traces/qwen35-122b-32k/exp_rpt_stack-pytest-large": {
+    "allocated_tokens": 27210420,
+    "chat_steps": [
+      "processed-chat/penfever-traces/qwen35-122b-32k/exp_rpt_stack-pytest-large",
+      "normalized-chat/penfever-traces/qwen35-122b-32k/exp_rpt_stack-pytest-large"
+    ],
+    "downloads": [
+      {
+        "bytes": 261931094,
+        "error": null,
+        "files": 3,
+        "hf_dataset_id": "penfever/stack-pytest-large-qwen3.5-122b-32k-traces",
+        "hf_urls_glob": [],
+        "revision": "2bdaaf5"
+      }
+    ],
+    "rough_token_count_b": 0.053662212
+  },
+  "penfever-traces/qwen35-122b-32k/exp_rpt_stack-pytest-v2": {
+    "allocated_tokens": 2911969,
+    "chat_steps": [
+      "processed-chat/penfever-traces/qwen35-122b-32k/exp_rpt_stack-pytest-v2",
+      "normalized-chat/penfever-traces/qwen35-122b-32k/exp_rpt_stack-pytest-v2"
+    ],
+    "downloads": [
+      {
+        "bytes": 28765632,
+        "error": null,
+        "files": 3,
+        "hf_dataset_id": "penfever/stack-pytest-v2-qwen3.5-122b-32k-traces",
+        "hf_urls_glob": [],
+        "revision": "b51fd1a"
+      }
+    ],
+    "rough_token_count_b": 0.005742752
+  },
+  "penfever-traces/qwen35-122b-32k/exp_rpt_unitsyn-python-large": {
+    "allocated_tokens": 10420101,
+    "chat_steps": [
+      "processed-chat/penfever-traces/qwen35-122b-32k/exp_rpt_unitsyn-python-large",
+      "normalized-chat/penfever-traces/qwen35-122b-32k/exp_rpt_unitsyn-python-large"
+    ],
+    "downloads": [
+      {
+        "bytes": 143164384,
+        "error": null,
+        "files": 3,
+        "hf_dataset_id": "penfever/unitsyn-python-large-qwen3.5-122b-32k-traces",
+        "hf_urls_glob": [],
+        "revision": "a98a9ec"
+      }
+    ],
+    "rough_token_count_b": 0.020549689
+  },
+  "penfever-traces/qwen35-122b-32k/exp_rpt_unitsyn-python-v3": {
+    "allocated_tokens": 1060171,
+    "chat_steps": [
+      "processed-chat/penfever-traces/qwen35-122b-32k/exp_rpt_unitsyn-python-v3",
+      "normalized-chat/penfever-traces/qwen35-122b-32k/exp_rpt_unitsyn-python-v3"
+    ],
+    "downloads": [
+      {
+        "bytes": 15239041,
+        "error": null,
+        "files": 3,
+        "hf_dataset_id": "penfever/unitsyn-python-v3-qwen3.5-122b-32k-traces",
+        "hf_urls_glob": [],
+        "revision": "6dd375a"
+      }
+    ],
+    "rough_token_count_b": 0.002090785
+  },
+  "penfever-traces/qwen35-122b-32k/inferredbugs-sandboxes-verifier": {
+    "allocated_tokens": 37561434,
+    "chat_steps": [
+      "processed-chat/penfever-traces/qwen35-122b-32k/inferredbugs-sandboxes-verifier",
+      "normalized-chat/penfever-traces/qwen35-122b-32k/inferredbugs-sandboxes-verifier"
+    ],
+    "downloads": [
+      {
+        "bytes": 433210049,
+        "error": null,
+        "files": 41,
+        "hf_dataset_id": "penfever/inferredbugs-sandboxes-verifier-qwen3.5-122b-32k-traces",
+        "hf_urls_glob": [],
+        "revision": "dc2fb11"
+      }
+    ],
+    "rough_token_count_b": 0.074075655
+  },
+  "penfever-traces/qwen35-122b-32k/llm-verifier-freelancer": {
+    "allocated_tokens": 12907729,
+    "chat_steps": [
+      "processed-chat/penfever-traces/qwen35-122b-32k/llm-verifier-freelancer",
+      "normalized-chat/penfever-traces/qwen35-122b-32k/llm-verifier-freelancer"
+    ],
+    "downloads": [
+      {
+        "bytes": 278455982,
+        "error": null,
+        "files": 15,
+        "hf_dataset_id": "penfever/llm-verifier-freelancer-qwen3.5-122b-32k-traces",
+        "hf_urls_glob": [],
+        "revision": "d78bdd3"
+      }
+    ],
+    "rough_token_count_b": 0.025455591
+  },
+  "penfever-traces/qwen35-122b-32k/mix_h10_reward_binary-v2": {
+    "allocated_tokens": 5980670,
+    "chat_steps": [
+      "processed-chat/penfever-traces/qwen35-122b-32k/mix_h10_reward_binary-v2",
+      "normalized-chat/penfever-traces/qwen35-122b-32k/mix_h10_reward_binary-v2"
+    ],
+    "downloads": [
+      {
+        "bytes": 65576144,
+        "error": null,
+        "files": 11,
+        "hf_dataset_id": "penfever/mix-h10-reward-binary-v2-qwen3.5-122b-32k-traces",
+        "hf_urls_glob": [],
+        "revision": "e2f0f94"
+      }
+    ],
+    "rough_token_count_b": 0.011794598
+  },
+  "penfever-traces/qwen35-122b-32k/mix_h10_reward_proportional-v2": {
+    "allocated_tokens": 9902735,
+    "chat_steps": [
+      "processed-chat/penfever-traces/qwen35-122b-32k/mix_h10_reward_proportional-v2",
+      "normalized-chat/penfever-traces/qwen35-122b-32k/mix_h10_reward_proportional-v2"
+    ],
+    "downloads": [
+      {
+        "bytes": 105821507,
+        "error": null,
+        "files": 3,
+        "hf_dataset_id": "penfever/mix-h10-reward-proportional-v2-qwen3.5-122b-32k-traces",
+        "hf_urls_glob": [],
+        "revision": "4329b37"
+      }
+    ],
+    "rough_token_count_b": 0.019529381
+  },
+  "penfever-traces/qwen35-122b-32k/mix_h10_reward_staged-v2": {
+    "allocated_tokens": 10714514,
+    "chat_steps": [
+      "processed-chat/penfever-traces/qwen35-122b-32k/mix_h10_reward_staged-v2",
+      "normalized-chat/penfever-traces/qwen35-122b-32k/mix_h10_reward_staged-v2"
+    ],
+    "downloads": [
+      {
+        "bytes": 121123849,
+        "error": null,
+        "files": 3,
+        "hf_dataset_id": "penfever/mix-h10-reward-staged-v2-qwen3.5-122b-32k-traces",
+        "hf_urls_glob": [],
+        "revision": "fb05ae8"
+      }
+    ],
+    "rough_token_count_b": 0.021130308
+  },
+  "penfever-traces/qwen35-122b-32k/mix_h11_single_skill_only-v2": {
+    "allocated_tokens": 9450858,
+    "chat_steps": [
+      "processed-chat/penfever-traces/qwen35-122b-32k/mix_h11_single_skill_only-v2",
+      "normalized-chat/penfever-traces/qwen35-122b-32k/mix_h11_single_skill_only-v2"
+    ],
+    "downloads": [
+      {
+        "bytes": 102525668,
+        "error": null,
+        "files": 3,
+        "hf_dataset_id": "penfever/mix-h11-single-skill-only-v2-qwen3.5-122b-32k-traces",
+        "hf_urls_glob": [],
+        "revision": "2353a61"
+      }
+    ],
+    "rough_token_count_b": 0.018638225
+  },
+  "penfever-traces/qwen35-122b-32k/mix_h1_struggle_zone-v2": {
+    "allocated_tokens": 11865066,
+    "chat_steps": [
+      "processed-chat/penfever-traces/qwen35-122b-32k/mix_h1_struggle_zone-v2",
+      "normalized-chat/penfever-traces/qwen35-122b-32k/mix_h1_struggle_zone-v2"
+    ],
+    "downloads": [
+      {
+        "bytes": 135340918,
+        "error": null,
+        "files": 3,
+        "hf_dataset_id": "penfever/mix-h1-struggle-zone-v2-qwen3.5-122b-32k-traces",
+        "hf_urls_glob": [],
+        "revision": "d464a97"
+      }
+    ],
+    "rough_token_count_b": 0.023399333
+  },
+  "penfever-traces/qwen35-122b-32k/mix_h4_binary_easy": {
+    "allocated_tokens": 7696329,
+    "chat_steps": [
+      "processed-chat/penfever-traces/qwen35-122b-32k/mix_h4_binary_easy",
+      "normalized-chat/penfever-traces/qwen35-122b-32k/mix_h4_binary_easy"
+    ],
+    "downloads": [
+      {
+        "bytes": 81561225,
+        "error": null,
+        "files": 3,
+        "hf_dataset_id": "penfever/mix-h4-binary-easy-qwen3.5-122b-32k-traces",
+        "hf_urls_glob": [],
+        "revision": "17c5080"
+      }
+    ],
+    "rough_token_count_b": 0.015178084
+  },
+  "penfever-traces/qwen35-122b-32k/mix_h8_original_tests-v2": {
+    "allocated_tokens": 9772794,
+    "chat_steps": [
+      "processed-chat/penfever-traces/qwen35-122b-32k/mix_h8_original_tests-v2",
+      "normalized-chat/penfever-traces/qwen35-122b-32k/mix_h8_original_tests-v2"
+    ],
+    "downloads": [
+      {
+        "bytes": 109062924,
+        "error": null,
+        "files": 3,
+        "hf_dataset_id": "penfever/mix-h8-original-tests-v2-qwen3.5-122b-32k-traces",
+        "hf_urls_glob": [],
+        "revision": "109359a"
+      }
+    ],
+    "rough_token_count_b": 0.019273123
+  },
+  "penfever-traces/qwen35-122b-32k/nemotron-gym-agent-calendar": {
+    "allocated_tokens": 8338179,
+    "chat_steps": [
+      "processed-chat/penfever-traces/qwen35-122b-32k/nemotron-gym-agent-calendar",
+      "normalized-chat/penfever-traces/qwen35-122b-32k/nemotron-gym-agent-calendar"
+    ],
+    "downloads": [
+      {
+        "bytes": 88994436,
+        "error": null,
+        "files": 3,
+        "hf_dataset_id": "penfever/nemotron-gym-agent-calendar-qwen3.5-122b-32k-traces",
+        "hf_urls_glob": [],
+        "revision": "4803103"
+      }
+    ],
+    "rough_token_count_b": 0.016443889
+  },
+  "penfever-traces/qwen35-122b-32k/nemotron-gym-agent-workplace-v2": {
+    "allocated_tokens": 640759,
+    "chat_steps": [
+      "processed-chat/penfever-traces/qwen35-122b-32k/nemotron-gym-agent-workplace-v2",
+      "normalized-chat/penfever-traces/qwen35-122b-32k/nemotron-gym-agent-workplace-v2"
+    ],
+    "downloads": [
+      {
+        "bytes": 6781158,
+        "error": null,
+        "files": 3,
+        "hf_dataset_id": "penfever/nemotron-gym-agent-workplace-v2-qwen3.5-122b-32k-traces",
+        "hf_urls_glob": [],
+        "revision": "665c852"
+      }
+    ],
+    "rough_token_count_b": 0.001263654
+  },
+  "penfever-traces/qwen35-122b-32k/nemotron-gym-competitive-coding": {
+    "allocated_tokens": 10186198,
+    "chat_steps": [
+      "processed-chat/penfever-traces/qwen35-122b-32k/nemotron-gym-competitive-coding",
+      "normalized-chat/penfever-traces/qwen35-122b-32k/nemotron-gym-competitive-coding"
+    ],
+    "downloads": [
+      {
+        "bytes": 352881986,
+        "error": null,
+        "files": 3,
+        "hf_dataset_id": "penfever/nemotron-gym-competitive-coding-qwen3.5-122b-32k-traces",
+        "hf_urls_glob": [],
+        "revision": "1328098"
+      }
+    ],
+    "rough_token_count_b": 0.020088404
+  },
+  "penfever-traces/qwen35-122b-32k/nemotron-gym-identity-following-v2": {
+    "allocated_tokens": 7823574,
+    "chat_steps": [
+      "processed-chat/penfever-traces/qwen35-122b-32k/nemotron-gym-identity-following-v2",
+      "normalized-chat/penfever-traces/qwen35-122b-32k/nemotron-gym-identity-following-v2"
+    ],
+    "downloads": [
+      {
+        "bytes": 91206806,
+        "error": null,
+        "files": 46,
+        "hf_dataset_id": "penfever/nemotron-gym-identity-following-v2-qwen3.5-122b-32k-traces",
+        "hf_urls_glob": [],
+        "revision": "fd1e3ab"
+      }
+    ],
+    "rough_token_count_b": 0.015429027
+  },
+  "penfever-traces/qwen35-122b-32k/nemotron-gym-instruction-following-calendar": {
+    "allocated_tokens": 23864062,
+    "chat_steps": [
+      "processed-chat/penfever-traces/qwen35-122b-32k/nemotron-gym-instruction-following-calendar",
+      "normalized-chat/penfever-traces/qwen35-122b-32k/nemotron-gym-instruction-following-calendar"
+    ],
+    "downloads": [
+      {
+        "bytes": 276643817,
+        "error": null,
+        "files": 3,
+        "hf_dataset_id": "penfever/nemotron-gym-if-calendar-qwen3.5-122b-32k-traces",
+        "hf_urls_glob": [],
+        "revision": "3325e0b"
+      }
+    ],
+    "rough_token_count_b": 0.047062793
+  },
+  "penfever-traces/qwen35-122b-32k/nemotron-gym-instruction-following-structured": {
+    "allocated_tokens": 26875519,
+    "chat_steps": [
+      "processed-chat/penfever-traces/qwen35-122b-32k/nemotron-gym-instruction-following-structured",
+      "normalized-chat/penfever-traces/qwen35-122b-32k/nemotron-gym-instruction-following-structured"
+    ],
+    "downloads": [
+      {
+        "bytes": 292781311,
+        "error": null,
+        "files": 3,
+        "hf_dataset_id": "penfever/nemotron-gym-if-structured-qwen3.5-122b-32k-traces",
+        "hf_urls_glob": [],
+        "revision": "29ad1f4"
+      }
+    ],
+    "rough_token_count_b": 0.053001748
+  },
+  "penfever-traces/qwen35-122b-32k/nemotron-gym-instruction-following-v2": {
+    "allocated_tokens": 37669042,
+    "chat_steps": [
+      "processed-chat/penfever-traces/qwen35-122b-32k/nemotron-gym-instruction-following-v2",
+      "normalized-chat/penfever-traces/qwen35-122b-32k/nemotron-gym-instruction-following-v2"
+    ],
+    "downloads": [
+      {
+        "bytes": 572310174,
+        "error": null,
+        "files": 142,
+        "hf_dataset_id": "penfever/nemotron-gym-if-v2-qwen3.5-122b-32k-traces",
+        "hf_urls_glob": [],
+        "revision": "50b7f77"
+      }
+    ],
+    "rough_token_count_b": 0.07428787
+  },
+  "penfever-traces/qwen35-122b-32k/nemotron-gym-knowledge-mcqa": {
+    "allocated_tokens": 6957332,
+    "chat_steps": [
+      "processed-chat/penfever-traces/qwen35-122b-32k/nemotron-gym-knowledge-mcqa",
+      "normalized-chat/penfever-traces/qwen35-122b-32k/nemotron-gym-knowledge-mcqa"
+    ],
+    "downloads": [
+      {
+        "bytes": 128744289,
+        "error": null,
+        "files": 42,
+        "hf_dataset_id": "penfever/nemotron-gym-knowledge-mcqa-qwen3.5-122b-32k-traces",
+        "hf_urls_glob": [],
+        "revision": "2b7d29c"
+      }
+    ],
+    "rough_token_count_b": 0.013720694
+  },
+  "penfever-traces/qwen35-122b-32k/nemotron-gym-knowledge-openqa-v2": {
+    "allocated_tokens": 7166959,
+    "chat_steps": [
+      "processed-chat/penfever-traces/qwen35-122b-32k/nemotron-gym-knowledge-openqa-v2",
+      "normalized-chat/penfever-traces/qwen35-122b-32k/nemotron-gym-knowledge-openqa-v2"
+    ],
+    "downloads": [
+      {
+        "bytes": 108082668,
+        "error": null,
+        "files": 34,
+        "hf_dataset_id": "penfever/nemotron-gym-knowledge-openqa-v2-qwen3.5-122b-32k-traces",
+        "hf_urls_glob": [],
+        "revision": "193d379"
+      }
+    ],
+    "rough_token_count_b": 0.014134103
+  },
+  "penfever-traces/qwen35-122b-32k/nemotron-gym-knowledge-web-search-mcqa": {
+    "allocated_tokens": 2317652,
+    "chat_steps": [
+      "processed-chat/penfever-traces/qwen35-122b-32k/nemotron-gym-knowledge-web-search-mcqa",
+      "normalized-chat/penfever-traces/qwen35-122b-32k/nemotron-gym-knowledge-web-search-mcqa"
+    ],
+    "downloads": [
+      {
+        "bytes": 40100498,
+        "error": null,
+        "files": 3,
+        "hf_dataset_id": "penfever/nemotron-gym-knowledge-web-search-mcqa-qwen3.5-122b-32k-traces",
+        "hf_urls_glob": [],
+        "revision": "c68f454"
+      }
+    ],
+    "rough_token_count_b": 0.004570688
+  },
+  "penfever-traces/qwen35-122b-32k/nemotron-gym-math-advanced-calculations-v3": {
+    "allocated_tokens": 5483653,
+    "chat_steps": [
+      "processed-chat/penfever-traces/qwen35-122b-32k/nemotron-gym-math-advanced-calculations-v3",
+      "normalized-chat/penfever-traces/qwen35-122b-32k/nemotron-gym-math-advanced-calculations-v3"
+    ],
+    "downloads": [
+      {
+        "bytes": 54073683,
+        "error": null,
+        "files": 3,
+        "hf_dataset_id": "penfever/nemotron-gym-math-advanced-calculations-v3-qwen3.5-122b-32k-traces",
+        "hf_urls_glob": [],
+        "revision": "59f67dc"
+      }
+    ],
+    "rough_token_count_b": 0.010814422
+  },
+  "penfever-traces/qwen35-122b-32k/nemotron-gym-safety-v2": {
+    "allocated_tokens": 24735872,
+    "chat_steps": [
+      "processed-chat/penfever-traces/qwen35-122b-32k/nemotron-gym-safety-v2",
+      "normalized-chat/penfever-traces/qwen35-122b-32k/nemotron-gym-safety-v2"
+    ],
+    "downloads": [
+      {
+        "bytes": 293963054,
+        "error": null,
+        "files": 99,
+        "hf_dataset_id": "penfever/nemotron-gym-safety-v2-qwen3.5-122b-32k-traces",
+        "hf_urls_glob": [],
+        "revision": "21ee501"
+      }
+    ],
+    "rough_token_count_b": 0.048782107
+  },
+  "penfever-traces/qwen35-122b-32k/nemotron-math-oracle-filtered": {
+    "allocated_tokens": 23614694,
+    "chat_steps": [
+      "processed-chat/penfever-traces/qwen35-122b-32k/nemotron-math-oracle-filtered",
+      "normalized-chat/penfever-traces/qwen35-122b-32k/nemotron-math-oracle-filtered"
+    ],
+    "downloads": [
+      {
+        "bytes": 315596464,
+        "error": null,
+        "files": 82,
+        "hf_dataset_id": "penfever/nemotron-math-oracle-filtered-qwen3.5-122b-32k-traces",
+        "hf_urls_glob": [],
+        "revision": "17906c9"
+      }
+    ],
+    "rough_token_count_b": 0.04657101
+  },
+  "penfever-traces/qwen35-122b-32k/nl2bash-tasks-cleaned-oracle": {
+    "allocated_tokens": 2585046,
+    "chat_steps": [
+      "processed-chat/penfever-traces/qwen35-122b-32k/nl2bash-tasks-cleaned-oracle",
+      "normalized-chat/penfever-traces/qwen35-122b-32k/nl2bash-tasks-cleaned-oracle"
+    ],
+    "downloads": [
+      {
+        "bytes": 26689365,
+        "error": null,
+        "files": 9,
+        "hf_dataset_id": "penfever/nl2bash-tasks-cleaned-oracle-qwen3.5-122b-32k-traces",
+        "hf_urls_glob": [],
+        "revision": "3c5283c"
+      }
+    ],
+    "rough_token_count_b": 0.005098021
+  },
+  "penfever-traces/qwen35-122b-32k/selfinstruct-naive-sandboxes-2-verified": {
+    "allocated_tokens": 3783523,
+    "chat_steps": [
+      "processed-chat/penfever-traces/qwen35-122b-32k/selfinstruct-naive-sandboxes-2-verified",
+      "normalized-chat/penfever-traces/qwen35-122b-32k/selfinstruct-naive-sandboxes-2-verified"
+    ],
+    "downloads": [
+      {
+        "bytes": 37373122,
+        "error": null,
+        "files": 9,
+        "hf_dataset_id": "penfever/selfinstruct-naive-sandboxes-2-verified-qwen3.5-122b-32k-traces",
+        "hf_urls_glob": [],
+        "revision": "721ec85"
+      }
+    ],
+    "rough_token_count_b": 0.007461561
+  },
+  "superior-reasoning": {
+    "allocated_tokens": 3594385286,
+    "chat_steps": [
+      "processed-chat/superior-reasoning-sft",
+      "normalized-chat/superior-reasoning"
+    ],
+    "downloads": [
+      {
+        "bytes": 24769186832,
+        "error": null,
+        "files": 2,
+        "hf_dataset_id": "Alibaba-Apsara/Superior-Reasoning-SFT-gpt-oss-120b",
+        "hf_urls_glob": [
+          "Superior-Reasoning-SFT-gpt-oss-120b-stage1-train-data.jsonl",
+          "Superior-Reasoning-SFT-gpt-oss-120b-stage2-train-data.jsonl"
+        ],
+        "revision": "21b55a6"
+      }
+    ],
+    "rough_token_count_b": 7.088558993
+  },
+  "synthetic-1": {
+    "allocated_tokens": 1521205631,
+    "chat_steps": [
+      "processed-chat/synthetic-1",
+      "normalized-chat/synthetic-1"
+    ],
+    "downloads": [
+      {
+        "bytes": 26387278463,
+        "error": null,
+        "files": 113,
+        "hf_dataset_id": "PrimeIntellect/SYNTHETIC-1",
+        "hf_urls_glob": [],
+        "revision": "f08fe8c"
+      }
+    ],
+    "rough_token_count_b": 5.448340497
+  },
+  "synthetic-misconceptions-conversations": {
+    "allocated_tokens": 1704859,
+    "chat_steps": [
+      "processed-chat/synthetic-misconceptions-conversations",
+      "normalized-chat/synthetic-misconceptions-conversations"
+    ],
+    "downloads": [
+      {
+        "bytes": 4759015,
+        "error": null,
+        "files": 1,
+        "hf_dataset_id": "open-athena/synthetic-misconceptions-conversations",
+        "hf_urls_glob": [
+          "train.parquet"
+        ],
+        "revision": "aac8a4cb74bd999ffce39944058a136c27460cbb"
+      }
+    ],
+    "rough_token_count_b": 0.001704859
+  },
+  "ultrachat-persona-conversations": {
+    "allocated_tokens": 163778531,
+    "chat_steps": [
+      "raw/ultrachat-persona-conversations",
+      "raw/ultrachat-200k-train-sft",
+      "processed-chat/ultrachat-persona-conversations",
+      "normalized-chat/ultrachat-persona-conversations"
+    ],
+    "downloads": [
+      {
+        "bytes": 864881387,
+        "error": null,
+        "files": 1,
+        "hf_dataset_id": "open-athena/ultrachat-persona-conversations",
+        "hf_urls_glob": [
+          "train.parquet"
+        ],
+        "revision": "576ad1516d49b9837605a70908367aa076c5874a"
+      },
+      {
+        "bytes": 732028119,
+        "error": null,
+        "files": 3,
+        "hf_dataset_id": "HuggingFaceH4/ultrachat_200k",
+        "hf_urls_glob": [
+          "data/train_sft-00000-of-00003-a3ecf92756993583.parquet",
+          "data/train_sft-00001-of-00003-0a1804bcb6ae68c6.parquet",
+          "data/train_sft-00002-of-00003-ee46ed25cfae92c6.parquet"
+        ],
+        "revision": "8049631c405ae6576f93f445c6b8166f76f5505a"
+      }
+    ],
+    "rough_token_count_b": 0.324455701
+  },
+  "wildchat-glm53-format-completions": {
+    "allocated_tokens": 9506138,
+    "chat_steps": [
+      "processed-chat/wildchat-glm53-format-completions",
+      "normalized-chat/wildchat-glm53-format-completions"
+    ],
+    "downloads": [
+      {
+        "bytes": 11190254,
+        "error": null,
+        "files": 1,
+        "hf_dataset_id": "open-athena/wildchat-glm53-format-completions",
+        "hf_urls_glob": [
+          "data/train-*.parquet"
+        ],
+        "revision": "e042ff3eed9c6f5fd0d2b4773c1a35fe49619769"
+      }
+    ],
+    "rough_token_count_b": 0.009506138
+  }
+}

@@ -96,7 +96,7 @@ are added.
 | Directory | Remote | Ref | Role |
 |---|---|---|---|
 | `spec-experiments` | `git@github.com:atutej/spec-experiments.git` | `main` | Pipelines (experiments by family), `env.sh`, workspace setup, docs |
-| `speculators` | `git@github.com:atutej/speculators.git` (`upstream`: `marin-community/speculators`) | `nemotron-terminal-preset` | Speculative-decoding library: training, `regenerate-responses`, `prepare-data`, `scripts/launch_vllm.py`, plus the `hs_connectors` sub-package in `speculators/hs_connectors/` |
+| `speculators` | `git@github.com:atutej/speculators.git` (`upstream`: `marin-community/speculators`) | `grug-dspark-gate` (= `nemotron-terminal-preset` + Grug support for DFlash/DSpark: gated verifier final norm, `grug_moe` config registration) | Speculative-decoding library: training, `regenerate-responses`, `prepare-data`, `scripts/launch_vllm.py`, plus the `hs_connectors` sub-package in `speculators/hs_connectors/` |
 
 The `speculators` branch is upstream `42ed6ff` plus the user's commits. It currently has one
 extra commit, which adds the `nemotron-terminal` dataset preset. Its working tree should stay

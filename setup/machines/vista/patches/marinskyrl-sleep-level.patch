@@ -1,0 +1,19 @@
+diff --git a/skyrl-train/skyrl_train/inference_engines/vllm/vllm_engine.py b/skyrl-train/skyrl_train/inference_engines/vllm/vllm_engine.py
+index 8b68150a..0df946e8 100644
+--- a/skyrl-train/skyrl_train/inference_engines/vllm/vllm_engine.py
++++ b/skyrl-train/skyrl_train/inference_engines/vllm/vllm_engine.py
+@@ -1786,7 +1786,13 @@ class AsyncVLLMInferenceEngine(InferenceEngineInterface):
+         # TODO(team): remove once vllm fixes this
+         # otherwise waking it up will output gibberish: https://github.com/vllm-project/vllm/issues/17103
+         await self.reset_prefix_cache()
+-        level = 1 if self._is_lora else kwargs.get("level", 2)
++        # Level 2 discards the model weights; the policy-to-engine weight sync refills only the TARGET model. A speculative-decoding draft (a separate set of weights in the
++        # engine) would come back uninitialised and almost never be accepted (accept length 1.0 in the 2026-10-14 colocated DSpark runs). Level 1 offloads every weight to host
++        # memory and restores it on wake. SKYRL_VLLM_SLEEP_LEVEL overrides the level for EVERY caller: engine creation puts the engines to sleep with an explicit level=2
++        # (create_ray_wrapped_inference_engines), which discarded the draft before the first wake-up even when only the default of the later sleeps was changed.
++        env_level = os.environ.get("SKYRL_VLLM_SLEEP_LEVEL")
++        level = int(env_level) if env_level else (1 if self._is_lora else kwargs.get("level", 2))
++        logger.info(f"AsyncVLLMInferenceEngine.sleep: level={level} (explicit={kwargs.get('level')}, SKYRL_VLLM_SLEEP_LEVEL={env_level})")
+         await self.llm.sleep(level=level)
+ 
+     async def init_weight_update_communicator(

@@ -14,3 +14,11 @@ vllm            https://github.com/marin-community/vllm.git  39e62869693c46402b1
 # LLaMA-Factory (upstream, installed from source into the `sft` env). Pinned commit: main on 2026-09-28, 72 commits after v0.9.5.
 # Not OpenThoughts-Agent's fork: see pipelines/sft/README.md.
 llamafactory    https://github.com/hiyouga/LlamaFactory.git  ce9dc9e072f80fa3abe0989d4ab90da25f083438
+# RL stack for the rl_speculation family. MarinSkyRL is pinned to 5de48d34 (2026-10-09): Megatron trainer (FSDP removed in bd9a59f2, 09-25), vllm 39e62869
+# (torch 2.13, cu132, the same build as our serving pin), and still the old Harbor/rollout schema that OpenThoughts-Agent 3bd1917e emits. Main after
+# c96f6d25 (10-09, shared rollout engine) rejects the launcher's terminal_bench_config keys. The 2026-09 Vista runs used a51fefd4 (FSDP, vllm fa50698a, no DSpark).
+MarinSkyRL        https://github.com/marin-community/MarinSkyRL.git     5de48d34fe4e65d00304f6e6e54a847b2068083c
+# Local MarinSkyRL patch (not committed upstream): setup/machines/vista/patches/marinskyrl-sleep-level.patch, makes the engine sleep level configurable (SKYRL_VLLM_SLEEP_LEVEL).
+# Launcher (hpc.launch). Vista needs local edits: setup/machines/vista/patches/openthoughts-agent-tacc.patch
+# (apply with `git -C OpenThoughts-Agent apply`); the patch holds account-specific values, so it is not committed.
+OpenThoughts-Agent https://github.com/open-thoughts/OpenThoughts-Agent.git 3bd1917e62c9d03d73063b433f5c442c279c0563

@@ -71,7 +71,7 @@ def sources_arg(args) -> list[str] | None:
     """--sources-file (one source per line) or --sources; None means every source in the mixture spec."""
     if getattr(args, "sources_file", None):
         return [l.strip() for l in Path(args.sources_file).read_text().splitlines() if l.strip()]
-    return args.sources
+    return getattr(args, "sources", None)   # `select` has no --sources: None means every source
 
 
 def selected_sources(only: list[str] | None) -> dict[str, int]:

@@ -5,7 +5,7 @@
 set -uo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 : "${SEQ_LENGTH:?set SEQ_LENGTH, e.g. SEQ_LENGTH=32768 bash submit_write.sh}"
-cmd=(sbatch --parsable -p gg -t 2-00:00:00 -J "datakit-write-$SEQ_LENGTH" --export=ALL "$HERE/write.sbatch")
+cmd=(sbatch --parsable -p gg -A "${ACCOUNT:-ASC26088}" -t 2-00:00:00 -J "datakit-write-$SEQ_LENGTH" --export=ALL "$HERE/write.sbatch")
 if [[ "${1:-}" == "--dry-run" ]]; then echo "${cmd[@]}"; exit 0; fi
 command -v sbatch >/dev/null || { echo "sbatch not found (login node?)" >&2; exit 1; }
 mkdir -p /scratch/09749/atutej/marin_speculator/logs/slurm

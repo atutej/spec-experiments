@@ -70,12 +70,15 @@ def run_subset(name: str, rows: list[dict], args) -> tuple[dict, list[dict]]:
     wall = time.time() - t0
     current = scrape(args.target)
 
-    spec = extract_spec_decode_metrics(current, baseline_metrics=baseline)
+    if args.no_spec:  # control arm: a server without a draft; only the throughput columns are meaningful
+        spec = {"num_drafts": 0.0, "num_draft_tokens": 0.0, "num_accepted_tokens": 0.0, "acceptance_length": 1.0}
+    else:
+        spec = extract_spec_decode_metrics(current, baseline_metrics=baseline)
     ok = [r for r in results if r and "error" not in r]
     errors = [r["error"] for r in results if r and "error" in r]
     if errors and len(errors) > 0.02 * len(rows):
         sys.exit(f"[{name}] {len(errors)} of {len(rows)} requests failed, e.g. {errors[0]}")
-    if spec["num_drafts"] <= 0:
+    if spec["num_drafts"] <= 0 and not args.no_spec:
         sys.exit(f"[{name}] the server reported no speculative-decoding drafts: it is not serving a draft "
                  f"(check --speculative-config and {args.target}/metrics)")
     toks = sum(r["completion_tokens"] for r in ok)
@@ -102,6 +105,7 @@ def main():
     ap.add_argument("--concurrency", type=int, default=32)
     ap.add_argument("--request-timeout", type=float, default=3600)
     ap.add_argument("--wandb-name", default=None, help="log the results to W&B under this run name (entity/project from WANDB_*)")
+    ap.add_argument("--no-spec", action="store_true", help="the server runs WITHOUT a draft (control arm): skip the drafts check, report throughput only")
     ap.add_argument("--checkpoint", default="", help="draft checkpoint path, recorded in the results")
     args = ap.parse_args()
 

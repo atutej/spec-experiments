@@ -235,3 +235,26 @@ Decided: no `prepare` stage in the training chain. The Datakit command ends in a
 - Disk and download volume for the full mix (tens of TB?). Estimate in step 5 before downloading.
 - GB200 queue wait and the QOS time limit.
 - No decontamination in the source data: the drafter may see eval items. Harmless for speed, but note it if drafter evals reuse benchmark prompts.
+
+## Full run: setup (2026-10-14 night). Scripts ready and dry-run checked; the data write is queued; training NOT submitted
+- **Datakit selection done:** `selection.json` = 6,480,049 rows from all 203 sources, 53.689B tokens, none below allocation (the resume job 1071607 had fetched everything; its last `select` step had a bug,
+  `sources_arg` read an `args.sources` the `select` command does not define, now fixed).
+- **Write job:** `data/submit_write.sh` (now `-A ASC26088`, partition gg, 2 days) -> job 1072916, queued 2026-10-14 ~22:55. Never run at this scale (tested on 3 small sources and, with `--allow-partial`, on the 100k sample).
+  Estimates in step 6 above: about 860 GB output, 33 core-hours of tokenizing. Resubmitting continues where it stopped.
+- **Training scripts** (copied from the tested 100k experiment): `settings.sh`, `draft_config.json`, `vista/{run.sh,run.sbatch,submit_chain.sh}`. Changes: data and work dirs for the full mix; the run is a TOKEN BUDGET
+  (`TOKEN_BUDGET`, default 12.5B tokens = 231,481 steps at 54k tokens/step, about 32.8 h at the 100k run's 0.51 s/step, i.e. 3 jobs) with `--max-steps` so the LR decays linearly over exactly that many steps and an early stop is annealed;
+  `--train-data-ratio 0.999` (the default 0.9 would hold out 5.4B tokens: hours of validation at the end; this holds out about 6.5k rows, about 54M tokens); `--checkpoint-freq 0.01` (every 1% of the epoch, about 85 min,
+  the resume granularity); no automatic Hugging Face upload in chain jobs (upload the finished run by hand: `HF_REPO=auto bash vista/run.sh upload`); `SMOKE=1` replaces the old "MAX_STEPS set means smoke" convention.
+- **Chain:** `JOBS=3 AFTER=<write job id> bash vista/submit_chain.sh` (first job `afterok` the write, later jobs `afterany`; account ASC26088, partition gb, reservation CGAI-gb). Dry run checked 2026-10-14.
+- **Not tested / caveats:** the write at scale; the 0.51 s/step and 54k tokens/step come from the 100k run (one node, 2 GPUs serving hidden states + 2 training) and may differ on the full mix (longer rows, more varied families);
+  validation happens only at the end of the run (the trainer validates per epoch), so mid-run monitoring is the per-step training accept length; a finished budget still starts later chain jobs (server start, about 5 min) before they exit.
+- **Scheduling conflict:** a 3-job chain occupies one reserved gb node for about 33 h and uses all 3 of the user's QOS gb submission slots (an RL job or an idev needs one), so it blocks other gb submissions, 2-node RL runs included,
+  while it drains. Submit it deliberately.
+
+### Decision (2026-10-14 night): the budget is the full epoch; training starts only after the RL pipeline is confirmed working with the drafter
+- Budget: one epoch over the whole mixture (`TOKEN_BUDGET=full`, the default in `settings.sh`), as close to Grug's own SFT as we can get. Assumption to check: that Grug's SFT saw the full allocation once (53.7B tokens before
+  the 32,768 clip; about 47.6B after it, since 11.4% of the allocation is clipped away). Estimate: about 880k steps, about 125 h, 11 jobs of 12 h at the 100k run's 0.51 s/step (not measured at this scale). The 12.5B-token
+  budget in the section above is still available as `TOKEN_BUDGET=12500000000`.
+- The epoch is too long to queue at once (3 gb submissions per user at a time), so `vista/drive_chain.sh` submits one 12 h job at a time from a login node (tmux/nohup) until the trainer's `epoch0_end` checkpoint
+  link appears; it resumes from checkpoints, stops after two jobs that die within 10 minutes, and never uploads. Only its `--dry-run` path has been exercised.
+- Launch order (decided by the user): write job 1072916 -> wait for the RL pipeline to be confirmed with the drafter -> then `AFTER=<write job> bash vista/drive_chain.sh` in tmux. Nothing is submitted for training yet.

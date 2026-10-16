@@ -48,7 +48,7 @@ TOKEN_BUDGET=${TOKEN_BUDGET:-full}                  # "full" (one epoch) or a nu
 if [[ "$TOKEN_BUDGET" == full ]]; then MAX_STEPS=${MAX_STEPS:-}; else MAX_STEPS=${MAX_STEPS:-$((TOKEN_BUDGET / TOKENS_PER_STEP))}; fi   # empty: the trainer runs the epoch and decays the LR over it
 TRAIN_DATA_RATIO=${TRAIN_DATA_RATIO:-0.999}      # held-out fraction for the end-of-run validation: the trainer's default of 0.9 would hold out 5.4B tokens (hours of validation)
 SAVE_TOTAL_LIMIT=${SAVE_TOTAL_LIMIT:-3}                         # step checkpoints kept (checkpoint-<step>/, about 1 GB each)
-CKPT_FREQ=${CKPT_FREQ:-0.01}                     # a checkpoint every 1% of the EPOCH (about 8.8k steps of a 880k-step epoch, about 75 min): the resume granularity of the chain
+CKPT_FREQ=${CKPT_FREQ:-0.001}                    # a checkpoint every 0.1% of the EPOCH (about 880 steps of a 880k-step epoch, about 7.5 min; a save took 1-2 s in the smoke test, under 0.5% of the time): a stop at the 12 h limit loses at most that much
 SMOKE=${SMOKE:-0}                                # SMOKE=1: no W&B, no upload
 
 # ---- metric logging (the trainer's --logger) ----

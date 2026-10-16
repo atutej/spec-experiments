@@ -1,6 +1,7 @@
 #!/bin/bash
 # Submit the Grug full-mixture drafter chain (run from a LOGIN node: sbatch is refused on compute nodes).
 #   JOBS=3 AFTER=<write job id> bash submit_chain.sh [--dry-run]     JOBS resumable `train` jobs, each after the previous (afterany: a job cut by its 12 h limit still hands over)
+#   DEP_TYPE=afterany JOBS=2 AFTER=<running train job id> bash submit_chain.sh    queue the next jobs behind a train job that will hit its 12 h limit (TIMEOUT never satisfies the default afterok)
 #   bash submit_chain.sh [--dry-run] upload                          the upload stage alone (HF_REPO=auto), by hand once the run is finished
 # One job on a gb node of the CGAI-gb reservation (common/slurm.sh), 12 h (the gb QOS maximum; at most 3 submitted jobs per user, an idev counts as one).
 # `train` resumes from $CKPT_DIR, so a job that hits its time limit is continued by submitting again: `AFTER=<jobid> bash submit_chain.sh train`.
@@ -35,10 +36,10 @@ for s in "${STAGES[@]}"; do
     [[ -z "$res" ]] || cmd+=("$res")
     if [[ -n "$prev" ]]; then
         # The first job waits for AFTER (the write job) with afterok: a failed write must not start training. Later jobs use afterany: a job that hits its time limit (TIMEOUT) still hands over.
-        if [[ "$prev" == "${AFTER:-}" ]]; then cmd+=(--dependency="afterok:$prev"); else cmd+=(--dependency="afterany:$prev"); fi
+        if [[ "$prev" == "${AFTER:-}" ]]; then cmd+=(--dependency="${DEP_TYPE:-afterok}:$prev"); else cmd+=(--dependency="afterany:$prev"); fi
     fi
     # shellcheck disable=SC2206  # comma-joined stages become separate arguments of run.sh on purpose
-    cmd+=("$HERE/run.sbatch" ${s//,/ })
+    cmd+=("$HERE/${RUN_SBATCH:-run.sbatch}" ${s//,/ })
     if [[ $DRY -eq 1 ]]; then echo "${cmd[*]}"; prev="<job-$s>"; continue; fi
     prev=$(submit "${cmd[@]}") || { echo "sbatch failed for stage $s." >&2; exit 1; }
     echo "$s: job $prev (partition gb, reservation ${RESERVATION-})"

@@ -1,0 +1,15 @@
+# targetgen drafter: job accounting (sacct) and the final lines of the two regeneration logs
+
+## sacct
+JobID                         JobName  Partition      State    Elapsed   NNodes 
+------------ ------------------------ ---------- ---------- ---------- -------- 
+1075247           dspark-grugon-write         gb  COMPLETED   00:09:41        1 
+1075248           dspark-grugon-regen         gb  COMPLETED   10:14:45        2 
+1075249           dspark-grugon-train         gb  COMPLETED   03:02:50        2 
+
+## regeneration log, shard 0 (last line)
+[shard 0] done: {'gen_tokens': 616062162, 'requests': 349648, 'rows': 135000, 'errors': 0, 'capped': 6741, 'complete': 127682, 'total_len': 577, 'skipped': 0} in 535.9 min (4.20 rows/s, 19,158 gen tok/s)
+
+## regeneration log, shard 1 (last line)
+[shard 1] done: {'gen_tokens': 613383048, 'requests': 348221, 'rows': 135000, 'errors': 0, 'capped': 6703, 'complete': 127751, 'total_len': 546, 'skipped': 0} in 610.0 min (3.69 rows/s, 16,760 gen tok/s)
+

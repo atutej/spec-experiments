@@ -1,0 +1,15 @@
+# Training-token inflation of the regenerate-responses output layout (3,000-row pilot, runs/rl_speculation/regen_test/parts)
+# command: python tools/boundary_layout_inflation.py --parts-dir <parts>
+rows 3000, generations 8082 (2.69 per row)
+training tokens: one row per conversation 23.6M (7,883 per conversation); one row per generation 90.6M (30,190 per conversation); ratio x3.83
+multi-turn rows only: x10.58
+
+# Round trip of dataset rows -> chat messages + tools -> chat template (500 random rows, seed 0)
+# command: python tools/rows_to_messages.py check --dataset <Datakit dataset> --num 500
+[transformers] Ignoring clean_up_tokenization_spaces=True for BPE tokenizer TokenizersBackend. The clean_up_tokenization post-processing step is designed for WordPiece tokenizers and is destructive for BPE (it strips spaces before punctuation). Set clean_up_tokenization_spaces=False to suppress this warning, or set clean_up_tokenization_spaces_for_bpe_even_though_it_will_corrupt_output=True to force cleanup anyway.
+round trip exact: 492/500 = 98.4%; failures by kind: {'differs': 8}
+  example: (3280616, 'differs at char 131718: rendered \'(the module-level decorators):\' vs original \'(the module-level decorators):<tool_call>\\n{"name": "str_replace_editor\'')
+  example: (5917229, 'differs at char 111705: rendered \'e update the hanning function:\' vs original \'e update the hanning function:<tool_call>\\n{"name": "str_replace_editor\'')
+  example: (678327, 'differs at char 126625: rendered \'at the complete modified file:\' vs original \'at the complete modified file:<tool_call>\\n{"name": "str_replace_editor\'')
+  example: (427185, 'differs at char 124929: rendered \'ng, and options type checking.\' vs original \'ng, and options type checking.<tool_call>\\n{"name": "bash", "arguments"\'')
+  example: (5906721, 'differs at char 128016: rendered \'end_header_id|>\\n<tool_response><tool_response name="execute_bash">====\' vs original \'end_header_id|>\\n<tool_response name="execute_bash">===================\'')

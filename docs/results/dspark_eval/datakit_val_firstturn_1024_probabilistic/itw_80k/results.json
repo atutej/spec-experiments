@@ -1,0 +1,46 @@
+{
+  "config": {
+    "checkpoint": "<workspace>/runs/eval_ckpts/full_step80813",
+    "model": "open-athena/Grug-67B-A2B-Datakit-SFT-262K-2026.09.21",
+    "max_tokens": 4096,
+    "temperature": 1.0,
+    "top_p": 1.0,
+    "top_k": -1,
+    "seed": 0,
+    "concurrency": 16,
+    "prompts_dir": "<workspace>/runs/val_prompts_1024",
+    "prompts_manifest": {
+      "first_turn.jsonl": {
+        "rows": 1024,
+        "sha256": "a3e0d3555f436f944d9f10dedd2fe1a00a4f00533fce6857c12cdd9fa99c3e23"
+      }
+    }
+  },
+  "results": [
+    {
+      "num_drafts": 525753.0,
+      "num_draft_tokens": 4206024.0,
+      "num_accepted_tokens": 1115514.0,
+      "acceptance_length": 3.121745382337333,
+      "acceptance_at_pos_0": 0.7067406177425521,
+      "acceptance_at_pos_1": 0.48392305892691057,
+      "acceptance_at_pos_2": 0.3281807236477966,
+      "acceptance_at_pos_3": 0.22325312456609853,
+      "acceptance_at_pos_4": 0.15317458958864713,
+      "acceptance_at_pos_5": 0.10483630145714813,
+      "acceptance_at_pos_6": 0.07209659288677382,
+      "acceptance_at_pos_7": 0.04954037352140644,
+      "subset": "first_turn",
+      "requests": 1024,
+      "failed": 0,
+      "completion_tokens": 1640648,
+      "completion_tokens_mean": 1602.1953125,
+      "wall_s": 381.76178216934204,
+      "output_tokens_per_s": 4297.570046632485,
+      "finish_reasons": {
+        "stop": 818,
+        "length": 206
+      }
+    }
+  ]
+}

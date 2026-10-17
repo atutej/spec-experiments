@@ -1,0 +1,12 @@
+{
+ "files": {
+  "first_turn.jsonl": {
+   "rows": 1024,
+   "sha256": "a3e0d3555f436f944d9f10dedd2fe1a00a4f00533fce6857c12cdd9fa99c3e23"
+  }
+ },
+ "source": "validation rows [6464687, 6471159) of /scratch/09749/atutej/marin_datakit/dataset_seq32768",
+ "seed": 0,
+ "max_prompt_tokens": 8000,
+ "skipped_while_sampling": 139
+}

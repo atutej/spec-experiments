@@ -1,0 +1,14 @@
+{
+ "files": {
+  "first_turn.jsonl": {
+   "rows": 1024,
+   "sha256": "efc1df04613559df89ef421182b24f65e5b6dff8b07b99979d71b69ca49a1ee9"
+  }
+ },
+ "source": "open-athena/Nemotron-RL-Ultra-RLVR1-Cleaned-v3-2026-09-30 data/train.parquet (84403 rows)",
+ "seed": 0,
+ "chat_template": "model default (Reasoning: /think); add_generation_prompt=True",
+ "skipped_over_max_prompt_tokens": 0,
+ "render_failures": {},
+ "tools": "from extra_info.nemotron_ultra.request_json, passed as tools="
+}

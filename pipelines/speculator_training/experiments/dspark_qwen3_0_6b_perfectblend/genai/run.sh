@@ -1,5 +1,5 @@
 #!/bin/bash
-# Online DSpark training for Qwen3-0.6B on Open-PerfectBlend, with on-policy regeneration.
+# Online DSpark training for Qwen3-0.6B on Open-PerfectBlend, with targetgen regeneration.
 # DSpark settings follow the official examples/train/dspark_qwen3_0_6b_sharegpt_online.sh;
 # this script adds a generation step so the training data is Qwen3-0.6B's own output:
 #
@@ -118,7 +118,7 @@ stop_master() {
 cleanup() { stop_server; stop_master; }
 trap cleanup EXIT
 
-# Step 1: On-policy regeneration with a plain vLLM server (not the hidden-state server)
+# Step 1: Targetgen regeneration with a plain vLLM server (not the hidden-state server)
 echo "=== Step 1: Regenerating $DATASET responses with $MODEL ==="
 use_env vllm
 start_server "$ALL_GPUS" "$LOG_DIR/regen_vllm.log" \

@@ -1,0 +1,40 @@
+{
+  "config": {
+    "checkpoint": "",
+    "model": "open-athena/Grug-67B-A2B-Datakit-SFT-262K-2026.09.21",
+    "max_tokens": 4096,
+    "temperature": 1.0,
+    "top_p": 1.0,
+    "top_k": -1,
+    "seed": 0,
+    "concurrency": 16,
+    "prompts_dir": "<workspace>/runs/r2egym_prompts_1024",
+    "prompts_manifest": {
+      "first_turn": {
+        "prompts": 1024,
+        "sha256": "4baf3f9b7c4f540532add8e404f2e11f58327a2bf30a005a6cccc055e0e4d248",
+        "prompt_tokens_median": 973,
+        "prompt_tokens_max": 1462
+      }
+    }
+  },
+  "results": [
+    {
+      "num_drafts": 0.0,
+      "num_draft_tokens": 0.0,
+      "num_accepted_tokens": 0.0,
+      "acceptance_length": 1.0,
+      "subset": "first_turn",
+      "requests": 1024,
+      "failed": 0,
+      "completion_tokens": 988540,
+      "completion_tokens_mean": 965.37109375,
+      "wall_s": 478.3990707397461,
+      "output_tokens_per_s": 2066.350167594234,
+      "finish_reasons": {
+        "stop": 867,
+        "length": 157
+      }
+    }
+  ]
+}

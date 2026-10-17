@@ -1,0 +1,17 @@
+{
+ "files": {
+  "first_turn.jsonl": {
+   "rows": 833,
+   "sha256": "069ffa862d88d72662500a2db97a5448db564a58badbe594e8f020a72375e1d3"
+  },
+  "later_turn.jsonl": {
+   "rows": 191,
+   "sha256": "3545a3ab0305afbcec134e362b9591c2a239272b354daaba898640248083c70a"
+  }
+ },
+ "source": "validation rows [6464687, 6471159) of <scratch>/marin_datakit/dataset_seq32768",
+ "turns": "random",
+ "seed": 0,
+ "max_prompt_tokens": 28000,
+ "skipped_while_sampling": 84
+}

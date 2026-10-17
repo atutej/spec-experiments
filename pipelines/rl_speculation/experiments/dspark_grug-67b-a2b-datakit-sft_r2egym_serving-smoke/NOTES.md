@@ -21,7 +21,7 @@ streams. The only difference is `--speculative-config {method: dspark, num_specu
 - Prompts are R2E-Gym instruction first turns, about 900 tokens each. RL contexts reach 49k and have many turns; Luke measured 2.15 tokens/step for
   prompts under 16k and 2.55 above 40k on his 64k Snowball (Jupiter GH200, EAGLE-3, adapted draft; issue #9079).
 - Not a measured result from our setup until run. Luke's numbers are the reference, not a target we have met.
-- The drafter was trained on offline Datakit text, and its validation accept length (2.926, teacher-forced) is not comparable to rollout accept length.
+- The drafter was trained on itw Datakit text, and its validation accept length (2.926, teacher-forced) is not comparable to rollout accept length.
 - No R2E-Gym adaptation and no agent system prompt.
 
 ## Run

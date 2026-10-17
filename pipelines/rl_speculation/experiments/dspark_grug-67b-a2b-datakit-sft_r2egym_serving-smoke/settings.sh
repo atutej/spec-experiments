@@ -2,7 +2,7 @@
 # Override from the environment, e.g. MAX_PROMPTS=8 MAX_TOKENS=512 bash vista/run.sh dspark
 MODEL="open-athena/Grug-67B-A2B-Datakit-SFT-262K-2026.09.21"
 # The drafter: a local checkpoint dir (speculators format, config.json + weights). The published copy is
-# atutej/dspark_grug-67b-a2b-datakit-sft_datakit-sft-mix-100k_offpolicy-20261014 (download it and point DRAFT at the folder).
+# atutej/dspark_grug-67b-a2b-datakit-sft_datakit-sft-mix-100k_itw-20261014 (download it and point DRAFT at the folder).
 DRAFT=${DRAFT:-$PROJECT_ROOT/runs/grug_dspark_100k/checkpoints/0}
 NUM_SPEC_TOKENS=${NUM_SPEC_TOKENS:-8}            # the drafter's block size
 # The fork's Grug GPU path needs TP=1; DP x expert-parallel over all GPUs, like the RL engines (one DP4 x EP4 engine per node).

@@ -133,7 +133,7 @@ def main():
             counts.append(spec[f"acceptance_at_pos_{i}"] * spec["num_drafts"])
             i += 1
         pooled["pos"] = [a + b for a, b in zip_longest(pooled["pos"], counts, fillvalue=0.0)]
-    if len(per_subset) > 1:
+    if len(per_subset) > 1 and pooled["num_drafts"] > 0:   # no pooled row for the no-draft arm (nothing to pool; it crashed here)
         d = pooled["num_drafts"]
         allrow = {"subset": "all", "num_drafts": d, "num_draft_tokens": pooled["num_draft_tokens"],
                   "num_accepted_tokens": pooled["num_accepted_tokens"], "acceptance_length": 1 + pooled["num_accepted_tokens"] / d}

@@ -1,0 +1,13 @@
+{
+ "tasks_dir": "<scratch>/tasks/repo-29-DCAgent%2Fr2egym-patched-full__revision-40-cb071d2678ba02ccc7c591181788546b478bd0ad",
+ "model": "open-athena/Grug-67B-A2B-Datakit-SFT-262K-2026.09.21",
+ "seed": 0,
+ "files": {
+  "first_turn": {
+   "prompts": 1024,
+   "sha256": "4baf3f9b7c4f540532add8e404f2e11f58327a2bf30a005a6cccc055e0e4d248",
+   "prompt_tokens_median": 973,
+   "prompt_tokens_max": 1462
+  }
+ }
+}

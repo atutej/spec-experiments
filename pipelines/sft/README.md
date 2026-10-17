@@ -1,7 +1,7 @@
 # SFT pipeline (planned, not built yet)
 
 Fine-tune a base model on a Hugging Face dataset. First goal: SFT Qwen3-0.6B on the Nemotron-Terminal 100k sample, then rerun the
-off-policy drafter experiment (`pipelines/speculator_training`) with that checkpoint as the target model (a new experiment folder
+itw drafter experiment (`pipelines/speculator_training`) with that checkpoint as the target model (a new experiment folder
 there, with the target path as a setting). SFT is kept apart from speculator training in the workspace: its own pipeline, its own
 conda env.
 
@@ -30,7 +30,7 @@ conda env.
   token IDs equal HF `apply_chat_template` in 4,356 (the other 8 differ only by `\n\n</think>` vs `\n</think>` in the last turn's own
   thinking); the loss starts exactly at the end of HF's generation prompt (4,363 of 4,364; one example not examined) and runs to the
   end, through `<|im_end|>\n`. Earlier turns' thinking is stripped, no empty think tags are added.
-- **Scope:** off-policy rerun only for now. **W&B project/naming:** to be decided after the rest is done.
+- **Scope:** itw rerun only for now. **W&B project/naming:** to be decided after the rest is done.
 
 ## Possible later: a Levanter backend (likely needed for Snowball)
 

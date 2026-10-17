@@ -234,7 +234,7 @@ generator:
     enable_return_routed_experts: false
     kernel_config:
       moe_backend: triton   # required by weight_sync_transport: expert_block (the engine default is "auto"; this changes the engine's MoE kernel)
-    # Our DSpark drafter (speculators format; trained offline on a Datakit sample, no R2E-Gym adaptation) through vLLM's native
+    # Our DSpark drafter (speculators format; trained itw (on the dataset's own text, no regeneration) on a Datakit sample, no R2E-Gym adaptation) through vLLM's native
     # speculative_config passthrough. num_speculative_tokens = the drafter's block size (8).
     speculative_config:
       method: dspark

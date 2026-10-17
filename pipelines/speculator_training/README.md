@@ -1,6 +1,6 @@
 # speculator_training
 
-Train speculative-decoding drafters with the `speculators` fork: regenerate on-policy responses
+Train speculative-decoding drafters with the `speculators` fork: regenerate targetgen responses
 with vLLM, build hidden-state data, train online over Mooncake.
 
 - **Envs:** `vllm` (serving: regeneration, hidden-state server) and `speculators` (data prep,
@@ -11,5 +11,5 @@ with vLLM, build hidden-state data, train online over Mooncake.
 - **`tools/`:** `export_registry_dataset.py` (seeded sample of a dataset preset as JSONL).
 - **`notebooks/`:** `dspark_from_scratch*.ipynb`, walkthroughs of the drafter and its training.
 
-Experiments: `dspark_qwen3_0_6b_nemotron-terminal-corpus_onpolicy` (on-policy: regenerated responses), `dspark_qwen3_0_6b_nemotron-terminal-corpus_offpolicy`
+Experiments: `dspark_qwen3_0_6b_nemotron-terminal-corpus_targetgen` (targetgen: regenerated responses), `dspark_qwen3_0_6b_nemotron-terminal-corpus_itw`
 (the same data with the corpus's own completions, no regeneration), `dspark_qwen3_0_6b_perfectblend`.

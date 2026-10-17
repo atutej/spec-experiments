@@ -20,6 +20,7 @@ ap.add_argument("--total-rows", type=int, default=6471159, help="rows of the who
 ap.add_argument("--max-prompt-tokens", type=int, default=8000)
 ap.add_argument("--min-prompt-tokens", type=int, default=32)
 ap.add_argument("--seed", type=int, default=0)
+ap.add_argument("--turns", choices=["first", "random"], default="first", help="first: the first assistant reply of each row (first_turn.jsonl only); random: a uniformly random assistant turn of each row, context = everything before it (the dataset's earlier turns), written as first_turn.jsonl (turn 0) and later_turn.jsonl (turn > 0)")
 a = ap.parse_args()
 
 shards = sorted(Path(a.dataset).glob("data-*.arrow"))
@@ -38,17 +39,28 @@ for i in order:
     ids = ids.tolist() if hasattr(ids, "tolist") else list(ids)
     m = mask.tolist() if hasattr(mask, "tolist") else list(mask)
     if 1 not in m: skipped += 1; continue
-    start = m.index(1)
-    end = start + (m[start:].index(0) if 0 in m[start:] else len(m) - start)   # end of the first supervised span
+    spans, j = [], 0
+    while j < len(m):
+        if m[j] == 1:
+            e = j
+            while e < len(m) and m[e] == 1: e += 1
+            spans.append((j, e)); j = e
+        else: j += 1
+    k = rng.randrange(len(spans)) if a.turns == "random" else 0
+    start, end = spans[k]
     if not (a.min_prompt_tokens <= start <= a.max_prompt_tokens): skipped += 1; continue
-    rows.append({"prompt": ids[:start], "prompt_tokens": start, "val_row": split_idx + (i - first_val), "reference_reply_tokens": end - start})
+    rows.append({"prompt": ids[:start], "prompt_tokens": start, "val_row": split_idx + (i - first_val), "reference_reply_tokens": end - start, "turn": k, "turns_in_row": len(spans)})
     if len(rows) == a.num: break
 assert len(rows) == a.num, f"only {len(rows)} usable rows"
 out = Path(a.output_dir); out.mkdir(parents=True, exist_ok=True)
-with open(out / "first_turn.jsonl", "w") as f:
-    for r in rows: f.write(json.dumps(r) + "\n")
-sha = hashlib.sha256((out / "first_turn.jsonl").read_bytes()).hexdigest()
-json.dump({"files": {"first_turn.jsonl": {"rows": len(rows), "sha256": sha}}, "source": f"validation rows [{split_idx}, {a.total_rows}) of {a.dataset}",
+files = {"first_turn": [r for r in rows if r["turn"] == 0]}
+if a.turns == "random": files["later_turn"] = [r for r in rows if r["turn"] > 0]
+manifest = {}
+for name, rs in files.items():
+    with open(out / f"{name}.jsonl", "w") as f:
+        for r in rs: f.write(json.dumps(r) + "\n")
+    manifest[f"{name}.jsonl"] = {"rows": len(rs), "sha256": hashlib.sha256((out / f"{name}.jsonl").read_bytes()).hexdigest()}
+json.dump({"files": manifest, "source": f"validation rows [{split_idx}, {a.total_rows}) of {a.dataset}", "turns": a.turns,
            "seed": a.seed, "max_prompt_tokens": a.max_prompt_tokens, "skipped_while_sampling": skipped}, open(out / "manifest.json", "w"), indent=1)
 pt = sorted(r["prompt_tokens"] for r in rows); rt = sorted(r["reference_reply_tokens"] for r in rows)
-print(f"wrote {len(rows)} prompts to {out}; prompt tokens median {pt[len(pt)//2]} (min {pt[0]}, max {pt[-1]}); dataset reply length median {rt[len(rt)//2]} (max {rt[-1]}); skipped {skipped}")
+print({n: len(v) for n, v in files.items()}); print(f"wrote {len(rows)} prompts to {out}; prompt tokens median {pt[len(pt)//2]} (min {pt[0]}, max {pt[-1]}); dataset reply length median {rt[len(rt)//2]} (max {rt[-1]}); skipped {skipped}")

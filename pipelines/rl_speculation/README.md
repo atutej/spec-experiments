@@ -2,7 +2,7 @@
 
 Use a finished drafter inside an RL run: does speculative decoding shorten rollouts, and does it leave the learning unchanged?
 Replicates Luke Lee's EAGLE-3 / R2E-Gym / MarinSkyRL experiment (marin issues #9079, #9114) with our DSpark drafter
-(`speculator_training/experiments/dspark_grug-67b-a2b-datakit-sft_datakit-sft-mix-100k_offpolicy`) on the Datakit-SFT Grug target, on GB200,
+(`speculator_training/experiments/dspark_grug-67b-a2b-datakit-sft_datakit-sft-mix-100k_itw`) on the Datakit-SFT Grug target, on GB200,
 with no draft adaptation. Background and open risks: `docs/rl_dspark_infra.md`.
 
 - **Envs:** `vllm` (serving smoke test), `speculators` (prompt building, the acceptance client). RL stages need a MarinSkyRL uv env with a

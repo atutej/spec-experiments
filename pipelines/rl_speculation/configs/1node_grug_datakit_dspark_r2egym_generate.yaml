@@ -234,7 +234,7 @@ generator:
 
   engine_init_kwargs:
     enable_return_routed_experts: false
-    # Our DSpark drafter (speculators format; trained offline on a Datakit sample, no R2E-Gym adaptation) through vLLM's native
+    # Our DSpark drafter (speculators format; trained itw (on the dataset's own text, no regeneration) on a Datakit sample, no R2E-Gym adaptation) through vLLM's native
     # speculative_config passthrough. num_speculative_tokens = the drafter's block size (8).
     speculative_config:
       method: dspark

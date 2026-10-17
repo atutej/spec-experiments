@@ -11,7 +11,7 @@ env.sh                 detects the machine, sources its settings, sets caches; s
 setup/                 rebuild the workspace: repos.txt, conda env recipes, locks, setup.sh
   machines/<name>/       one folder per machine: env.sh, NOTES.md, slurm/ (env-build wrappers)
 pipelines/             one folder per family of experiments
-  speculator_training/   train drafters (DSpark etc.) on on-policy data with the speculators fork
+  speculator_training/   train drafters (DSpark etc.) on targetgen data with the speculators fork
     experiments/<name>/  NOTES.md, genai/run.sh, vista/ (smoke tests, sbatch)
     tools/  notebooks/
   <future family>/       same shape, e.g. SFT of a base model
@@ -34,3 +34,5 @@ bash <workspace>/spec-experiments/setup/setup.sh --check   # report; drop --chec
 Run outputs go to `<workspace>/runs/<name>/` (their logs in `runs/<name>/logs/`), and logs of setup, Slurm jobs
 and smoke tests go to `<workspace>/logs/{setup,slurm,smoke}/`. Neither goes into this repo. Read a family's `README.md`
 for the envs it needs, and an experiment's `NOTES.md` for its settings and reference results.
+
+Naming: drafter experiments are `itw` (trained on existing text, formerly offline/off-policy) or `targetgen` (trained on the target's own replies, formerly online/on-policy); see [`docs/naming_itw_targetgen.md`](docs/naming_itw_targetgen.md).

@@ -1,0 +1,2 @@
+subset,requests,failed,num_drafts,num_draft_tokens,num_accepted_tokens,acceptance_length
+first_turn,1024,0,0.0,0.0,0.0,1.0

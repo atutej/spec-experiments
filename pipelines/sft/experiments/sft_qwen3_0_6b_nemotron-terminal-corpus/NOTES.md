@@ -3,7 +3,7 @@
 Full fine-tune of `Qwen/Qwen3-0.6B` on the Nemotron-Terminal corpus's own completions (DeepSeek-V3.2 terminus-2 trajectories), the SAME
 100k conversations as the speculator pipeline. One training example per assistant turn; loss only on that turn's thinking and response;
 earlier turns' thinking is stripped from the context. The result is meant to be the target model of a new drafter experiment
-(`pipelines/speculator_training`, off-policy, target = this checkpoint). Decisions: `../../README.md`.
+(`pipelines/speculator_training`, itw, target = this checkpoint). Decisions: `../../README.md`.
 
 ## Run
 

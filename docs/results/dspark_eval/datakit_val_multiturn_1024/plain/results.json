@@ -1,0 +1,59 @@
+{
+  "config": {
+    "checkpoint": "",
+    "model": "open-athena/Grug-67B-A2B-Datakit-SFT-262K-2026.09.21",
+    "max_tokens": 4096,
+    "temperature": 1.0,
+    "top_p": 1.0,
+    "top_k": -1,
+    "seed": 0,
+    "concurrency": 16,
+    "prompts_dir": "<workspace>/runs/val_prompts_multiturn_1024",
+    "prompts_manifest": {
+      "first_turn.jsonl": {
+        "rows": 833,
+        "sha256": "069ffa862d88d72662500a2db97a5448db564a58badbe594e8f020a72375e1d3"
+      },
+      "later_turn.jsonl": {
+        "rows": 191,
+        "sha256": "3545a3ab0305afbcec134e362b9591c2a239272b354daaba898640248083c70a"
+      }
+    }
+  },
+  "results": [
+    {
+      "num_drafts": 0.0,
+      "num_draft_tokens": 0.0,
+      "num_accepted_tokens": 0.0,
+      "acceptance_length": 1.0,
+      "subset": "first_turn",
+      "requests": 833,
+      "failed": 0,
+      "completion_tokens": 1497806,
+      "completion_tokens_mean": 1798.0864345738296,
+      "wall_s": 702.8062343597412,
+      "output_tokens_per_s": 2131.179159735978,
+      "finish_reasons": {
+        "stop": 630,
+        "length": 203
+      }
+    },
+    {
+      "num_drafts": 0.0,
+      "num_draft_tokens": 0.0,
+      "num_accepted_tokens": 0.0,
+      "acceptance_length": 1.0,
+      "subset": "later_turn",
+      "requests": 191,
+      "failed": 0,
+      "completion_tokens": 162190,
+      "completion_tokens_mean": 849.1623036649214,
+      "wall_s": 100.54346990585327,
+      "output_tokens_per_s": 1613.1331070219796,
+      "finish_reasons": {
+        "stop": 186,
+        "length": 5
+      }
+    }
+  ]
+}

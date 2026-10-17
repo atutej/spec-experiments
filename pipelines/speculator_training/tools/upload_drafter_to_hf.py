@@ -84,7 +84,7 @@ def data_section(manifest: dict, name: str) -> list[str]:
 
 
 def card(root: Path, best: Path | None, latest: Path, repo_id: str, run_name: str, description: str, datasets: list[str],
-         speculators_ref: str, manifest: dict | None, manifest_name: str, card_extra: str, serve_args: str, wandb_runs: list[str], reproduce: str = "") -> str:
+         speculators_ref: str, manifest: dict | None, manifest_name: str, card_extra: str, serve_args: str, wandb_runs: list[str], reproduce: str = "", wandb_note: str = "") -> str:
     y = yaml_flat(root / "run.yaml")
     shown = best or latest
     cfg = json.loads((shown / "config.json").read_text())
@@ -115,6 +115,8 @@ def card(root: Path, best: Path | None, latest: Path, repo_id: str, run_name: st
         for item in wandb_runs:
             label, _, url = item.partition("=")
             L.append(f"- [{label}]({url})")
+        if wandb_note:
+            L += ["", wandb_note]
     if val:
         L += ["", "## Validation (teacher-forced, on rows of the training distribution)", ""]
         for k, v in val.items():
@@ -148,6 +150,34 @@ def card(root: Path, best: Path | None, latest: Path, repo_id: str, run_name: st
     return "\n".join(L)
 
 
+STAGE_MARK = ".upload_stage"
+
+
+def stage_folder(dest: Path, parts, manifest_path: str, manifest_name: str, text: str) -> None:
+    """Assemble the exact upload folder: small files copied, the weights symlinked, plus README.md and the manifest. Refuses a non-empty folder this tool did not make."""
+    import shutil
+
+    if dest.exists() and any(dest.iterdir()):
+        if not (dest / STAGE_MARK).exists():
+            sys.exit(f"{dest} exists, is not empty and was not made by this tool; choose another --stage-dir")
+        shutil.rmtree(dest)
+    dest.mkdir(parents=True, exist_ok=True)
+    (dest / STAGE_MARK).write_text("made by upload_drafter_to_hf.py; safe to delete\n")
+    for prefix, d in parts:
+        (dest / prefix).mkdir(parents=True, exist_ok=True)
+        for f in FILES:
+            src = d / f
+            if not src.exists():
+                continue
+            if f == "model.safetensors":
+                (dest / prefix / f).symlink_to(src.resolve())
+            else:
+                shutil.copy2(src, dest / prefix / f)
+    if manifest_path:
+        shutil.copy2(manifest_path, dest / manifest_name)
+    (dest / "README.md").write_text(text)
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("--checkpoints-dir", required=True)
@@ -164,6 +194,8 @@ def main() -> None:
     ap.add_argument("--wandb-run", action="append", default=[], metavar="LABEL=URL", help="a W&B run to list in the card's Training logs section (repeatable)")
     ap.add_argument("--reproduce", default="", help="markdown file for a 'Reproduce' section; {GH_REF} in it is replaced by --gh-ref")
     ap.add_argument("--gh-ref", default="", help="commit SHA of the code repo the Reproduce links point at (required to upload when --reproduce is used)")
+    ap.add_argument("--stage-dir", default="", help="assemble the upload folder here (kept after the run; a --dry-run builds it without any network): README.md, the files that will be uploaded, the manifest")
+    ap.add_argument("--wandb-note", default="", help="one sentence shown under the W&B links (e.g. why runs show as crashed)")
     ap.add_argument("--serve-args", default="--dtype bfloat16", help="extra `vllm serve` flags shown in the card's Use section")
     args = ap.parse_args()
 
@@ -188,9 +220,12 @@ def main() -> None:
                 print(f"  {prefix + f:36s} {(d / f).stat().st_size / 1e6:9.1f} MB   (from {d.name}/)")
     if manifest is not None:
         print(f"  {manifest_name:36s} {Path(args.data_manifest).stat().st_size / 1e6:9.1f} MB   (from {args.data_manifest})")
-    text = card(root, best, latest, repo_id, args.run_name, args.description, datasets, args.speculators_ref, manifest, manifest_name, card_extra, args.serve_args, args.wandb_run, reproduce)
+    text = card(root, best, latest, repo_id, args.run_name, args.description, datasets, args.speculators_ref, manifest, manifest_name, card_extra, args.serve_args, args.wandb_run, reproduce, args.wandb_note)
     print("--- card ---\n" + text + "--- end card ---")
     if args.dry_run:
+        if args.stage_dir:
+            stage_folder(Path(args.stage_dir), parts, args.data_manifest, manifest_name, text)
+            print(f"upload folder staged at {args.stage_dir}")
         print("dry run: nothing uploaded")
         return
 
@@ -204,18 +239,15 @@ def main() -> None:
     print(f"logged in as {who}")
     if "/" not in args.repo_id:
         args.repo_id = f"{who}/{args.repo_id}"
-        text = card(root, best, latest, args.repo_id, args.run_name, args.description, datasets, args.speculators_ref, manifest, manifest_name, card_extra, args.serve_args, args.wandb_run, reproduce)
+        text = card(root, best, latest, args.repo_id, args.run_name, args.description, datasets, args.speculators_ref, manifest, manifest_name, card_extra, args.serve_args, args.wandb_run, reproduce, args.wandb_note)
     api.create_repo(args.repo_id, repo_type="model", private=not args.public, exist_ok=True)
-    with tempfile.TemporaryDirectory() as tmp:
-        for prefix, d in parts:
-            (Path(tmp) / prefix).mkdir(parents=True, exist_ok=True)
-            for f in FILES:
-                if (d / f).exists():
-                    (Path(tmp) / prefix / f).symlink_to((d / f).resolve())
-        if manifest is not None:
-            (Path(tmp) / manifest_name).symlink_to(Path(args.data_manifest).resolve())
-        (Path(tmp) / "README.md").write_text(text)
-        api.upload_folder(folder_path=tmp, repo_id=args.repo_id, repo_type="model", commit_message=args.commit_message)
+    if args.stage_dir:
+        stage_folder(Path(args.stage_dir), parts, args.data_manifest, manifest_name, text)
+        api.upload_folder(folder_path=args.stage_dir, repo_id=args.repo_id, repo_type="model", commit_message=args.commit_message, ignore_patterns=[STAGE_MARK])
+    else:
+        with tempfile.TemporaryDirectory() as tmp:
+            stage_folder(Path(tmp) / "up", parts, args.data_manifest, manifest_name, text)
+            api.upload_folder(folder_path=str(Path(tmp) / "up"), repo_id=args.repo_id, repo_type="model", commit_message=args.commit_message, ignore_patterns=[STAGE_MARK])
     info = api.model_info(args.repo_id)
     print(f"uploaded: https://huggingface.co/{args.repo_id} (private={info.private}, {len(info.siblings or [])} files)")
 

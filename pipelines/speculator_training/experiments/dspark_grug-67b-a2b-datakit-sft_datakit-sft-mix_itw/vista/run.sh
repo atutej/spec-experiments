@@ -17,7 +17,7 @@ set -euo pipefail
 set -E; trap 'echo "run.sh: command failed (exit $?) at line $LINENO: $BASH_COMMAND" >&2' ERR
 
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../../.." && pwd)"   # repo root (this file: pipelines/<pipeline>/experiments/<name>/vista/)
-EXP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+EXP_DIR="${EXP_DIR_OVERRIDE:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"   # EXP_DIR_OVERRIDE: another experiment (its settings.sh) trains with this script, e.g. the Dr. Doom sibling
 set +u; source "$REPO_DIR/env.sh"; set -u     # env.sh: CC=gcc (Vista's nvidia module sets nvc, which breaks inductor), the caches, PROJECT_ROOT, NUM_GPUS
 use_env() { set +u; conda activate "$1"; set -u; }   # conda's activate scripts are not nounset-safe
 source "$EXP_DIR/settings.sh"

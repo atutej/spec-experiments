@@ -72,9 +72,22 @@ def join_text(system: str, user: str) -> str:
     return f"{system}\n\n{user}" if system else user
 
 
+# EmbeddingGemma 2 is multimodal: its processor refuses text that contains the literal placeholder tokens ("Found 1 <|image|> tokens in the text but no images were passed",
+# which stopped the first full run on shard 202) and its tokenizer turns the half-open forms into special tokens. Rows that merely mention these strings get a space after the first character.
+PLACEHOLDERS = ("<|image|>", "<|video|>", "<|audio|>", "<|image>", "<image|>", "<|audio>", "<audio|>")
+
+
+def sanitize(text: str) -> str:
+    for t in PLACEHOLDERS:
+        if t in text:
+            text = text.replace(t, t[0] + " " + t[1:])
+    return text
+
+
 def clip_left(texts, et, window=WINDOW):
     """Prefix each text and keep its last tokens so the whole input is at most `window` embedder tokens (BOS/EOS margin 8)."""
     keep = window - len(et(PREFIX, add_special_tokens=False)["input_ids"]) - 8
+    texts = [sanitize(t) for t in texts]
     out, ncut = [], 0
     for text, ids in zip(texts, et(texts, add_special_tokens=False)["input_ids"]):
         if len(ids) > keep:

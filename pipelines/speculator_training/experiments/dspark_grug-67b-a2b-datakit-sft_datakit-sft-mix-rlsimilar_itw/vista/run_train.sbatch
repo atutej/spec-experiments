@@ -9,5 +9,7 @@ set -uo pipefail
 EXP=/scratch/09749/atutej/marin_speculator/spec-experiments/pipelines/speculator_training/experiments/dspark_grug-67b-a2b-datakit-sft_datakit-sft-mix-rlsimilar_itw
 DATA=${RLSIM_BUILD_DIR:-/scratch/09749/atutej/marin_speculator/runs/grug_rlsimilar_data}/dataset
 [[ -f "$DATA/state.json" && -f "$DATA/token_freq.pt" ]] || { echo "the training dataset $DATA is missing or unfinished (submit_data.sh builds it)" >&2; exit 1; }
+RUN_WORK_DIR=${RLSIM_WORK_DIR:-/scratch/09749/atutej/marin_speculator/runs/grug_dspark_itw_rlsimilar}
+[[ ! -e "$RUN_WORK_DIR/checkpoints/epoch0_end" ]] || { echo "already finished: $RUN_WORK_DIR/checkpoints/epoch0_end exists, nothing to do"; exit 0; }   # a chained follow-up job after a completed run
 export EXP_DIR_OVERRIDE="$EXP"
 exec bash /scratch/09749/atutej/marin_speculator/spec-experiments/pipelines/speculator_training/experiments/dspark_grug-67b-a2b-datakit-sft_datakit-sft-mix_itw/vista/run_2node_ddp.sh train

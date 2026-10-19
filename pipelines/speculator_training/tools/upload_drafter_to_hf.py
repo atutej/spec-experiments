@@ -17,6 +17,8 @@ training_state.json. NOT the optimizer and scheduler state (about as large as th
 `--data-manifest` is the dataset's manifest.json (per-source row and token counts, written by build_datakit_sft_mix.py write). It is uploaded as
 `training_data_manifest.json` and the card gets a "Training data" section that summarises it and links it, as the Grug target's card does for
 `training_data_mix.json`. `--card-extra` appends a markdown file (e.g. results tables) before the "Use" section.
+`--data-section FILE` replaces the generated "Training data" section with the file's text (for a dataset that is not a Datakit-format manifest, e.g. a filtered subset);
+`--extra-file PATH` (repeatable) uploads PATH to the repo root under its own name.
 
 Needs a write token (HF_TOKEN, or `hf auth login`). The repo is created private unless --public. --dry-run touches no network.
 """
@@ -84,7 +86,7 @@ def data_section(manifest: dict, name: str) -> list[str]:
 
 
 def card(root: Path, best: Path | None, latest: Path, repo_id: str, run_name: str, description: str, datasets: list[str],
-         speculators_ref: str, manifest: dict | None, manifest_name: str, card_extra: str, serve_args: str, wandb_runs: list[str], reproduce: str = "", wandb_note: str = "") -> str:
+         speculators_ref: str, manifest: dict | None, manifest_name: str, card_extra: str, serve_args: str, wandb_runs: list[str], reproduce: str = "", wandb_note: str = "", data_section_text: str = "") -> str:
     y = yaml_flat(root / "run.yaml")
     shown = best or latest
     cfg = json.loads((shown / "config.json").read_text())
@@ -102,7 +104,9 @@ def card(root: Path, best: Path | None, latest: Path, repo_id: str, run_name: st
               f"(fork `atutej/speculators`, branch `{speculators_ref}`); run name `" + run_name + "`.", ""]
     if description:
         L += [description, ""]
-    if manifest is not None:
+    if data_section_text:
+        L += [data_section_text.strip(), ""]
+    elif manifest is not None:
         L += data_section(manifest, manifest_name)
     L += ["## Training", "",
           f"- Online training: hidden states of layers {taps} (plus the final layer) of the target, streamed by vLLM through Mooncake",
@@ -153,7 +157,7 @@ def card(root: Path, best: Path | None, latest: Path, repo_id: str, run_name: st
 STAGE_MARK = ".upload_stage"
 
 
-def stage_folder(dest: Path, parts, manifest_path: str, manifest_name: str, text: str) -> None:
+def stage_folder(dest: Path, parts, manifest_path: str, manifest_name: str, text: str, extra_files=()) -> None:
     """Assemble the exact upload folder: small files copied, the weights symlinked, plus README.md and the manifest. Refuses a non-empty folder this tool did not make."""
     import shutil
 
@@ -175,6 +179,8 @@ def stage_folder(dest: Path, parts, manifest_path: str, manifest_name: str, text
                 shutil.copy2(src, dest / prefix / f)
     if manifest_path:
         shutil.copy2(manifest_path, dest / manifest_name)
+    for f in extra_files:
+        shutil.copy2(f, dest / Path(f).name)
     (dest / "README.md").write_text(text)
 
 
@@ -190,6 +196,8 @@ def main() -> None:
     ap.add_argument("--datasets", nargs="*", default=["nvidia/Nemotron-Terminal-Corpus"], help="dataset ids for the card's front matter (default: the Qwen3-0.6B runs' corpus; pass none for no list)")
     ap.add_argument("--speculators-ref", default="nemotron-terminal-preset", help="branch of the speculators fork named in the card")
     ap.add_argument("--data-manifest", default="", help="the training dataset's manifest.json: uploaded as training_data_manifest.json and summarised in the card")
+    ap.add_argument("--data-section", default="", help="markdown file used instead of the generated 'Training data' section")
+    ap.add_argument("--extra-file", action="append", default=[], metavar="PATH", help="a file uploaded to the repo root under its own name (repeatable)")
     ap.add_argument("--card-extra", default="", help="markdown file appended to the card before the Use section (e.g. results tables)")
     ap.add_argument("--wandb-run", action="append", default=[], metavar="LABEL=URL", help="a W&B run to list in the card's Training logs section (repeatable)")
     ap.add_argument("--reproduce", default="", help="markdown file for a 'Reproduce' section; {GH_REF} in it is replaced by --gh-ref")
@@ -204,6 +212,11 @@ def main() -> None:
     manifest_name = "training_data_manifest.json"
     manifest = json.loads(Path(args.data_manifest).read_text()) if args.data_manifest else None
     card_extra = Path(args.card_extra).read_text() if args.card_extra else ""
+    data_section_text = Path(args.data_section).read_text() if args.data_section else ""
+    extra_files = [str(Path(f)) for f in args.extra_file]
+    for f in extra_files:
+        if not Path(f).is_file():
+            sys.exit(f"--extra-file {f} is not a file")
     MARK = "<GH-COMMIT-AFTER-PUSH>"
     reproduce = Path(args.reproduce).read_text().replace("{GH_REF}", args.gh_ref or MARK) if args.reproduce else ""
     if MARK in reproduce and not args.dry_run:
@@ -220,11 +233,13 @@ def main() -> None:
                 print(f"  {prefix + f:36s} {(d / f).stat().st_size / 1e6:9.1f} MB   (from {d.name}/)")
     if manifest is not None:
         print(f"  {manifest_name:36s} {Path(args.data_manifest).stat().st_size / 1e6:9.1f} MB   (from {args.data_manifest})")
-    text = card(root, best, latest, repo_id, args.run_name, args.description, datasets, args.speculators_ref, manifest, manifest_name, card_extra, args.serve_args, args.wandb_run, reproduce, args.wandb_note)
+    text = card(root, best, latest, repo_id, args.run_name, args.description, datasets, args.speculators_ref, manifest, manifest_name, card_extra, args.serve_args, args.wandb_run, reproduce, args.wandb_note, data_section_text)
+    for f in extra_files:
+        print(f"  {Path(f).name:36s} {Path(f).stat().st_size / 1e6:9.1f} MB   (from {f})")
     print("--- card ---\n" + text + "--- end card ---")
     if args.dry_run:
         if args.stage_dir:
-            stage_folder(Path(args.stage_dir), parts, args.data_manifest, manifest_name, text)
+            stage_folder(Path(args.stage_dir), parts, args.data_manifest, manifest_name, text, extra_files)
             print(f"upload folder staged at {args.stage_dir}")
         print("dry run: nothing uploaded")
         return
@@ -239,14 +254,14 @@ def main() -> None:
     print(f"logged in as {who}")
     if "/" not in args.repo_id:
         args.repo_id = f"{who}/{args.repo_id}"
-        text = card(root, best, latest, args.repo_id, args.run_name, args.description, datasets, args.speculators_ref, manifest, manifest_name, card_extra, args.serve_args, args.wandb_run, reproduce, args.wandb_note)
+        text = card(root, best, latest, args.repo_id, args.run_name, args.description, datasets, args.speculators_ref, manifest, manifest_name, card_extra, args.serve_args, args.wandb_run, reproduce, args.wandb_note, data_section_text)
     api.create_repo(args.repo_id, repo_type="model", private=not args.public, exist_ok=True)
     if args.stage_dir:
-        stage_folder(Path(args.stage_dir), parts, args.data_manifest, manifest_name, text)
+        stage_folder(Path(args.stage_dir), parts, args.data_manifest, manifest_name, text, extra_files)
         api.upload_folder(folder_path=args.stage_dir, repo_id=args.repo_id, repo_type="model", commit_message=args.commit_message, ignore_patterns=[STAGE_MARK])
     else:
         with tempfile.TemporaryDirectory() as tmp:
-            stage_folder(Path(tmp) / "up", parts, args.data_manifest, manifest_name, text)
+            stage_folder(Path(tmp) / "up", parts, args.data_manifest, manifest_name, text, extra_files)
             api.upload_folder(folder_path=str(Path(tmp) / "up"), repo_id=args.repo_id, repo_type="model", commit_message=args.commit_message, ignore_patterns=[STAGE_MARK])
     info = api.model_info(args.repo_id)
     print(f"uploaded: https://huggingface.co/{args.repo_id} (private={info.private}, {len(info.siblings or [])} files)")

@@ -1,0 +1,38 @@
+{
+  "config": {
+    "checkpoint": "",
+    "model": "open-athena/Grug-67B-A2B-Datakit-SFT-262K-2026.09.21-dr-doom",
+    "max_tokens": 49152,
+    "temperature": 1.0,
+    "top_p": 1.0,
+    "top_k": -1,
+    "seed": 0,
+    "concurrency": 16,
+    "prompts_dir": "<workspace>/runs/nemotron_rlvr_prompts_1024",
+    "prompts_manifest": {
+      "first_turn.jsonl": {
+        "rows": 1024,
+        "sha256": "efc1df04613559df89ef421182b24f65e5b6dff8b07b99979d71b69ca49a1ee9"
+      }
+    }
+  },
+  "results": [
+    {
+      "num_drafts": 0.0,
+      "num_draft_tokens": 0.0,
+      "num_accepted_tokens": 0.0,
+      "acceptance_length": 1.0,
+      "subset": "first_turn",
+      "requests": 256,
+      "failed": 0,
+      "completion_tokens": 4111708,
+      "completion_tokens_mean": 16061.359375,
+      "wall_s": 2431.824823141098,
+      "output_tokens_per_s": 1690.7911955142638,
+      "finish_reasons": {
+        "stop": 198,
+        "length": 58
+      }
+    }
+  ]
+}

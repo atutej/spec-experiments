@@ -1,0 +1,3 @@
+R80=atutej/dspark_grug-67b-a2b-datakit-sft-dr-doom_datakit-sft-mix_itw-80k-20261020
+R160=atutej/dspark_grug-67b-a2b-datakit-sft-dr-doom_datakit-sft-mix_itw-160k-20261020
+RW=atutej/dspark_grug-67b-a2b-datakit-sft-dr-doom_datakit-sft-mix_targetgen-warm80k-20261020

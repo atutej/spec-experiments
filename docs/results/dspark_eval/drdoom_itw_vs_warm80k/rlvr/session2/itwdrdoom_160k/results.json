@@ -1,0 +1,46 @@
+{
+  "config": {
+    "checkpoint": "<workspace>/runs/eval_ckpts/drdoom_itw_step160860",
+    "model": "open-athena/Grug-67B-A2B-Datakit-SFT-262K-2026.09.21-dr-doom",
+    "max_tokens": 49152,
+    "temperature": 1.0,
+    "top_p": 1.0,
+    "top_k": -1,
+    "seed": 0,
+    "concurrency": 16,
+    "prompts_dir": "<workspace>/runs/nemotron_rlvr_prompts_1024",
+    "prompts_manifest": {
+      "first_turn.jsonl": {
+        "rows": 1024,
+        "sha256": "efc1df04613559df89ef421182b24f65e5b6dff8b07b99979d71b69ca49a1ee9"
+      }
+    }
+  },
+  "results": [
+    {
+      "num_drafts": 1458604.0,
+      "num_draft_tokens": 11668832.0,
+      "num_accepted_tokens": 2604218.0,
+      "acceptance_length": 2.7854181121126773,
+      "acceptance_at_pos_0": 0.699501715338776,
+      "acceptance_at_pos_1": 0.4481565935648058,
+      "acceptance_at_pos_2": 0.2715514286262755,
+      "acceptance_at_pos_3": 0.1604924983066,
+      "acceptance_at_pos_4": 0.09472687583470223,
+      "acceptance_at_pos_5": 0.056042627059846264,
+      "acceptance_at_pos_6": 0.0341072696907454,
+      "acceptance_at_pos_7": 0.020839103690926394,
+      "subset": "first_turn",
+      "requests": 256,
+      "failed": 0,
+      "completion_tokens": 4062738,
+      "completion_tokens_mean": 15870.0703125,
+      "wall_s": 1084.4183785915375,
+      "output_tokens_per_s": 3746.467304691718,
+      "finish_reasons": {
+        "stop": 202,
+        "length": 54
+      }
+    }
+  ]
+}

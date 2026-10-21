@@ -104,7 +104,12 @@ async def run_regen(args):
     store = RowStore(args.dataset)
     n_train = int(store.num_rows * args.train_ratio)
     rng = np.random.default_rng(args.seed)
-    chosen = rng.choice(n_train, size=args.num, replace=False)      # the sample is the same for every shard; each takes its share
+    if args.rows_file:      # sample only from these rows (e.g. the rows a run has NOT seen yet, from eval_acceptance/itw_seen_rows.py)
+        pool = np.load(args.rows_file).astype(np.int64)
+        assert len(pool) >= args.num and pool.max() < n_train, f"--rows-file has {len(pool)} rows (max {pool.max()}), --num {args.num}, train split {n_train}"
+        chosen = rng.choice(pool, size=args.num, replace=False)
+    else:
+        chosen = rng.choice(n_train, size=args.num, replace=False)      # the sample is the same for every shard; each takes its share
     mine = [int(i) for i in chosen[args.shard :: args.num_shards]]
     out_dir = Path(args.out_dir); out_dir.mkdir(parents=True, exist_ok=True)
     done = set()
@@ -218,11 +223,22 @@ def write_vocab_files(files, out: Path, args):
     torch.save(freq, out / "token_freq.pt")
     (out / "token_freq.json").write_text(json.dumps({str(k): v for k, v in freq.items()}))
     d2t, t2d = build_vocab_mappings_from_distribution(token_freq_dict=freq, draft_vocab_size=args.draft_vocab_size, target_vocab_size=V)
-    np.save(out / f"d2t-{args.draft_vocab_size}.npy", d2t.cpu().numpy())
-    np.save(out / f"t2d-{args.draft_vocab_size}.npy", t2d.cpu().numpy())
+    own_t2d = t2d.cpu().numpy().astype(bool)
+    if args.vocab_from_checkpoint:      # warm start: the checkpoint's own maps, so draft index i keeps meaning the same token as in the loaded weights
+        from safetensors import safe_open
+        with safe_open(args.vocab_from_checkpoint, "np") as f:
+            d2t_c, t2d_c = f.get_tensor("d2t"), f.get_tensor("t2d")
+        assert d2t_c.shape == (args.draft_vocab_size,) and t2d_c.shape == (V,) and int(t2d_c.sum()) == args.draft_vocab_size, (d2t_c.shape, t2d_c.shape, int(t2d_c.sum()))
+        np.save(out / f"d2t-{args.draft_vocab_size}.npy", d2t_c)
+        np.save(out / f"t2d-{args.draft_vocab_size}.npy", t2d_c)
+        print(f"using the draft vocabulary of {args.vocab_from_checkpoint}; the vocabulary built from these tokens differs from it in {int((own_t2d != t2d_c.astype(bool)).sum()) // 2:,} tokens", flush=True)
+        t2d = torch.from_numpy(t2d_c.astype(bool))
+    else:
+        np.save(out / f"d2t-{args.draft_vocab_size}.npy", d2t.cpu().numpy())
+        np.save(out / f"t2d-{args.draft_vocab_size}.npy", t2d.cpu().numpy())
     total = counts.sum()
     covered = counts[t2d.cpu().numpy().astype(bool)].sum()
-    print(f"draft vocabulary from {total:,} supervised tokens ({len(freq):,} distinct): the {args.draft_vocab_size:,} most frequent cover {covered / total:.2%}", flush=True)
+    print(f"draft vocabulary from {total:,} supervised tokens ({len(freq):,} distinct): the {args.draft_vocab_size:,} {'tokens of the checkpoint vocabulary' if args.vocab_from_checkpoint else 'most frequent'} cover {covered / total:.2%} (the {args.draft_vocab_size:,} most frequent of these tokens would cover {counts[own_t2d].sum() / total:.2%})", flush=True)
     if args.compare_vocab_from:      # how much of these tokens the OTHER (e.g. the itw drafter's) vocabulary would cover
         other = np.load(Path(args.compare_vocab_from) / f"t2d-{args.draft_vocab_size}.npy").astype(bool)
         print(f"for comparison, the vocabulary in {args.compare_vocab_from} covers {counts[other].sum() / total:.2%} of them; the two vocabularies share {int((other & t2d.cpu().numpy().astype(bool)).sum()):,} tokens", flush=True)
@@ -239,11 +255,13 @@ def main():
     r.add_argument("--concurrency", type=int, default=512); r.add_argument("--max-new-tokens", type=int, default=32768, help="per turn; the most liberal setting, in practice limited by the room left under --max-total-len")
     r.add_argument("--max-total-len", type=int, default=32768); r.add_argument("--temperature", type=float, default=1.0); r.add_argument("--top-p", type=float, default=1.0)
     r.add_argument("--retries", type=int, default=3); r.add_argument("--request-timeout", type=float, default=7200)
+    r.add_argument("--rows-file", default="", help="a .npy of row indices (training split): sample the --num rows from these instead of from the whole train split")
     r.add_argument("--part-rows", type=int, default=500); r.add_argument("--max-error-frac", type=float, default=0.02)
     m = sub.add_parser("merge")
     m.add_argument("--parts-dir", required=True); m.add_argument("--out", required=True)
     m.add_argument("--draft-vocab-size", type=int, default=32000); m.add_argument("--target-vocab-size", type=int, default=128256)
     m.add_argument("--compare-vocab-from", default=None, help="a dataset dir whose t2d map is compared with the new one (coverage only; nothing is copied)")
+    m.add_argument("--vocab-from-checkpoint", default="", help="a model.safetensors holding d2t/t2d: write ITS draft-vocabulary maps into the output (a warm start must keep them; the maps built from the new tokens would not line up with the loaded weights)")
     m.add_argument("--drop-source-row", action="store_true")
     args = ap.parse_args()
     if args.cmd == "regen":

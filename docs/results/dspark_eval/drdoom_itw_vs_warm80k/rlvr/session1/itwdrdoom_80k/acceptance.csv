@@ -1,0 +1,2 @@
+subset,requests,failed,num_drafts,num_draft_tokens,num_accepted_tokens,acceptance_length,acceptance_at_pos_0,acceptance_at_pos_1,acceptance_at_pos_2,acceptance_at_pos_3,acceptance_at_pos_4,acceptance_at_pos_5,acceptance_at_pos_6,acceptance_at_pos_7
+first_turn,256,0,1491272.0,11930176.0,2519056.0,2.689199555815438,0.6847013824439807,0.4276262143995193,0.2531201551427238,0.14559047578174875,0.08364805347381296,0.04853708780155465,0.028728494868809983,0.017247691903287933

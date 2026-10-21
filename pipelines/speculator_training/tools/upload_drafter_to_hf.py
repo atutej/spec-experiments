@@ -137,7 +137,7 @@ def card(root: Path, best: Path | None, latest: Path, repo_id: str, run_name: st
     if reproduce:
         L += ["", reproduce.strip(), ""]
     L += ["", "## Use", "",
-          "With the Marin vLLM fork (supports `method: dspark`):", "",
+          "With the [Marin vLLM fork](https://github.com/marin-community/vllm/releases/tag/marin-vllm-gpu-20260929-39e62869693c) (supports `method: dspark`):", "",
           "```", f"vllm serve {verifier} {serve_args} \\",
           f"  --speculative-config '{{\"model\": \"{repo_id}\", \"num_speculative_tokens\": {cfg.get('block_size', 8)}, \"method\": \"dspark\", "
           "\"draft_sample_method\": \"probabilistic\", \"rejection_sample_method\": \"standard\"}'",

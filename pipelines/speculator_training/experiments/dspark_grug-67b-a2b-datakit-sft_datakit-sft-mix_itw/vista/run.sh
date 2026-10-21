@@ -149,7 +149,7 @@ stage_train() {
         --mooncake-master "127.0.0.1:$MOONCAKE_PORT" --mooncake-protocol tcp \
         --mooncake-global-segment-gib "$MOONCAKE_GLOBAL_GIB" --mooncake-local-buffer-gib "$MOONCAKE_LOCAL_GIB" \
         --save-path "$CKPT_DIR" \
-        --draft-config "$DRAFT_CONFIG" \
+        ${DRAFT_CONFIG:+--draft-config "$DRAFT_CONFIG"} \
         --draft-vocab-size "$DRAFT_VOCAB_SIZE" \
         --mask-token-id "$MASK_TOKEN_ID" \
         --epochs "$EPOCHS" \

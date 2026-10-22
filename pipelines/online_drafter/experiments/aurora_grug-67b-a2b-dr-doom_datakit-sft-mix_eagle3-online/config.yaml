@@ -1,0 +1,77 @@
+# Aurora (external mode) config: train an EAGLE-3 drafter for Snowball (the Dr. Doom target) ONLINE from random initialisation ("day-0" in Aurora's words) on Datakit prompts.
+# Derived from Aurora's examples/qwen3-4b-external-with-draft (the from-scratch example): the trainer creates the scratch draft and the vLLM server starts from it.
+# run.sh fills the paths, ports and the server URL. This file is the smoke-test version: 1-layer draft (draft_config.json), 20 steps.
+model:
+  target_model_path: open-athena/Grug-67B-A2B-Datakit-SFT-262K-2026.09.21-dr-doom
+  trust_remote_code: true
+  draft_model_config: null        # run.sh
+
+dataset:
+  train_data_path: ""             # run.sh: one Datakit shard (.arrow); only the vocabulary mapping and loading use it, the trainer never trains on its rows
+  pretokenized: true              # rows carry input_ids + loss_mask (our Aurora fork accepts loss_mask when there are no labels)
+  num_proc: 4
+
+training:
+  attention_backend: flex_attention
+  micro_batch_size: 4
+  draft_accumulation_steps: 1
+  learning_rate: 1e-4
+  max_concurrent_batches: 1
+  max_grad_norm: 2.5
+  max_seq_length: 5120            # prompt (<= 4096 tokens, the client filters) + completion
+  num_epochs: 1
+  num_train_steps: 20             # run.sh / override; the step count does not come from the dataset size here
+  seed: 42
+  training_num_gpus_per_node: 2
+  training_num_nodes: 1
+  ttt_length: 5
+  warmup_ratio: 0.0
+  lr_decay_style: constant
+  train_with_decode: true
+
+inference:
+  inference_engine_type: sgl      # unused: inference_num_gpus 0 means no local engines
+  inference_num_gpus: 0
+  inference_num_gpus_per_engine: 1
+  inference_num_gpus_per_node: 1
+  max_sample_pool_size: 1000
+  inference_buffer_threshold: 32
+  inference_batch_size: 12
+
+decode:
+  max_new_tokens: 256
+  temperature: 1.0
+  speculative_algorithm: EAGLE3
+  speculative_draft_model_path: null   # null: the trainer saves a scratch draft to <output_dir>/scratch_draft_model and the server starts from it
+  speculative_num_steps: 5
+  speculative_eagle_topk: 1
+  speculative_num_draft_tokens: 6
+  weight_sync_enabled: true
+  weight_sync_interval: 5              # smoke test; 50 for real runs
+
+online_serving:
+  enabled: true
+  host: "0.0.0.0"
+  port: 18080
+  sglang_url: null                     # run.sh: the capture server's URL (Aurora's key name, from its SGLang days)
+
+mooncake:
+  master_server_address: null          # run.sh
+  metadata_server: null
+  protocol: tcp
+  global_segment_size: 8GB
+  local_buffer_size: 4GB
+  hidden_dim: 2560                     # the TARGET's hidden size (Aurora sizes buffers as 3 tapped layers + the final states from it; its default is 4096)
+  max_seq_len: 5120
+
+output_dir: ""                         # run.sh
+cache_dir: ./cache
+model_download_dir: null
+
+logging:
+  report_to: none
+
+debug:
+  save_debug_train_data: null
+  debug_train_only: false
+  debug_inference_only: false

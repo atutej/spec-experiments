@@ -22,3 +22,7 @@ MarinSkyRL        https://github.com/marin-community/MarinSkyRL.git     5de48d34
 # Launcher (hpc.launch). Vista needs local edits: setup/machines/vista/patches/openthoughts-agent-tacc.patch
 # (apply with `git -C OpenThoughts-Agent apply`); the patch holds account-specific values, so it is not committed.
 OpenThoughts-Agent https://github.com/open-thoughts/OpenThoughts-Agent.git 3bd1917e62c9d03d73063b433f5c442c279c0563
+
+# aurora: online drafter trainer (togethercomputer/aurora, MIT), our fork (branch vllm-engine): upstream main of 2026-10-21 plus optional SGLang import, loss_mask loader, grug_moe target config,
+# the DSpark draft model and trainer (see pipelines/online_drafter/README.md).
+aurora            https://github.com/atutej/aurora.git                  3495a955f03b2e9db0e47bd15d2c1e7f40fe6d38

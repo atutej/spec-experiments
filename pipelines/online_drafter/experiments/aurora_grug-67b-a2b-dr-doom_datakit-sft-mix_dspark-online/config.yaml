@@ -15,8 +15,8 @@ dataset:
 training:
   attention_backend: flex_attention
   micro_batch_size: 4
-  draft_accumulation_steps: 1
-  learning_rate: 1e-4             # what Aurora's examples use (constant, no warmup) also when they continue a pretrained draft; our own DSpark runs used 3e-4 with a decay
+  draft_accumulation_steps: 4     # global batch 8 -> 32 samples per optimizer step (the first run's gradient noise took the draft from 2.95 to 2.5 accept length)
+  learning_rate: 1e-5             # 1e-4 (Aurora's usual example value) degraded our converged checkpoint; 1e-5 is what Aurora's own qwen3-8b-external-with-draft example uses
   max_concurrent_batches: 1
   max_grad_norm: 2.5
   max_seq_length: 5120            # prompt (<= 4096 tokens, the client filters) + completion
@@ -26,7 +26,8 @@ training:
   training_num_gpus_per_node: 2
   training_num_nodes: 1
   ttt_length: 5                   # unused by DSpark
-  warmup_ratio: 0.0
+  warmup_ratio: 0.003             # x lr_total_steps (100000) = 300 optimizer steps of linear warmup: Adam starts from an empty state on a converged checkpoint
+  lr_total_steps: 100000
   lr_decay_style: constant
   train_with_decode: true
 

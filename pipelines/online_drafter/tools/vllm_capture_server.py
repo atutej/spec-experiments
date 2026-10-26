@@ -18,6 +18,7 @@ import requests
 import uvicorn
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
+from draft_updater import DraftUpdater
 from vllm import LLM, SamplingParams
 
 p = argparse.ArgumentParser()
@@ -129,14 +130,15 @@ class Update(BaseModel):
     update_draft_model: bool = True
 
 
+updater = DraftUpdater(lambda d: llm.collective_rpc("ac_reload_draft", args=(d,)), lock, state, args.scratch_dir)
+
+
 @app.post("/update_weights_from_disk")
 def update_weights_from_disk(u: Update):
     if not u.update_draft_model:
         raise HTTPException(400, "only draft updates are supported")
-    with lock:
-        res = llm.collective_rpc("ac_reload_draft", args=(u.model_path,))
-        state["draft_updates"] += 1
-    return {"success": True, "message": json.dumps(res[0]) if res else "", "updates": state["draft_updates"]}
+    updater.submit(u.model_path)   # copied now, applied between rollout batches (see draft_updater.py); /health reports draft_updates as they are applied
+    return {"success": True, "message": "queued: applied between rollout batches", "updates": state["draft_updates"], "queued": True}
 
 
 if __name__ == "__main__":

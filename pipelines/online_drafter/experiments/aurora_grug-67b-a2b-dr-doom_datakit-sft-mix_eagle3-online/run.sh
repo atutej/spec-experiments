@@ -6,13 +6,16 @@
 # args for tools/vllm_capture_server.py, e.g. "--data-parallel-size 4 --enable-expert-parallel"), TRAIN_GPUS (0,1), SERVER_GPU (2).
 # Other drafters: INIT_DRAFT=<draft checkpoint dir> starts from that draft instead of a random one (no scratch draft; its config.json is the draft config),
 # METHOD=dspark SPEC_TOKENS=8 serves a DSpark drafter, CONFIG=<aurora config.yaml> picks another config (see ../aurora_grug-67b-a2b-dr-doom_datakit-sft-mix_dspark-online).
+# CLIENT_PROMPTS=<jsonl of {"token_ids": [...]}>, MAX_MODEL_LEN (server, 8192), MOONCAKE_SEGMENT_GB / MAX_POOL (the client's Mooncake pool and its unfetched-sample throttle): the RLVR runs
+# (see ../aurora_grug-67b-a2b-dr-doom_rlvr-train_dspark-online); the trainer's <data file> then only gives it the vocabulary mapping and the step count.
 # FOREVER=1 (the long job): no step or request budget, the prompts cycle, and the script runs until Slurm ends the job (or a process dies, which stops everything so a
 # failure does not burn the allocation). Checkpoints: the trainer's draft-sync directory is copied to $RUN/drafts/step_N after every successful sync (the sync dir itself
 # is overwritten in place, so a kill mid-write could leave it torn); only the last KEEP_DRAFTS and every 1000th step are kept (forever_watch in tools/lib.sh).
 set -uo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"; TOOLS="$HERE/../../tools"; source "$TOOLS/lib.sh"
 init_run "${1:?usage: run.sh <new run dir> <data file> [overrides]}"; DATA=${2:?data file (.arrow shard or jsonl)}; shift 2
-[[ -f "$DATA" ]] || { echo "missing data file $DATA" >&2; exit 1; }
+CLIENT_PROMPTS=${CLIENT_PROMPTS:-$DATA}   # the prompts the rollout client sends: by default the same file the trainer reads; CLIENT_PROMPTS=<jsonl of {"token_ids": [...]}> to roll out other prompts (the RLVR runs)
+[[ -f "$DATA" && -f "$CLIENT_PROMPTS" ]] || { echo "missing data file $DATA or prompts $CLIENT_PROMPTS" >&2; exit 1; }
 for p in 6380 18080 30000 50052 8090; do port_free $p || { echo "port $p is in use" >&2; exit 1; }; done
 FOREVER=${FOREVER:-0}; KEEP_DRAFTS=${KEEP_DRAFTS:-5}
 INIT_DRAFT=${INIT_DRAFT:-}; METHOD=${METHOD:-eagle3}; SPEC_TOKENS=${SPEC_TOKENS:-5}; CONFIG=${CONFIG:-$HERE/config.yaml}
@@ -50,14 +53,14 @@ done; echo "scratch draft saved ($SCRATCH) after ${waited}s more"
 
 # 3. vLLM capture server (Marin fork, unmodified) starting from that random draft
 run_in vllm server CUDA_VISIBLE_DEVICES=$SERVER_GPU HF_HUB_OFFLINE=1 VLLM_LOGGING_LEVEL=WARNING PYTHONPATH="$TOOLS" TOKENIZERS_PARALLELISM=false -- \
-    python "$TOOLS/vllm_capture_server.py" --target $TARGET --draft "$SCRATCH" --method $METHOD --num-spec-tokens $SPEC_TOKENS --max-model-len 8192 --gpu-memory-utilization 0.9 --port 30000 --scratch-dir /tmp ${SERVER_ARGS:-}
+    python "$TOOLS/vllm_capture_server.py" --target $TARGET --draft "$SCRATCH" --method $METHOD --num-spec-tokens $SPEC_TOKENS --max-model-len ${MAX_MODEL_LEN:-8192} --gpu-memory-utilization 0.9 --port 30000 --scratch-dir /tmp ${SERVER_ARGS:-}
 wait_http "http://localhost:30000/health" 2400 server || exit 1
 
 # 4. the prompt stream: Datakit rows, cut at the start of their last assistant reply (token ids, no template)
-run_in aurora client HF_HUB_OFFLINE=1 -- python "$TOOLS/rollout_client.py" --server http://localhost:30000 --callback http://localhost:18080 --prompts "$DATA" \
+run_in aurora client HF_HUB_OFFLINE=1 -- python "$TOOLS/rollout_client.py" --server http://localhost:30000 --callback http://localhost:18080 --prompts "$CLIENT_PROMPTS" \
     --limit "$REQUESTS" --max-prompt-tokens "$MAX_PROMPT_TOKENS" --batch "$BATCH" --max-tokens "$MAX_TOKENS" --temperature 1.0 \
     --mooncake-master "$IP:50052" --mooncake-metadata "http://$IP:8090/metadata" --local-hostname "$IP" --stop-file "$RUN/stop" --log "$RUN/rollouts.jsonl" ${WANDB_PROJECT:+--wandb-project "$WANDB_PROJECT" --wandb-entity "${WANDB_ENTITY:-}" --wandb-group "${WANDB_GROUP:-}" --wandb-dir "$RUN/wandb" --steps-per-sync "${SYNC_INTERVAL:-0}"} \
-    $([[ $FOREVER == 1 ]] && echo --loop)
+    ${MOONCAKE_SEGMENT_GB:+--mooncake-segment-gb "$MOONCAKE_SEGMENT_GB"} ${MAX_POOL:+--max-pool "$MAX_POOL"} $([[ $FOREVER == 1 ]] && echo --loop)
 echo "running: training log $RUN/logs/training.log, server log $RUN/logs/server.log, per-batch results $RUN/rollouts.jsonl"
 
 [[ $FOREVER == 1 ]] && { forever_watch; exit 1; }   # tools/lib.sh: draft copies, runs until Slurm ends the job or a process dies

@@ -1,0 +1,1 @@
+R_FFN3X_L6=atutej/dspark-ffn3x-layers2x_grug-67b-a2b-datakit-sft-dr-doom_datakit-sft-mix_itw-76k-20261026

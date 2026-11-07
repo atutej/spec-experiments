@@ -1,0 +1,184 @@
+# Split layout (NOT colocated): policy EP=4 on node 1, one DP4xEP4 engine on node 2, engines never sleep. Dr. Doom target + Qwen3-layer targetgen-warm80k drafter. Derived from configs/2node_grug_datakit_dspark_r2egym_rl.yaml.
+entrypoint: skyrl_train.entrypoints.main_base
+
+context_budget:   # 4608 new tokens per turn (the model reasons at length; 3000 was exhausted before the first tool call), window 10240 (v4 at 14336/4096 also OOMed at step 2, in the logprob forward); step-2 OOM at 4.6k/16384 (4 GiB free, ~93 GiB per GPU outside any process), 6144/20480 left 41 MB free
+  request_window_tokens: 10240
+  max_new_tokens_per_turn: 3072
+  max_turns: 6
+
+trainer:
+  strategy: megatron
+  # false: the Megatron worker then clears recompute_*; Megatron-core rejects cpu_offloading together with activation recomputation.
+  gradient_checkpointing: true
+  gradient_checkpointing_use_reentrant: false
+  # skyrl_train's Grug FSDP2 path (model_wrapper.validate_grug_training_options)
+  # unconditionally rejects sample packing for GRUG_MOE_MODEL_TYPE -- ppo_base_config's
+  # default of true crashes on init with "Flash attention 2 should be used for
+  # `use_sample_packing`" before even reaching the Grug-specific check.
+  use_sample_packing: false
+  # ppo_base_config defaults this to false -> resolve_attn_implementation() picks
+  # "eager" attention (attn_backend stays "auto" below). Eager materializes the full
+  # O(seq_len^2) attention score matrix and its own softmax/softmax_backward -- for
+  # real R2E-Gym trajectories up to ~32k tokens this is exactly what OOM'd in
+  # policy_train ("Tried to allocate ~40 GiB" inside structured_softmax_backward_cuda_out).
+  # Verified in isolation on this GB200: eager attention peaks at 50.66 GiB for a
+  # 16k-token sequence vs 0.80 GiB for flash-attention-2 (~63x). GrugMoE supports
+  # flash_attention_2 natively (GRUG_SUPPORTED_ATTENTION_BACKENDS), and the aarch64
+  # flash-attn wheel installed into MarinSkyRL's venv verified working (fwd+bwd) on
+  # this hardware. This is the actual fix -- NOT more GPUs/nodes (FSDP sharding
+  # doesn't touch this at all, since it's a per-example activation cost, not
+  # parameter/optimizer memory).
+  flash_attn: true
+  algorithm:
+    advantage_estimator: rloo_n
+    # No separate reference model needed for a smoke test -- avoids a second
+    # ~134GB Snowball copy that a single 4-GPU node cannot fit alongside the
+    # policy + generator copies.
+    use_kl_loss: false
+    kl_loss_coef: 0.0
+    eps_clip_low: 0.2
+    eps_clip_high: 0.2   # reference recipe (was 0.05)
+    loss_reduction: sequence_mean
+    off_policy_correction: tis   # token-level truncation at 2.0: the old use_tis / tis_imp_ratio_cap 2.0
+    group_advantage_min_size: 2
+
+  # Smoke: just prove one training step completes without error.
+  epochs: 1
+  max_steps: 48   # full run (about 5 h at ~6 min/step with 128 trajectories and the single-channel NCCL setting)
+  update_epochs_per_batch: 1
+
+  train_batch_size: 16
+  policy_mini_batch_size: 16
+  eval_batch_size: 16
+
+  micro_forward_batch_size_per_gpu: 1
+  micro_train_batch_size_per_gpu: 1
+
+  eval_interval: 16
+  eval_before_train: true   # baseline at temperature 1
+  ckpt_interval: 0   # NO checkpoints: job 1118981 (RG, 2026-11-03) died at the step-16 save because node RAM hit 100% (steady use is ~1.5 of 1.69 TB with the optimizer offloaded to host); no resume possible, so no chained job
+  max_ckpts_to_keep: 2
+  resume_mode: null   # left unset on purpose: the launcher (hpc/rl_paths.py) resolves it per chained job (AT_LINK_START): latest checkpoint if one exists, else fresh; an explicit "latest" is rejected when none exists yet
+  hf_save_interval: 0   # no HF export of the 67B policy during training
+  hf_hub_repo_id: null
+  hf_hub_private: false
+  hf_hub_revision: main
+
+  enable_db_registration: false
+
+  project_name: marin_rl   # wandb project (entity atutej comes from WANDB_ENTITY in vista/submit.sh)
+  log_level: INFO
+  tracker_commit_each_step: true
+  logger: wandb   # direct wandb logging; the launcher downgrades to console unless WANDB_MODE=online (set in vista/submit.sh)
+
+  run_name: null
+  ckpt_path: null
+  export_path: null
+
+  policy:
+    model:
+      path: /scratch/09749/atutej/marin_speculator/cache/hf/hub/models--open-athena--Grug-67B-A2B-Datakit-SFT-262K-2026.09.21-dr-doom/snapshots/fd4a272b78d4c224851aaeae7f51987c5d19649c
+    optimizer_config:
+      lr: 5e-7   # reference recipe; after MarinSkyRL #452 (2026-08-23) 3e-6 acts like the old 8e-6, so 8e-6 would be very aggressive here
+      weight_decay: 0.0
+      adam_betas: [0.9, 0.999]
+      max_grad_norm: 0.9
+      num_warmup_steps: 3   # reference: lr 5e-7, warmup 3
+    # MarinSkyRL main is Megatron-only (bd9a59f2 removed the FSDP trainers). Grug: TP=1; EP=4 divides the 256 experts (about 33 GiB of bf16 weights per rank).
+    # The optimizer state of a 67B model lives in CPU RAM (the node has ~1.6 TB).
+    megatron_config:
+      tensor_model_parallel_size: 1
+      expert_model_parallel_size: 4
+      logprob_chunk_size: 128   # default 1024: smaller logit chunks (vocab 128256 x 32k tokens is ~17 GB in fp32 per sequence)
+      ddp_config:
+        grad_reduce_in_fp32: false
+      optimizer_config_kwargs:
+        use_precision_aware_optimizer: true
+        optimizer_cpu_offload: true
+        optimizer_offload_fraction: 1.0
+
+  placement:
+    # Single GB200 node, 4 GPUs total. colocate_all=true forces policy+generator onto
+    # the SAME GPU(s) regardless of how many are available -- that's what colocation
+    # means, not an adaptive fallback -- which is why this OOM'd on GPU 0 even after
+    # vista_gb200 correctly gave Ray a 4-GPU view. With 4 real GPUs, disaggregate
+    # instead: policy gets 1, generator gets 1 (see num_inference_engines below), on
+    # separate devices, no more memory contention. colocate_policy_ref stays true
+    # since use_kl_loss=false means no separate reference model is instantiated anyway.
+    colocate_all: false
+    colocate_policy_ref: true
+    policy_num_nodes: 1
+    ref_num_nodes: 1
+    # 1 GPU for policy left the whole ~67B-A2B model (weights+grads+optimizer+backward
+    # activations) on a single GPU, which OOM'd during loss.backward(). 3 of the 4
+    # physical GPUs for policy (generator keeps the other 1, per num_inference_engines
+    # below) lets FSDP2 (fsdp_size=-1 above) actually shard the model 3-way.
+    policy_num_gpus_per_node: 4
+    ref_num_gpus_per_node: 1
+    policy_strict_spread_pg: false
+    policy_per_gpu_bundles: true
+    policy_force_cvd_mask: true
+
+generator:
+  backend: vllm
+  timeout_multiplier: 1.0
+  model_dtype: bfloat16
+
+  inference_engine_tensor_parallel_size: 1
+  num_inference_engines: 1
+  inference_engine_data_parallel_size: 4
+  inference_engine_expert_parallel_size: 4
+  inference_engine_mp_backend: true
+
+  n_samples_per_prompt: 8   # reference: 8 samples per prompt
+  eval_n_samples_per_prompt: 1
+
+  # 0.6 left no room for KV-cache blocks once the ~67B-A2B (all-experts-resident)
+  # weights loaded on a dedicated GPU (disaggregated placement -- see colocate_all
+  # above): "No available memory for the cache blocks." Raised since this GPU is no
+  # longer shared with the policy/ref.
+  gpu_memory_utilization: 0.88   # was 0.92: c672-004 GPUs 2-3 hold 2 GB and 11.7 GB of orphaned memory after the previous job
+
+  max_num_seqs: 64
+  max_num_batched_tokens: 16384
+
+  enable_prefix_caching: true
+  enable_chunked_prefill: true
+
+  run_engines_locally: true
+  weight_sync_backend: nccl
+  # SPLIT layout: the first two runs ran out of GPU memory in the weight sync after the first training step (the gather of the full HF-format weights on each policy GPU, tens of GiB
+  # beyond the process' own allocation). expert_block broadcasts each expert matrix from the trainer rank that holds it to the engine workers that serve it, with no full gather. It needs the
+  # non-colocated Grug layout used here (TP=1, engines TP=1 with EP=DP, NCCL) and vLLM's TRITON MoE backend (below).
+  weight_sync_transport: expert_block
+  enable_http_endpoint: true
+  sampling_params:
+    temperature: 1.0
+    top_p: 1.0
+    top_k: -1
+    stop: ["</sql>", "</solution>"]   # tool boundary of the SkyRL-SQL format
+  eval_sampling_params:   # the SkyRL default is greedy (temperature 0.0); blog evals and training use temperature 1
+    temperature: 1.0
+    top_p: 1.0
+    top_k: -1
+    stop: ["</sql>", "</solution>"]
+  use_conversation_multi_turn: false   # as in the SkyRL-SQL reference script
+
+  engine_init_kwargs:
+    enable_return_routed_experts: false
+    kernel_config:
+      moe_backend: triton   # required by weight_sync_transport: expert_block (the engine default is "auto"; this changes the engine's MoE kernel)
+    # Our Qwen3-layer DSpark drafter targetgen-warm80k for the Dr. Doom target (speculators format; trained on the Dr. Doom target's own replies (targetgen), warm-started from itw-80k, no R2E-Gym adaptation; stock vLLM wheel, no overlay) through vLLM's native
+    # speculative_config passthrough. num_speculative_tokens = the drafter's block size (8).
+    speculative_config:
+      method: dspark
+      model: /scratch/09749/atutej/marin_speculator/runs/eval_ckpts/drdoom_targetgen_warm80k_final
+      num_speculative_tokens: 8
+      # vLLM's default draft_sample_method is "greedy", which cost ~0.6 accept length at T=1 in the replay of the 1109533 contexts (2.33 vs 2.94 pooled, targetgen-warm80k, replay in
+      # runs/rl_speculation/rollout_replay_drdoom_20261029). Probabilistic drafting + standard rejection matches the sampled (T=1) rollouts.
+      draft_sample_method: probabilistic
+      rejection_sample_method: standard
+
+data:
+  train_data: ["/scratch/09749/atutej/marin_speculator/runs/rl_speculation/sql_data_native_20261103/train.parquet"]
+  val_data: ["/scratch/09749/atutej/marin_speculator/runs/rl_speculation/sql_data_native_20261103/validation_256.parquet"]

@@ -1,0 +1,16 @@
+# Reasoning Gym RLVR prompts for the no-sandbox RL smoke (revision = installed reasoning-gym version 0.1.25).
+train:
+  - source: reasoning_gym
+    revision: 0.1.25
+    parameters:
+      tasks: [leg_counting, knights_knaves, countdown, propositional_logic, family_relationships, syllogism]
+      rows_per_task: 1500
+      seed: 42
+validation:
+  - source: reasoning_gym
+    revision: 0.1.25
+    parameters:
+      tasks: [leg_counting, knights_knaves, countdown, propositional_logic, family_relationships, syllogism]
+      rows_per_task: 16
+      start_index: 1500
+      seed: 42

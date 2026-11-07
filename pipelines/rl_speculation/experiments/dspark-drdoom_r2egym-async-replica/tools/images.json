@@ -1,0 +1,105 @@
+{
+ "version": 1,
+ "bundle": "v3-20260918",
+ "images": [
+  {
+   "repo": "aiohttp",
+   "name": "harbor__a7ab1d592a71__snapshot",
+   "dockerfile": "dockerfiles/Dockerfile.aiohttp",
+   "dockerfile_sha256": "d50fef6f461e04ff5026b23b74893c0aa86ddb84c04adeffde6bbf266ceadedf",
+   "task": "r2egym-v1-00005",
+   "task_count": 80,
+   "size_gb": 1.1831575632095337
+  },
+  {
+   "repo": "coveragepy",
+   "name": "harbor__00a7fef177af__snapshot",
+   "dockerfile": "dockerfiles/Dockerfile.coveragepy",
+   "dockerfile_sha256": "d40f1e757990e33e0156120795aff7f0fe5512ead0d77fcb94cc7397541ae193",
+   "task": "r2egym-v1-00300",
+   "task_count": 78,
+   "size_gb": 1.380266954191029
+  },
+  {
+   "repo": "datalad",
+   "name": "harbor__f9853da0617b__snapshot",
+   "dockerfile": "dockerfiles/Dockerfile.datalad",
+   "dockerfile_sha256": "17eda5bd86bf546a192b7e05cd75ff45c21f422bd68baddbefbd2dcda4be55b8",
+   "task": "r2egym-v1-00409",
+   "task_count": 97,
+   "size_gb": 2.029971624724567
+  },
+  {
+   "repo": "numpy",
+   "name": "harbor__1af7863e05dd__snapshot",
+   "dockerfile": "dockerfiles/Dockerfile.numpy",
+   "dockerfile_sha256": "98be3f77904dc0a8ceb8c3854d32f2ffd6605f5192b4a84c30dd42e1981e4db8",
+   "task": "r2egym-v1-01781",
+   "task_count": 152,
+   "size_gb": 2.7105779238045216
+  },
+  {
+   "repo": "orange3",
+   "name": "harbor__7905daf5c23e__snapshot",
+   "dockerfile": "dockerfiles/Dockerfile.orange3",
+   "dockerfile_sha256": "1bef35fa3ad30926498b9747411e805472006df5694dfadbef9da776cf6de516",
+   "task": "r2egym-v1-02566",
+   "task_count": 48,
+   "size_gb": 3.063566501252353
+  },
+  {
+   "repo": "pandas",
+   "name": "harbor__c9cd7039f831__snapshot",
+   "dockerfile": "dockerfiles/Dockerfile.pandas",
+   "dockerfile_sha256": "d47d9fdfc7f56458bca1305635cfa9298d9262db7c5b788d7131eb39e01dfe31",
+   "task": "r2egym-v1-03043",
+   "task_count": 269,
+   "size_gb": 2.9591631703078747
+  },
+  {
+   "repo": "pillow",
+   "name": "harbor__cf5f8910339f__snapshot",
+   "dockerfile": "dockerfiles/Dockerfile.pillow",
+   "dockerfile_sha256": "6ce08ac13e81140624941d30ea48309bbef79c4b0c072073c09e425aa1eb660f",
+   "task": "r2egym-v1-04485",
+   "task_count": 574,
+   "size_gb": 1.797274000942707
+  },
+  {
+   "repo": "pyramid",
+   "name": "harbor__18aa570afb60__snapshot",
+   "dockerfile": "dockerfiles/Dockerfile.pyramid",
+   "dockerfile_sha256": "f57564863c8ce26d8938ce073a5b3debeb69c244639d8e3e18961f49beecac2c",
+   "task": "r2egym-v1-05105",
+   "task_count": 167,
+   "size_gb": 0.9701889380812645
+  },
+  {
+   "repo": "scrapy",
+   "name": "harbor__3c25f97e30b9__snapshot",
+   "dockerfile": "dockerfiles/Dockerfile.scrapy",
+   "dockerfile_sha256": "986d6c677841c526bc7cb00ff6bc0110845c8a15eeb2aeaf428f911cd5054ece",
+   "task": "r2egym-v1-05295",
+   "task_count": 123,
+   "size_gb": 1.0030402801930904
+  },
+  {
+   "repo": "sympy",
+   "name": "harbor__8c0fc945338b__snapshot",
+   "dockerfile": "dockerfiles/Dockerfile.sympy",
+   "dockerfile_sha256": "131df6bc1d35cff6f5f8dcbecaca764934833672b9b1c151b7714d4421d2481d",
+   "task": "r2egym-v1-05509",
+   "task_count": 1286,
+   "size_gb": 1.2199779264628887
+  },
+  {
+   "repo": "tornado",
+   "name": "harbor__0cd47102cdf0__snapshot",
+   "dockerfile": "dockerfiles/Dockerfile.tornado",
+   "dockerfile_sha256": "b67813d546b6e6dac27bff9b23a7d703e5eec3202aec19eb0dfb285983bd9b97",
+   "task": "r2egym-v1-07840",
+   "task_count": 161,
+   "size_gb": 0.9746686713770032
+  }
+ ]
+}

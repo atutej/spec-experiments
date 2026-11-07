@@ -9,6 +9,7 @@ R2E-Gym RL is on hold: the shared Daytona org's snapshot quota (40, holding 48) 
 | `dspark_grug-67b-a2b-datakit-sft_r2egym-rl-ab` | 2-node RL, drafter vs plain, colocated and split layouts | layouts exercised, no with/without comparison |
 | `dspark-grug-layers_grug-67b-a2b-dr-doom_r2egym-rl-split` | Planned 64-step split RL, Dr. Doom target, Grug-layer drafter (needs a vLLM overlay) | planned, not run |
 | `dspark-targetgen-warm80k_grug-67b-a2b-dr-doom_r2egym-rl-split` | Planned 64-step split RL, Dr. Doom target, targetgen warm80k drafter | planned, not run |
+| `dspark-drdoom_r2egym-rollout-replay-acceptance` | Rebuilds the exact prompts a finished RL job served (`build_replay_prompts.py`) and replays them against Dr. Doom with each drafter (`run_replay.sh`), accept length by context length | used on the crashed job 1109533 |
 | `dspark-drdoom_r2egym-async-replica` | Snapshot-registration tool, image list and digests for the reference setup's 11 per-repo images | registration failed on the quota |
 
 The shared R2E-Gym configs stay in `../configs/`, the prompt builder in `../tools/build_r2egym_prompts.py`.

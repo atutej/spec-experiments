@@ -22,7 +22,7 @@ INIT_DRAFT=${INIT_DRAFT:-}; METHOD=${METHOD:-eagle3}; SPEC_TOKENS=${SPEC_TOKENS:
 DRAFT_CONFIG=${DRAFT_CONFIG:-${INIT_DRAFT:+$INIT_DRAFT/config.json}}; DRAFT_CONFIG=${DRAFT_CONFIG:-$HERE/draft_config.json}
 IP=$(local_ip); REQUESTS=${REQUESTS:-160}; BATCH=${BATCH:-32}; MAX_TOKENS=${MAX_TOKENS:-256}; MAX_PROMPT_TOKENS=${MAX_PROMPT_TOKENS:-4096}; STEPS=${STEPS:-20}
 [[ $FOREVER == 1 ]] && { REQUESTS=${REQUESTS_FOREVER:-0}; STEPS=100000000; }   # 0 requests = every usable row of the file, cycled
-TARGET=open-athena/Grug-67B-A2B-Datakit-SFT-262K-2026.09.21-dr-doom; TRAIN_GPUS=${TRAIN_GPUS:-0,1}; SERVER_GPU=${SERVER_GPU:-2}
+TARGET=${TARGET:-open-athena/Grug-67B-A2B-Datakit-SFT-262K-2026.09.21-dr-doom}; TRAIN_GPUS=${TRAIN_GPUS:-0,1}; SERVER_GPU=${SERVER_GPU:-2}
 RAYDIR=/tmp/aurora_ray_$$; export RAY_ADDRESS="$IP:6380" RAY_AUTH_MODE=token   # Ray 2.59 heads require token auth; the token lives in ~/.ray/auth_token
 cleanup() {
     echo "stopping..."; touch "$RUN/stop"

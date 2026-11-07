@@ -6,4 +6,4 @@
 #SBATCH -t 02:00:00
 #SBATCH -o /scratch/09749/atutej/marin_speculator/logs/slurm/%x-%j.out
 set -uo pipefail
-exec bash /scratch/09749/atutej/marin_speculator/spec-experiments/pipelines/rl_speculation/experiments/dspark_grug-67b-a2b-datakit-sft_r2egym_serving-smoke/vista/run.sh "$@"
+exec bash /scratch/09749/atutej/marin_speculator/spec-experiments/pipelines/rl_speculation/archive_r2egym/dspark_grug-67b-a2b-datakit-sft_r2egym_serving-smoke/vista/run.sh "$@"

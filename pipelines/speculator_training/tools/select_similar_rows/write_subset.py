@@ -22,6 +22,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--dataset", required=True); ap.add_argument("--sel", required=True); ap.add_argument("--out", required=True)
     ap.add_argument("--seed", type=int, default=0); ap.add_argument("--num-shards", type=int, default=215)
+    ap.add_argument("--num-proc", type=int, default=None, help="processes for save_to_disk (default: one)")
     a = ap.parse_args()
     src, sel, out = Path(a.dataset).resolve(), Path(a.sel), Path(a.out).resolve()
     if out == src or src in out.parents:
@@ -48,7 +49,7 @@ def main():
     assert len(ds) == int(offsets[-1])
     sub = ds.select(idx.tolist())
     print(f"saving {len(sub):,} rows ({len(np.unique(idx)):,} unique)", flush=True)
-    sub.save_to_disk(str(out), num_shards=min(a.num_shards, max(1, len(sub) // 1000)))
+    sub.save_to_disk(str(out), num_shards=min(a.num_shards, max(1, len(sub) // 1000)), num_proc=a.num_proc)
 
     freq = np.zeros(VOCAB_CAP, dtype=np.int64)
     n_tok = n_sup = 0

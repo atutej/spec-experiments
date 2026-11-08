@@ -51,7 +51,8 @@ run_arm() {  # run_arm <label> <drafter dir@method@tokens>
     local method=dspark ntok=$NUM_SPEC_TOKENS extra=${SPEC_EXTRA:-}
     if [[ "$draft" == *@* ]]; then IFS=@ read -r draft method ntok <<< "$draft"; [[ "$method" == dspark ]] || extra=""; fi
     use_env vllm
-    local spec_args=(--speculative-config "$(printf '{"model": "%s", "num_speculative_tokens": %s, "method": "%s"%s}' "$draft" "$ntok" "$method" "$extra")")
+    local spec_args=()   # an empty drafter (ARMS="label=") is the plain, no-draft arm: no speculative config
+    [[ -z "$draft" ]] || spec_args=(--speculative-config "$(printf '{"model": "%s", "num_speculative_tokens": %s, "method": "%s"%s}' "$draft" "$ntok" "$method" "$extra")")
     setsid vllm serve "$MODEL" --port "$PORT" --tensor-parallel-size 1 --data-parallel-size 4 --enable-expert-parallel --max-model-len ${MAX_MODEL_LEN:-32768} \
         --gpu-memory-utilization 0.9 ${SERVER_EXTRA:-} "${spec_args[@]}" > "$d/server.log" 2>&1 &
     local PGID=$!

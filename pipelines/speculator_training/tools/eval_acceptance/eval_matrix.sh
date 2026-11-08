@@ -15,13 +15,16 @@
 #   --per-pair          one job per (benchmark, drafter)
 # Options: --dry-run (print, submit nothing)  --stamp S  --out-base DIR (default runs/eval_matrix_<stamp>; rerun with the same dir to fill in missing pairs: finished pairs are skipped)
 #          --time HH:MM:SS (per job; default 1 h per pair + 15 min, at most 12 h)  --model <target repo> (default Dr. Doom)
+#          --after <job id>  start only when that job has ended (sbatch --dependency=afterany:<id>)
+#          --plain  also run a plain (no-draft) arm right before each drafter's pair, in the same job: for speedup (tokens/s ratio, speedup_report.py <out base>)
+#          --server-extra '<flags>' extra `vllm serve` flags for every server, e.g. '--compilation-config={"cudagraph_mode":"PIECEWISE"}' (no spaces inside a flag; env EVAL_SERVER_EXTRA)
 # Results: <out base>/<benchmark>/<drafter label>/...   Settings travel in the environment: T=1, probabilistic draft sampling with standard rejection.
 set -uo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$HERE/../../../../common/slurm.sh"   # gb_reservation_args
 source "$HERE/eval_benchmarks.sh"
 [[ -f "$HERE/eval_local.sh" ]] && source "$HERE/eval_local.sh"
-DRAFTERS=${DRAFTERS:-}; BENCHES=${BENCHES:-}; JOBS=${JOBS:-1}; DRY=0; STAMP=${STAMP:-$(date +%Y%m%d-%H%M)}; OUT_BASE=${OUT_BASE:-}; TIME=${TIME:-}
+EVAL_AFTER=${EVAL_AFTER:-}; EVAL_PLAIN=${EVAL_PLAIN:-0}; EVAL_SERVER_EXTRA=${EVAL_SERVER_EXTRA:-}; DRAFTERS=${DRAFTERS:-}; BENCHES=${BENCHES:-}; JOBS=${JOBS:-1}; DRY=0; STAMP=${STAMP:-$(date +%Y%m%d-%H%M)}; OUT_BASE=${OUT_BASE:-}; TIME=${TIME:-}
 MODEL=${MODEL:-open-athena/Grug-67B-A2B-Datakit-SFT-262K-2026.09.21-dr-doom}
 VLLM_OVERLAY=${VLLM_OVERLAY:-$ROOT/tmp/grug_dspark_serving_smoke_2026-10-27/vllm_overlay}
 die() { echo "ERROR: $*" >&2; exit 1; }
@@ -37,6 +40,9 @@ while [[ $# -gt 0 ]]; do
         --out-base) OUT_BASE=$2; shift 2 ;;
         --time) TIME=$2; shift 2 ;;
         --model) MODEL=$2; shift 2 ;;
+        --server-extra) EVAL_SERVER_EXTRA=$2; shift 2 ;;
+        --plain) EVAL_PLAIN=1; shift ;;
+        --after) EVAL_AFTER=$2; shift 2 ;;
         -h|--help) sed -n 2,22p "$0"; exit 0 ;;
         *) die "unknown option $1 (see --help)" ;;
     esac
@@ -72,13 +78,17 @@ case $JOBS in 1|drafter|pair) ;; *) die "JOBS must be 1, drafter or pair (got '$
 
 # ---- group the pairs into jobs. A pair is "<bench>|<label>=<dir>@<method>@<N>[+overlay]"
 declare -a GROUP_PAIRS=() GROUP_NAMES=()
+pair_str() {  # pair_str <bench> <drafter index>: "<bench>|<spec>", with a plain arm "<bench>|plain-<label>=" before it under --plain
+    [[ $EVAL_PLAIN -eq 1 ]] && printf '%s|plain-%s=;' "$1" "${LABELS[$2]}"
+    printf '%s|%s' "$1" "${SPECS[$2]}"
+}
 if [[ $JOBS == 1 ]]; then
-    p=""; for b in $BENCHES; do for s in "${SPECS[@]}"; do p+="${p:+;}$b|$s"; done; done
+    p=""; for b in $BENCHES; do for i in "${!SPECS[@]}"; do p+="${p:+;}$(pair_str "$b" "$i")"; done; done
     GROUP_PAIRS+=("$p"); GROUP_NAMES+=("evm-all")
 elif [[ $JOBS == drafter ]]; then
-    for i in "${!SPECS[@]}"; do p=""; for b in $BENCHES; do p+="${p:+;}$b|${SPECS[$i]}"; done; GROUP_PAIRS+=("$p"); GROUP_NAMES+=("evm-${LABELS[$i]:0:24}"); done
+    for i in "${!SPECS[@]}"; do p=""; for b in $BENCHES; do p+="${p:+;}$(pair_str "$b" "$i")"; done; GROUP_PAIRS+=("$p"); GROUP_NAMES+=("evm-${LABELS[$i]:0:24}"); done
 else
-    for b in $BENCHES; do for i in "${!SPECS[@]}"; do GROUP_PAIRS+=("$b|${SPECS[$i]}"); GROUP_NAMES+=("evm-$b-${LABELS[$i]:0:20}"); done; done
+    for b in $BENCHES; do for i in "${!SPECS[@]}"; do GROUP_PAIRS+=("$(pair_str "$b" "$i")"); GROUP_NAMES+=("evm-$b-${LABELS[$i]:0:20}"); done; done
 fi
 auto_time() {  # one hour per pair plus 15 minutes, at most 12 h
     local n=$1 m=$(( $1 * 60 + 15 )); (( m > 720 )) && { echo "WARNING: $n pairs need over 12 h in one job; use --per-drafter or --per-pair" >&2; m=720; }
@@ -87,12 +97,12 @@ auto_time() {  # one hour per pair plus 15 minutes, at most 12 h
 res=$(gb_reservation_args)
 if [[ -z "$res" && "${ALLOW_NO_RESERVATION:-0}" != 1 ]]; then die "no reservation would be applied (CGAI-gb missing); ALLOW_NO_RESERVATION=1 overrides"; fi
 [[ $DRY -eq 1 ]] || { command -v sbatch >/dev/null || die "sbatch not found (login node?)"; mkdir -p "$ROOT/logs/slurm" "$OUT_BASE"; }
-echo "target $MODEL | benchmarks: $BENCHES | drafters: ${LABELS[*]} | jobs: ${#GROUP_PAIRS[@]} ($( [[ $JOBS == 1 ]] && echo serial || echo "per-$JOBS" )) | out $OUT_BASE"
+echo "target $MODEL${EVAL_SERVER_EXTRA:+ | server flags: $EVAL_SERVER_EXTRA} | benchmarks: $BENCHES | drafters: ${LABELS[*]} | jobs: ${#GROUP_PAIRS[@]} ($( [[ $JOBS == 1 ]] && echo serial || echo "per-$JOBS" )) | out $OUT_BASE"
 for g in "${!GROUP_PAIRS[@]}"; do
     pairs=${GROUP_PAIRS[$g]}; n=$(awk -F';' '{print NF}' <<< "$pairs"); t=${TIME:-$(auto_time "$n")}
-    cmd=(sbatch --parsable -p gb -A "${ACCOUNT:-ASC26088}" -t "$t" -J "${GROUP_NAMES[$g]}" --export=ALL); [[ -z "$res" ]] || cmd+=("$res"); cmd+=("$HERE/eval_matrix.sbatch")
+    cmd=(sbatch --parsable -p gb -A "${ACCOUNT:-ASC26088}" -t "$t" -J "${GROUP_NAMES[$g]}" --export=ALL); [[ -z "$res" ]] || cmd+=("$res"); [[ -z "$EVAL_AFTER" ]] || cmd+=(--dependency="afterany:$EVAL_AFTER"); cmd+=("$HERE/eval_matrix.sbatch")
     echo "== ${GROUP_NAMES[$g]}: $n pair(s), time $t"; tr ';' '\n' <<< "$pairs" | sed 's/^/     /'
     if [[ $DRY -eq 1 ]]; then echo "   ${cmd[*]}"; continue; fi
-    out=$( export EVAL_PAIRS="$pairs" EVAL_OUT_BASE="$OUT_BASE" MODEL VLLM_OVERLAY; "${cmd[@]}" 2>&1 ); id=$(grep -E '^[0-9]+$' <<< "$out" | tail -1)
+    out=$( export EVAL_PAIRS="$pairs" EVAL_OUT_BASE="$OUT_BASE" MODEL VLLM_OVERLAY EVAL_SERVER_EXTRA; "${cmd[@]}" 2>&1 ); id=$(grep -E '^[0-9]+$' <<< "$out" | tail -1)
     [[ "$id" =~ ^[0-9]+$ ]] || die "sbatch failed for ${GROUP_NAMES[$g]}: $(tail -3 <<< "$out")"; echo "   job $id"
 done

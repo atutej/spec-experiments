@@ -1,0 +1,88 @@
+--- a/skyrl-train/skyrl_train/workers/megatron/megatron_worker.py
++++ b/skyrl-train/skyrl_train/workers/megatron/megatron_worker.py
+@@ -75,6 +75,26 @@
+ from marinskyrl.runtime_options import WeightSyncTransport
+ 
+ 
++def _memdiag(tag: str) -> None:
++    """MEMDIAG (2026-11-06): driver view vs PyTorch view of this GPU, to locate memory held outside the allocator."""
++    try:
++        if not torch.cuda.is_available():
++            return
++        free, total = torch.cuda.mem_get_info()
++        gib = 1024.0**3
++        used = (total - free) / gib
++        alloc = torch.cuda.memory_allocated() / gib
++        resv = torch.cuda.memory_reserved() / gib
++        peak = torch.cuda.max_memory_allocated() / gib
++        logger.info(
++            f"MEMDIAG rank={torch.distributed.get_rank() if torch.distributed.is_initialized() else -1} "
++            f"{tag}: driver_used={used:.1f} GiB pytorch_alloc={alloc:.1f} reserved={resv:.1f} "
++            f"peak_alloc={peak:.1f} outside_pytorch={used - resv:.1f} GiB"
++        )
++    except Exception as exc:  # diagnostics must never break training
++        logger.warning(f"MEMDIAG failed at {tag}: {exc}")
++
++
+ class _MegatronInitMode(StrEnum):
+     TRAINING = "training"
+     CHECKPOINT_EXPORT = "checkpoint-export"
+@@ -198,6 +218,7 @@
+         """
+         Override `Worker.forward` to support passing the full mini batch to the MegatronModelWrapper.forward method.
+         """
++        _memdiag("forward:start")
+         log_r3_resident_set(self._rank, data)
+         # Run in micro batches grouped into a single mini-batch
+         micro_bsz = probe_micro_batch_size or self.cfg.trainer.micro_forward_batch_size_per_gpu
+@@ -251,6 +272,7 @@
+                     f"{diff.mean().item():.6f}, max abs {diff.max().item():.6f}"
+                 )
+ 
++        _memdiag("forward:end")
+         log_probs = log_probs.to("cpu")
+         output = TrainingOutputBatch({"output": log_probs})
+         output.metadata = data.metadata
+@@ -552,6 +574,7 @@
+ 
+     def _ppo_train_impl(self, train_data, timing: PhaseBreakdown) -> "TrainingOutputBatch":
+         """Train through Megatron Core's pipeline scheduler."""
++        _memdiag("ppo_train:start")
+         self._drain_r3_decentral_stagger(train_data)
+         if self.model.router_replay is not None and train_data.routed_experts is None:
+             raise ValueError("moe_router_replay is on but the batch carries no rollout_routed_experts")
+@@ -635,8 +658,10 @@
+                         profiler=profiler,
+                     )
+ 
++                    _memdiag("ppo_train:after_forward_backward")
+                     if self.empty_cuda_cache:
+                         torch.cuda.empty_cache()
++                    _memdiag("ppo_train:after_empty_cache")
+ 
+                     with timing.span("megatron_optimizer_step"):
+                         step_result = self.strategy.optimizer_step(
+@@ -647,6 +672,7 @@
+                             consecutive_nonfinite_steps=self._consecutive_nonfinite_steps,
+                             max_consecutive_nonfinite_steps=self.cfg.trainer.policy.max_consecutive_nonfinite_steps,
+                         )
++                    _memdiag("ppo_train:after_optimizer_step")
+                     checksum_mismatch = None
+                     if self.cfg.trainer.policy.megatron_config.check_dp_weight_consistency:
+                         with timing.span("megatron_dp_weight_checksum"):
+@@ -706,6 +732,7 @@
+             )
+             self._warned_exact_unit_policy_ratio = True
+ 
++        _memdiag("ppo_train:end")
+         output = TrainingOutputBatch()
+         output.metadata = {"train_status": status_mean}
+         return output
+@@ -825,6 +852,7 @@
+             await cache_reset_task
+         torch.cuda.empty_cache()
+         torch.distributed.barrier()
++        _memdiag("weight_sync:end")
+ 
+     def grug_optimizer_route_snapshot(self):
+         """Return this rank and the optimizer route for each named parameter."""

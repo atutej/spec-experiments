@@ -1,0 +1,2402 @@
+diff --git a/hpc/dotenv/tacc.env b/hpc/dotenv/tacc.env
+index 815aaea5..bb17c22d 100644
+--- a/hpc/dotenv/tacc.env
++++ b/hpc/dotenv/tacc.env
+@@ -1,15 +1,20 @@
+-export WANDB_ENTITY=dogml
++export WANDB_ENTITY=atutej
+ export WANDB_PROJECT=OpenThoughts-Agent
+ export DCFT=$SCRATCH/OpenThoughts-Agent
+-export DCFT_GROUP=G-827553
++export DCFT_GROUP=CCR24067
+ export CHECKPOINTS_DIR=$SCRATCH/checkpoints
+ export MODELS_DIR=$HF_HUB_CACHE
+ export DATASETS_DIR=$HF_HUB_CACHE
+ export TOKENIZED_DATASETS_DIR=$SCRATCH/tokenized_datasets
+-export DCFT_CONDA=$SCRATCH/miniconda3
++# NOTE: /work is ~96.6% full (only ~36GB free) on this account, so the otagent env
++# lives on /scratch instead of inside a named env under DCFT_CONDA. DCFT_CONDA still
++# points at the working conda *executable* (the /scratch one is broken/empty).
++export DCFT_CONDA=/work/09749/atutej/vista/miniconda3
++export OTAGENT_ENV=/scratch/09749/atutej/conda-envs/otagent
+ dcft_activate() {
+   # shellcheck disable=SC1090
+-  source "$DCFT_CONDA/bin/activate" otagent
++  source "$DCFT_CONDA/etc/profile.d/conda.sh"
++  conda activate "$OTAGENT_ENV"
+   export PYTHONPATH="${DCFT_PRIVATE:-$DCFT}${PYTHONPATH:+:$PYTHONPATH}"
+ }
+ export DCFT_ACTIVATE_ENV=dcft_activate
+@@ -19,14 +24,15 @@ export HF_HUB_CACHE=$SCRATCH/hub   # shared, READ-ONLY raw hub cache (model + da
+ # SFT: force every per-rank WRITE cache (HF-datasets arrow build+lock, Triton/Inductor,
+ # Ray, TMPDIR, XDG) onto NODE-LOCAL /tmp instead of the shared experiment work area.
+ # Vista gh /tmp is 261G XFS, and shared Lustre flock BREAKS under 16-way concurrency
+-# (ENOLCK/ESTALE — killed SFT 815251/815508/815530 on BOTH the axolotl FileLockLoader lock
+-# and the HF datasets builder lock). Read by the universal_sft.sbatch write-cache guard,
+-# which then routes HF_DATASETS_CACHE/TRITON_CACHE_DIR/etc. node-local (per-node, uncontended).
++# (ENOLCK/ESTALE per upstream Ben Feuer notes on the original tacc.env this was copied
++# from). Read by the universal_sft.sbatch write-cache guard, which then routes
++# HF_DATASETS_CACHE/TRITON_CACHE_DIR/etc. node-local (per-node, uncontended).
+ # HF_HUB_CACHE stays shared+populated -> node-local arrow builds read cached parquet, no re-download.
+ # (Scoped to SFT: only the SFT sbatch reads this var; eval/datagen/RL ignore it.)
+ export SFT_KEEP_TMPDIR_LOCAL=1
+ export DC_AGENT_SECRET_ENV=$SCRATCH/keys.env
+-# SkyRL home directory (clone from https://github.com/penfever/SkyRL.git)
++# SkyRL home directory (clone marin-community/MarinSkyRL here; resolve_rl_repo_dir
++# probes for both "SkyRL" and "MarinSkyRL" directory names under $SCRATCH)
+ source "${DCFT_PRIVATE:-$DCFT}/hpc/shell_utils/resolve_rl_repo.sh"
+ export SKYRL_HOME="$(resolve_rl_repo_dir "$SCRATCH")"
+ export GCS_CREDENTIALS_PATH=$SCRATCH/.gcs_credentials.json
+@@ -36,4 +42,4 @@ export PYTORCH_CUDNN_ALLOW_TF32=1         # optional, lets cuDNN kernels use TF3
+ # Include SKYRL_HOME/skyrl-train for examples/terminal_bench entrypoints
+ export PYTHONPATH="${SKYRL_HOME}/skyrl-train:${DCFT_PRIVATE:-$DCFT}${PYTHONPATH:+:$PYTHONPATH}"
+ # Your personal email address for notifications
+-export EMAIL_ADDRESS="bf996@nyu.edu"
+\ No newline at end of file
++export EMAIL_ADDRESS="an34232@eid.utexas.edu"
+diff --git a/hpc/hpc.py b/hpc/hpc.py
+index 8d40bfd8..29814de4 100644
+--- a/hpc/hpc.py
++++ b/hpc/hpc.py
+@@ -1522,6 +1522,55 @@ vista = HPC(
+     },
+ )
+ 
++# Vista GB200 (`gb` partition) — same physical cluster/hostname pattern as `vista` (GH200,
++# `gh` partition), but 4x GB200 per node instead of 1x GH200. Hostname alone can't
++# disambiguate the two (both match r".*?.vista.tacc.utexas.edu"), so detect_hpc() below
++# checks $SLURM_JOB_PARTITION after a vista-pattern hostname match and returns this object
++# instead when the partition is "gb". Account/dotenv/paths are identical to `vista` (same
++# user, same $SCRATCH); only the GPU topology differs, so those are inherited rather than
++# duplicated. The GH200-specific node_exclusion_list/nccl_settings tuning on `vista` was
++# learned from real GH200 node failures and does not carry over -- left empty here pending
++# real GB200-specific observations.
++vista_gb200 = HPC(
++    name="vista_gb200",
++    hostname_pattern=r".*?.vista.tacc.utexas.edu",
++    dotenv_filename="tacc.env",
++    account="CCR24067",
++    partition="gb",
++    gpus_per_node=4,
++    cpus_per_node=144,
++    internet_node=True,
++    gpus_type="GB200 189GB",
++    unified_gpu_memory=True,
++    total_partition_nodes=18,
++    pretok_time_limit="4:00:00",
++    pretok_partition="gb",
++    needs_cuda_detection=True,
++    # Runtime configuration for Ray/vLLM. gcc/15.1.0 (not the default nvc/nvc++) is
++    # load-bearing here too -- same aarch64-armv9-flag rejection issue as GH200.
++    modules=["gcc/15.1.0", "tacc-apptainer"],
++    conda_activate="source $SCRATCH/miniconda3/etc/profile.d/conda.sh && conda activate $SCRATCH/miniconda3/envs/vllm_sandboxes",
++    env_vars={
++        "HF_HOME": "/tmp/hf_home",
++        "PYTHONFAULTHANDLER": "1",
++        "NCCL_TIMEOUT": "1800",
++        "NCCL_IB_TIMEOUT": "22",
++        "PYTORCH_ALLOC_CONF": "garbage_collection_threshold:0.6,max_split_size_mb:128",
++    },
++    library_paths={
++        "TRITON_CC": "/home1/apps/gcc/15.1.0/bin/gcc",
++        "LD_PRELOAD": "/home1/apps/gcc/15.1.0/lib64/libstdc++.so.6",
++        "CC": "/home1/apps/gcc/15.1.0/bin/gcc",
++        "CXX": "/home1/apps/gcc/15.1.0/bin/g++",
++    },
++    training_launcher="torchrun",
++    default_time_limit="24:00:00",
++    max_time_limit="48:00:00",
++    num_nodes_slow=1,
++    num_nodes_default=1,
++    num_nodes_fast=4,
++)
++
+ # EmpireAI Beta — NY-state consortium GB200 NVL72 SuperPOD (aarch64 Grace + B200/sm_100).
+ # Placed by the aarch64/TACC blocks (vista) since it shares that arch class.
+ # Containerized via Pyxis/Enroot (mega_final_dm.sqsh). Integrated into hpc.launch —
+@@ -1889,11 +1938,15 @@ clusters = [
+     jupiter,
+     juwels,
+     leonardo,
++    # vista MUST be checked before capella: capella's hostname_pattern (r"c\d") is broad
++    # enough to match Vista GB200 compute-node hostnames too (e.g. "c672-016...vista.tacc...
++    # .edu"), and detect_hpc() returns on first match. Local-only reorder, not an upstream fix.
++    vista,
++    vista_gb200,
+     capella,
+     alpha,
+     dip,
+     lrz,
+-    vista,
+     empireai,
+     lonestar,
+     claix,
+@@ -1918,10 +1971,18 @@ def detect_hpc() -> HPC:
+     if nersc_host == "perlmutter":
+         candidate_hostnames.add(f"{hostname}.perlmutter.nersc.gov")
+ 
++    # Vista's `gh` (GH200, 1 GPU/node) and `gb` (GB200, 4 GPU/node) partitions share the
++    # same hostname pattern, so hostname alone can't tell them apart. Both `vista` and
++    # `vista_gb200` match; disambiguate by $SLURM_JOB_PARTITION (reliably set inside any
++    # sbatch/srun/idev allocation) before falling through to the first hostname match.
++    slurm_partition = os.environ.get("SLURM_JOB_PARTITION", "")
++
+     for cluster in clusters:
+         pattern = re.compile(cluster.hostname_pattern)
+         for candidate in candidate_hostnames:
+             if pattern.match(candidate):
++                if cluster.name in ("vista", "vista_gb200") and slurm_partition:
++                    cluster = vista_gb200 if slurm_partition == "gb" else vista
+                 print(f"Automatically detected HPC: {cluster.name}")
+                 return cluster.model_copy(update={"hostname": candidate})
+ 
+diff --git a/hpc/ray_utils.py b/hpc/ray_utils.py
+index 8a515951..84ca2042 100644
+--- a/hpc/ray_utils.py
++++ b/hpc/ray_utils.py
+@@ -576,7 +576,13 @@ class RayCluster:
+             f"--export=ALL,VLLM_HOST_IP={node_ip}",
+             "--nodes=1",
+             "--ntasks=1",
+-            f"--gres=gpu:{self.config.gpus_per_node}",
++        ]
++        # TACC Vista: GPUs are not tracked as a SLURM gres (scontrol show node ->
++        # Gres=(null)); --gres=gpu:N unconditionally errors there ("Invalid generic
++        # resource (gres) specification"). Nodes are allocated exclusively anyway.
++        if not os.environ.get("OT_AGENT_NO_GPU_GRES"):
++            srun_cmd.append(f"--gres=gpu:{self.config.gpus_per_node}")
++        srun_cmd += [
+             f"--gpu-bind={self.config.gpu_bind}",
+             "--overlap",
+         ]
+@@ -907,7 +913,11 @@ while True:
+                 f"--export={self.config.srun_export_env}",
+                 "--nodes=1",
+                 "--ntasks=1",
+-                f"--gres=gpu:{self.config.gpus_per_node}",
++            ]
++            # See gres note above (TACC Vista has no GPU gres).
++            if not os.environ.get("OT_AGENT_NO_GPU_GRES"):
++                srun_cmd.append(f"--gres=gpu:{self.config.gpus_per_node}")
++            srun_cmd += [
+                 f"--gpu-bind={self.config.gpu_bind}",
+                 "--overlap",
+                 "-w",
+diff --git a/hpc/rl_config_utils.py b/hpc/rl_config_utils.py
+index 8084bc45..959b3666 100644
+--- a/hpc/rl_config_utils.py
++++ b/hpc/rl_config_utils.py
+@@ -877,6 +877,10 @@ def build_skyrl_hydra_args(
+     # - wrap_policy: fsdp_config.wrap_policy.transformer_layer_cls_to_wrap is not in
+     #   SkyRL's base fsdp_config struct, so a bare override is rejected
+     #   ("Key 'wrap_policy' is not in struct"); ++ adds-or-overrides it.
++    # - speculative_decoding: null by default in skyrl_train's ppo_base_config on the
++    #   weaver/skyrl-native-speculative-decodin branch (marinskyrl's managed EAGLE
++    #   serving config) -- a bare override into a null node fails with "Key 'method'
++    #   is not in struct"; ++ adds-or-overrides it, same as engine_init_kwargs.
+     optional_patterns = {
+         ".engine_init_kwargs",
+         ".hf_hub_",
+@@ -884,6 +888,8 @@ def build_skyrl_hydra_args(
+         ".optimizer_kwargs",
+         ".rope_scaling",
+         ".wrap_policy",
++        ".speculative_decoding",
++        ".transformer_config_kwargs",  # Megatron-core TransformerConfig overrides (cpu_offloading, ...): not keys of the base config dict
+     }
+ 
+     # `rollout` (fanout coordinators, coordinator_rpc_timeout) is a real SkyRL section; dropping it
+diff --git a/hpc/skyrl_yaml/tacc/1node_grug_datakit_dspark_r2egym_generate.yaml b/hpc/skyrl_yaml/tacc/1node_grug_datakit_dspark_r2egym_generate.yaml
+new file mode 100644
+index 00000000..8e7f29b4
+--- /dev/null
++++ b/hpc/skyrl_yaml/tacc/1node_grug_datakit_dspark_r2egym_generate.yaml
+@@ -0,0 +1,246 @@
++entrypoint: skyrl_train.entrypoints.terminal_bench_generate
++
++context_budget:
++  request_window_tokens: 32768
++  max_new_tokens_per_turn: 8192
++  max_turns: 12
++
++terminal_bench:
++  trials_dir: null
++
++  harbor:
++    name: terminus-2
++    enable_summarize: false
++    store_all_messages: true
++    trajectory_config:
++      raw_content: true
++    enable_episode_logging: false
++    record_terminal_session: false
++    enable_pane_logging: false
++
++    strict_json_parser: true
++
++    interleaved_thinking: true
++    extra_body:
++      chat_template_kwargs:
++        enable_thinking: true
++    override_timeout_sec: 1800
++
++    override_cpus: 1
++    override_memory_mb: 2048
++    override_storage_mb: 2048
++
++    auto_snapshot: true
++
++    verifier_override_timeout_sec: 120
++
++    max_retries: 3
++    min_wait_sec: 60.0
++    max_wait_sec: 600.0
++    wait_multiplier: 2.0
++
++    exclude_exceptions:
++      - VerifierTimeoutError
++      - RewardFileNotFoundError
++      - RewardFileEmptyError
++      - VerifierOutputParseError
++      - VerifierRuntimeError
++
++    # Smoke scale: a handful of concurrent trials, not the Jupiter 300.
++    n_concurrent_trials: 16
++
++    log_level: INFO
++
++    enable_reward_shaping: false
++
++    collect_rollout_details: true
++
++    enable_error_classification: true
++    mask_exceptions:
++      - DaytonaError
++      - EnvironmentStartTimeoutError
++      - NetworkError
++      - ConnectionError
++      - RewardFileNotFoundError
++      - RewardFileEmptyError
++      - AgentEnvironmentTimeoutError
++    default_error_treatment: zero
++    passthrough_exceptions:
++      - AgentTimeoutError
++      - ContextLengthExceededError
++
++  model_info:
++
++  archiving:
++    enabled: false
++
++  trace_upload:
++    enabled: false
++    repo_org: DCAgent
++    episodes: last
++    dataset_type: SFT
++    cleanup: true
++
++trainer:
++  strategy: megatron
++  # false: the Megatron worker then clears recompute_*; Megatron-core rejects cpu_offloading together with activation recomputation.
++  gradient_checkpointing: false
++  gradient_checkpointing_use_reentrant: false
++  # skyrl_train's Grug FSDP2 path (model_wrapper.validate_grug_training_options)
++  # unconditionally rejects sample packing for GRUG_MOE_MODEL_TYPE -- ppo_base_config's
++  # default of true crashes on init with "Flash attention 2 should be used for
++  # `use_sample_packing`" before even reaching the Grug-specific check.
++  use_sample_packing: false
++  # ppo_base_config defaults this to false -> resolve_attn_implementation() picks
++  # "eager" attention (attn_backend stays "auto" below). Eager materializes the full
++  # O(seq_len^2) attention score matrix and its own softmax/softmax_backward -- for
++  # real R2E-Gym trajectories up to ~32k tokens this is exactly what OOM'd in
++  # policy_train ("Tried to allocate ~40 GiB" inside structured_softmax_backward_cuda_out).
++  # Verified in isolation on this GB200: eager attention peaks at 50.66 GiB for a
++  # 16k-token sequence vs 0.80 GiB for flash-attention-2 (~63x). GrugMoE supports
++  # flash_attention_2 natively (GRUG_SUPPORTED_ATTENTION_BACKENDS), and the aarch64
++  # flash-attn wheel installed into MarinSkyRL's venv verified working (fwd+bwd) on
++  # this hardware. This is the actual fix -- NOT more GPUs/nodes (FSDP sharding
++  # doesn't touch this at all, since it's a per-example activation cost, not
++  # parameter/optimizer memory).
++  flash_attn: true
++  algorithm:
++    advantage_estimator: rloo_n
++    # No separate reference model needed for a smoke test -- avoids a second
++    # ~134GB Snowball copy that a single 4-GPU node cannot fit alongside the
++    # policy + generator copies.
++    use_kl_loss: false
++    kl_loss_coef: 0.0
++    eps_clip_low: 0.2
++    eps_clip_high: 0.05
++    loss_reduction: sequence_mean
++    off_policy_correction: tis   # token-level truncation at 2.0: the old use_tis / tis_imp_ratio_cap 2.0
++    group_advantage_min_size: 2
++
++  # Smoke: just prove one training step completes without error.
++  epochs: 1
++  max_steps: 1
++  update_epochs_per_batch: 1
++
++  train_batch_size: 4
++  policy_mini_batch_size: 4
++  eval_batch_size: 4
++
++  micro_forward_batch_size_per_gpu: 1
++  micro_train_batch_size_per_gpu: 1
++
++  eval_interval: 999999
++  eval_before_train: false
++  ckpt_interval: 999999
++  resume_mode: null
++  hf_save_interval: 999999
++  hf_hub_repo_id: null
++  hf_hub_private: false
++  hf_hub_revision: main
++
++  enable_db_registration: false
++
++  project_name: OpenThoughts-Agent
++  log_level: INFO
++  tracker_commit_each_step: true
++  logger: console
++
++  run_name: null
++  ckpt_path: null
++  export_path: null
++
++  policy:
++    model:
++      path: /scratch/09749/atutej/marin_speculator/cache/hf/hub/models--open-athena--Grug-67B-A2B-Datakit-SFT-262K-2026.09.21/snapshots/b8c07f7df1df65525abbfdbcd1572318ba11c42f
++    optimizer_config:
++      lr: 8e-6
++      weight_decay: 0.0
++      adam_betas: [0.9, 0.999]
++      max_grad_norm: 0.9
++    # MarinSkyRL main is Megatron-only (bd9a59f2 removed the FSDP trainers). Grug: TP=1; EP=2 divides the 256 experts. The optimizer state of a 67B
++    # model does not fit on 2 GPUs, so it lives in CPU RAM (the node has ~1.6 TB).
++    megatron_config:
++      tensor_model_parallel_size: 1
++      expert_model_parallel_size: 2
++      ddp_config:
++        grad_reduce_in_fp32: false
++      optimizer_config_kwargs:
++        use_precision_aware_optimizer: true
++        optimizer_cpu_offload: true
++        optimizer_offload_fraction: 1.0
++      # Weight offload to CPU (Megatron-core cpu_offloading): the policy does not fit on 2 GPUs otherwise (OOM at 128 GiB allocated per rank). Megatron
++      # rejects cpu_offloading together with activation recomputation, so gradient_checkpointing is false (see trainer above).
++      transformer_config_kwargs:
++        cpu_offloading: true
++        cpu_offloading_weights: true
++        cpu_offloading_activations: true
++        cpu_offloading_num_layers: 25
++
++  placement:
++    # Single GB200 node, 4 GPUs total. colocate_all=true forces policy+generator onto
++    # the SAME GPU(s) regardless of how many are available -- that's what colocation
++    # means, not an adaptive fallback -- which is why this OOM'd on GPU 0 even after
++    # vista_gb200 correctly gave Ray a 4-GPU view. With 4 real GPUs, disaggregate
++    # instead: policy gets 1, generator gets 1 (see num_inference_engines below), on
++    # separate devices, no more memory contention. colocate_policy_ref stays true
++    # since use_kl_loss=false means no separate reference model is instantiated anyway.
++    colocate_all: false
++    colocate_policy_ref: true
++    policy_num_nodes: 1
++    ref_num_nodes: 1
++    # 1 GPU for policy left the whole ~67B-A2B model (weights+grads+optimizer+backward
++    # activations) on a single GPU, which OOM'd during loss.backward(). 3 of the 4
++    # physical GPUs for policy (generator keeps the other 1, per num_inference_engines
++    # below) lets FSDP2 (fsdp_size=-1 above) actually shard the model 3-way.
++    policy_num_gpus_per_node: 2
++    ref_num_gpus_per_node: 1
++    policy_strict_spread_pg: false
++    policy_per_gpu_bundles: true
++    policy_force_cvd_mask: true
++
++generator:
++  backend: vllm
++  timeout_multiplier: 1.0
++  model_dtype: bfloat16
++
++  inference_engine_tensor_parallel_size: 1
++  num_inference_engines: 1
++  inference_engine_data_parallel_size: 4
++  inference_engine_expert_parallel_size: 4
++  inference_engine_mp_backend: true
++
++  n_samples_per_prompt: 2
++  eval_n_samples_per_prompt: 2
++
++  # 0.6 left no room for KV-cache blocks once the ~67B-A2B (all-experts-resident)
++  # weights loaded on a dedicated GPU (disaggregated placement -- see colocate_all
++  # above): "No available memory for the cache blocks." Raised since this GPU is no
++  # longer shared with the policy/ref.
++  gpu_memory_utilization: 0.92
++
++  max_num_seqs: 16
++  max_num_batched_tokens: 8192
++
++  enable_prefix_caching: true
++  enable_chunked_prefill: true
++
++  run_engines_locally: true
++  weight_sync_backend: nccl
++  enable_http_endpoint: true
++  sampling_params:
++    temperature: 1.0
++    top_p: 1.0
++    top_k: -1
++
++  engine_init_kwargs:
++    enable_return_routed_experts: false
++    # Our DSpark drafter (speculators format; trained offline on a Datakit sample, no R2E-Gym adaptation) through vLLM's native
++    # speculative_config passthrough. num_speculative_tokens = the drafter's block size (8).
++    speculative_config:
++      method: dspark
++      model: /scratch/09749/atutej/marin_speculator/runs/grug_dspark_100k/checkpoints/0
++      num_speculative_tokens: 8
++
++data:
++  train_data: ["/scratch/09749/atutej/marin_speculator/runs/rl_speculation/r2egym_tasks_16"]
++  val_data: []
+diff --git a/hpc/skyrl_yaml/tacc/1node_grug_datakit_dspark_r2egym_smoke.yaml b/hpc/skyrl_yaml/tacc/1node_grug_datakit_dspark_r2egym_smoke.yaml
+new file mode 100644
+index 00000000..d45e9363
+--- /dev/null
++++ b/hpc/skyrl_yaml/tacc/1node_grug_datakit_dspark_r2egym_smoke.yaml
+@@ -0,0 +1,246 @@
++entrypoint: skyrl_train.entrypoints.terminal_bench
++
++context_budget:
++  request_window_tokens: 32768
++  max_new_tokens_per_turn: 8192
++  max_turns: 999999
++
++terminal_bench:
++  trials_dir: null
++
++  harbor:
++    name: terminus-2
++    enable_summarize: false
++    store_all_messages: true
++    trajectory_config:
++      raw_content: true
++    enable_episode_logging: false
++    record_terminal_session: false
++    enable_pane_logging: false
++
++    strict_json_parser: true
++
++    interleaved_thinking: true
++    extra_body:
++      chat_template_kwargs:
++        enable_thinking: true
++    override_timeout_sec: 1800
++
++    override_cpus: 1
++    override_memory_mb: 2048
++    override_storage_mb: 2048
++
++    auto_snapshot: true
++
++    verifier_override_timeout_sec: 120
++
++    max_retries: 3
++    min_wait_sec: 60.0
++    max_wait_sec: 600.0
++    wait_multiplier: 2.0
++
++    exclude_exceptions:
++      - VerifierTimeoutError
++      - RewardFileNotFoundError
++      - RewardFileEmptyError
++      - VerifierOutputParseError
++      - VerifierRuntimeError
++
++    # Smoke scale: a handful of concurrent trials, not the Jupiter 300.
++    n_concurrent_trials: 4
++
++    log_level: INFO
++
++    enable_reward_shaping: false
++
++    collect_rollout_details: true
++
++    enable_error_classification: true
++    mask_exceptions:
++      - DaytonaError
++      - EnvironmentStartTimeoutError
++      - NetworkError
++      - ConnectionError
++      - RewardFileNotFoundError
++      - RewardFileEmptyError
++      - AgentEnvironmentTimeoutError
++    default_error_treatment: zero
++    passthrough_exceptions:
++      - AgentTimeoutError
++      - ContextLengthExceededError
++
++  model_info:
++
++  archiving:
++    enabled: false
++
++  trace_upload:
++    enabled: false
++    repo_org: DCAgent
++    episodes: last
++    dataset_type: SFT
++    cleanup: true
++
++trainer:
++  strategy: megatron
++  # false: the Megatron worker then clears recompute_*; Megatron-core rejects cpu_offloading together with activation recomputation.
++  gradient_checkpointing: false
++  gradient_checkpointing_use_reentrant: false
++  # skyrl_train's Grug FSDP2 path (model_wrapper.validate_grug_training_options)
++  # unconditionally rejects sample packing for GRUG_MOE_MODEL_TYPE -- ppo_base_config's
++  # default of true crashes on init with "Flash attention 2 should be used for
++  # `use_sample_packing`" before even reaching the Grug-specific check.
++  use_sample_packing: false
++  # ppo_base_config defaults this to false -> resolve_attn_implementation() picks
++  # "eager" attention (attn_backend stays "auto" below). Eager materializes the full
++  # O(seq_len^2) attention score matrix and its own softmax/softmax_backward -- for
++  # real R2E-Gym trajectories up to ~32k tokens this is exactly what OOM'd in
++  # policy_train ("Tried to allocate ~40 GiB" inside structured_softmax_backward_cuda_out).
++  # Verified in isolation on this GB200: eager attention peaks at 50.66 GiB for a
++  # 16k-token sequence vs 0.80 GiB for flash-attention-2 (~63x). GrugMoE supports
++  # flash_attention_2 natively (GRUG_SUPPORTED_ATTENTION_BACKENDS), and the aarch64
++  # flash-attn wheel installed into MarinSkyRL's venv verified working (fwd+bwd) on
++  # this hardware. This is the actual fix -- NOT more GPUs/nodes (FSDP sharding
++  # doesn't touch this at all, since it's a per-example activation cost, not
++  # parameter/optimizer memory).
++  flash_attn: true
++  algorithm:
++    advantage_estimator: rloo_n
++    # No separate reference model needed for a smoke test -- avoids a second
++    # ~134GB Snowball copy that a single 4-GPU node cannot fit alongside the
++    # policy + generator copies.
++    use_kl_loss: false
++    kl_loss_coef: 0.0
++    eps_clip_low: 0.2
++    eps_clip_high: 0.05
++    loss_reduction: sequence_mean
++    off_policy_correction: tis   # token-level truncation at 2.0: the old use_tis / tis_imp_ratio_cap 2.0
++    group_advantage_min_size: 2
++
++  # Smoke: just prove one training step completes without error.
++  epochs: 1
++  max_steps: 1
++  update_epochs_per_batch: 1
++
++  train_batch_size: 4
++  policy_mini_batch_size: 4
++  eval_batch_size: 4
++
++  micro_forward_batch_size_per_gpu: 1
++  micro_train_batch_size_per_gpu: 1
++
++  eval_interval: 999999
++  eval_before_train: false
++  ckpt_interval: 999999
++  resume_mode: null
++  hf_save_interval: 999999
++  hf_hub_repo_id: null
++  hf_hub_private: false
++  hf_hub_revision: main
++
++  enable_db_registration: false
++
++  project_name: OpenThoughts-Agent
++  log_level: INFO
++  tracker_commit_each_step: true
++  logger: console
++
++  run_name: null
++  ckpt_path: null
++  export_path: null
++
++  policy:
++    model:
++      path: /scratch/09749/atutej/marin_speculator/cache/hf/hub/models--open-athena--Grug-67B-A2B-Datakit-SFT-262K-2026.09.21/snapshots/b8c07f7df1df65525abbfdbcd1572318ba11c42f
++    optimizer_config:
++      lr: 8e-6
++      weight_decay: 0.0
++      adam_betas: [0.9, 0.999]
++      max_grad_norm: 0.9
++    # MarinSkyRL main is Megatron-only (bd9a59f2 removed the FSDP trainers). Grug: TP=1; EP=2 divides the 256 experts. The optimizer state of a 67B
++    # model does not fit on 2 GPUs, so it lives in CPU RAM (the node has ~1.6 TB).
++    megatron_config:
++      tensor_model_parallel_size: 1
++      expert_model_parallel_size: 2
++      ddp_config:
++        grad_reduce_in_fp32: false
++      optimizer_config_kwargs:
++        use_precision_aware_optimizer: true
++        optimizer_cpu_offload: true
++        optimizer_offload_fraction: 1.0
++      # Weight offload to CPU (Megatron-core cpu_offloading): the policy does not fit on 2 GPUs otherwise (OOM at 128 GiB allocated per rank). Megatron
++      # rejects cpu_offloading together with activation recomputation, so gradient_checkpointing is false (see trainer above).
++      transformer_config_kwargs:
++        cpu_offloading: true
++        cpu_offloading_weights: true
++        cpu_offloading_activations: true
++        cpu_offloading_num_layers: 25
++
++  placement:
++    # Single GB200 node, 4 GPUs total. colocate_all=true forces policy+generator onto
++    # the SAME GPU(s) regardless of how many are available -- that's what colocation
++    # means, not an adaptive fallback -- which is why this OOM'd on GPU 0 even after
++    # vista_gb200 correctly gave Ray a 4-GPU view. With 4 real GPUs, disaggregate
++    # instead: policy gets 1, generator gets 1 (see num_inference_engines below), on
++    # separate devices, no more memory contention. colocate_policy_ref stays true
++    # since use_kl_loss=false means no separate reference model is instantiated anyway.
++    colocate_all: false
++    colocate_policy_ref: true
++    policy_num_nodes: 1
++    ref_num_nodes: 1
++    # 1 GPU for policy left the whole ~67B-A2B model (weights+grads+optimizer+backward
++    # activations) on a single GPU, which OOM'd during loss.backward(). 3 of the 4
++    # physical GPUs for policy (generator keeps the other 1, per num_inference_engines
++    # below) lets FSDP2 (fsdp_size=-1 above) actually shard the model 3-way.
++    policy_num_gpus_per_node: 2
++    ref_num_gpus_per_node: 1
++    policy_strict_spread_pg: false
++    policy_per_gpu_bundles: true
++    policy_force_cvd_mask: true
++
++generator:
++  backend: vllm
++  timeout_multiplier: 1.0
++  model_dtype: bfloat16
++
++  inference_engine_tensor_parallel_size: 1
++  num_inference_engines: 1
++  inference_engine_data_parallel_size: 2
++  inference_engine_expert_parallel_size: 2
++  inference_engine_mp_backend: true
++
++  n_samples_per_prompt: 2
++  eval_n_samples_per_prompt: 2
++
++  # 0.6 left no room for KV-cache blocks once the ~67B-A2B (all-experts-resident)
++  # weights loaded on a dedicated GPU (disaggregated placement -- see colocate_all
++  # above): "No available memory for the cache blocks." Raised since this GPU is no
++  # longer shared with the policy/ref.
++  gpu_memory_utilization: 0.92
++
++  max_num_seqs: 8
++  max_num_batched_tokens: 8192
++
++  enable_prefix_caching: true
++  enable_chunked_prefill: true
++
++  run_engines_locally: true
++  weight_sync_backend: nccl
++  enable_http_endpoint: true
++  sampling_params:
++    temperature: 1.0
++    top_p: 1.0
++    top_k: -1
++
++  engine_init_kwargs:
++    enable_return_routed_experts: false
++    # Our DSpark drafter (speculators format; trained offline on a Datakit sample, no R2E-Gym adaptation) through vLLM's native
++    # speculative_config passthrough. num_speculative_tokens = the drafter's block size (8).
++    speculative_config:
++      method: dspark
++      model: /scratch/09749/atutej/marin_speculator/runs/grug_dspark_100k/checkpoints/0
++      num_speculative_tokens: 8
++
++data:
++  train_data: ["/scratch/09749/atutej/marin_speculator/runs/rl_speculation/r2egym_tasks_16"]
++  val_data: []
+diff --git a/hpc/skyrl_yaml/tacc/1node_grug_datakit_plain_r2egym_generate.yaml b/hpc/skyrl_yaml/tacc/1node_grug_datakit_plain_r2egym_generate.yaml
+new file mode 100644
+index 00000000..b306a894
+--- /dev/null
++++ b/hpc/skyrl_yaml/tacc/1node_grug_datakit_plain_r2egym_generate.yaml
+@@ -0,0 +1,240 @@
++entrypoint: skyrl_train.entrypoints.terminal_bench_generate
++
++context_budget:
++  request_window_tokens: 32768
++  max_new_tokens_per_turn: 8192
++  max_turns: 12
++
++terminal_bench:
++  trials_dir: null
++
++  harbor:
++    name: terminus-2
++    enable_summarize: false
++    store_all_messages: true
++    trajectory_config:
++      raw_content: true
++    enable_episode_logging: false
++    record_terminal_session: false
++    enable_pane_logging: false
++
++    strict_json_parser: true
++
++    interleaved_thinking: true
++    extra_body:
++      chat_template_kwargs:
++        enable_thinking: true
++    override_timeout_sec: 1800
++
++    override_cpus: 1
++    override_memory_mb: 2048
++    override_storage_mb: 2048
++
++    auto_snapshot: true
++
++    verifier_override_timeout_sec: 120
++
++    max_retries: 3
++    min_wait_sec: 60.0
++    max_wait_sec: 600.0
++    wait_multiplier: 2.0
++
++    exclude_exceptions:
++      - VerifierTimeoutError
++      - RewardFileNotFoundError
++      - RewardFileEmptyError
++      - VerifierOutputParseError
++      - VerifierRuntimeError
++
++    # Smoke scale: a handful of concurrent trials, not the Jupiter 300.
++    n_concurrent_trials: 16
++
++    log_level: INFO
++
++    enable_reward_shaping: false
++
++    collect_rollout_details: true
++
++    enable_error_classification: true
++    mask_exceptions:
++      - DaytonaError
++      - EnvironmentStartTimeoutError
++      - NetworkError
++      - ConnectionError
++      - RewardFileNotFoundError
++      - RewardFileEmptyError
++      - AgentEnvironmentTimeoutError
++    default_error_treatment: zero
++    passthrough_exceptions:
++      - AgentTimeoutError
++      - ContextLengthExceededError
++
++  model_info:
++
++  archiving:
++    enabled: false
++
++  trace_upload:
++    enabled: false
++    repo_org: DCAgent
++    episodes: last
++    dataset_type: SFT
++    cleanup: true
++
++trainer:
++  strategy: megatron
++  # false: the Megatron worker then clears recompute_*; Megatron-core rejects cpu_offloading together with activation recomputation.
++  gradient_checkpointing: false
++  gradient_checkpointing_use_reentrant: false
++  # skyrl_train's Grug FSDP2 path (model_wrapper.validate_grug_training_options)
++  # unconditionally rejects sample packing for GRUG_MOE_MODEL_TYPE -- ppo_base_config's
++  # default of true crashes on init with "Flash attention 2 should be used for
++  # `use_sample_packing`" before even reaching the Grug-specific check.
++  use_sample_packing: false
++  # ppo_base_config defaults this to false -> resolve_attn_implementation() picks
++  # "eager" attention (attn_backend stays "auto" below). Eager materializes the full
++  # O(seq_len^2) attention score matrix and its own softmax/softmax_backward -- for
++  # real R2E-Gym trajectories up to ~32k tokens this is exactly what OOM'd in
++  # policy_train ("Tried to allocate ~40 GiB" inside structured_softmax_backward_cuda_out).
++  # Verified in isolation on this GB200: eager attention peaks at 50.66 GiB for a
++  # 16k-token sequence vs 0.80 GiB for flash-attention-2 (~63x). GrugMoE supports
++  # flash_attention_2 natively (GRUG_SUPPORTED_ATTENTION_BACKENDS), and the aarch64
++  # flash-attn wheel installed into MarinSkyRL's venv verified working (fwd+bwd) on
++  # this hardware. This is the actual fix -- NOT more GPUs/nodes (FSDP sharding
++  # doesn't touch this at all, since it's a per-example activation cost, not
++  # parameter/optimizer memory).
++  flash_attn: true
++  algorithm:
++    advantage_estimator: rloo_n
++    # No separate reference model needed for a smoke test -- avoids a second
++    # ~134GB Snowball copy that a single 4-GPU node cannot fit alongside the
++    # policy + generator copies.
++    use_kl_loss: false
++    kl_loss_coef: 0.0
++    eps_clip_low: 0.2
++    eps_clip_high: 0.05
++    loss_reduction: sequence_mean
++    off_policy_correction: tis   # token-level truncation at 2.0: the old use_tis / tis_imp_ratio_cap 2.0
++    group_advantage_min_size: 2
++
++  # Smoke: just prove one training step completes without error.
++  epochs: 1
++  max_steps: 1
++  update_epochs_per_batch: 1
++
++  train_batch_size: 4
++  policy_mini_batch_size: 4
++  eval_batch_size: 4
++
++  micro_forward_batch_size_per_gpu: 1
++  micro_train_batch_size_per_gpu: 1
++
++  eval_interval: 999999
++  eval_before_train: false
++  ckpt_interval: 999999
++  resume_mode: null
++  hf_save_interval: 999999
++  hf_hub_repo_id: null
++  hf_hub_private: false
++  hf_hub_revision: main
++
++  enable_db_registration: false
++
++  project_name: OpenThoughts-Agent
++  log_level: INFO
++  tracker_commit_each_step: true
++  logger: console
++
++  run_name: null
++  ckpt_path: null
++  export_path: null
++
++  policy:
++    model:
++      path: /scratch/09749/atutej/marin_speculator/cache/hf/hub/models--open-athena--Grug-67B-A2B-Datakit-SFT-262K-2026.09.21/snapshots/b8c07f7df1df65525abbfdbcd1572318ba11c42f
++    optimizer_config:
++      lr: 8e-6
++      weight_decay: 0.0
++      adam_betas: [0.9, 0.999]
++      max_grad_norm: 0.9
++    # MarinSkyRL main is Megatron-only (bd9a59f2 removed the FSDP trainers). Grug: TP=1; EP=2 divides the 256 experts. The optimizer state of a 67B
++    # model does not fit on 2 GPUs, so it lives in CPU RAM (the node has ~1.6 TB).
++    megatron_config:
++      tensor_model_parallel_size: 1
++      expert_model_parallel_size: 2
++      ddp_config:
++        grad_reduce_in_fp32: false
++      optimizer_config_kwargs:
++        use_precision_aware_optimizer: true
++        optimizer_cpu_offload: true
++        optimizer_offload_fraction: 1.0
++      # Weight offload to CPU (Megatron-core cpu_offloading): the policy does not fit on 2 GPUs otherwise (OOM at 128 GiB allocated per rank). Megatron
++      # rejects cpu_offloading together with activation recomputation, so gradient_checkpointing is false (see trainer above).
++      transformer_config_kwargs:
++        cpu_offloading: true
++        cpu_offloading_weights: true
++        cpu_offloading_activations: true
++        cpu_offloading_num_layers: 25
++
++  placement:
++    # Single GB200 node, 4 GPUs total. colocate_all=true forces policy+generator onto
++    # the SAME GPU(s) regardless of how many are available -- that's what colocation
++    # means, not an adaptive fallback -- which is why this OOM'd on GPU 0 even after
++    # vista_gb200 correctly gave Ray a 4-GPU view. With 4 real GPUs, disaggregate
++    # instead: policy gets 1, generator gets 1 (see num_inference_engines below), on
++    # separate devices, no more memory contention. colocate_policy_ref stays true
++    # since use_kl_loss=false means no separate reference model is instantiated anyway.
++    colocate_all: false
++    colocate_policy_ref: true
++    policy_num_nodes: 1
++    ref_num_nodes: 1
++    # 1 GPU for policy left the whole ~67B-A2B model (weights+grads+optimizer+backward
++    # activations) on a single GPU, which OOM'd during loss.backward(). 3 of the 4
++    # physical GPUs for policy (generator keeps the other 1, per num_inference_engines
++    # below) lets FSDP2 (fsdp_size=-1 above) actually shard the model 3-way.
++    policy_num_gpus_per_node: 2
++    ref_num_gpus_per_node: 1
++    policy_strict_spread_pg: false
++    policy_per_gpu_bundles: true
++    policy_force_cvd_mask: true
++
++generator:
++  backend: vllm
++  timeout_multiplier: 1.0
++  model_dtype: bfloat16
++
++  inference_engine_tensor_parallel_size: 1
++  num_inference_engines: 1
++  inference_engine_data_parallel_size: 4
++  inference_engine_expert_parallel_size: 4
++  inference_engine_mp_backend: true
++
++  n_samples_per_prompt: 2
++  eval_n_samples_per_prompt: 2
++
++  # 0.6 left no room for KV-cache blocks once the ~67B-A2B (all-experts-resident)
++  # weights loaded on a dedicated GPU (disaggregated placement -- see colocate_all
++  # above): "No available memory for the cache blocks." Raised since this GPU is no
++  # longer shared with the policy/ref.
++  gpu_memory_utilization: 0.92
++
++  max_num_seqs: 16
++  max_num_batched_tokens: 8192
++
++  enable_prefix_caching: true
++  enable_chunked_prefill: true
++
++  run_engines_locally: true
++  weight_sync_backend: nccl
++  enable_http_endpoint: true
++  sampling_params:
++    temperature: 1.0
++    top_p: 1.0
++    top_k: -1
++
++  engine_init_kwargs:
++    enable_return_routed_experts: false
++
++data:
++  train_data: ["/scratch/09749/atutej/marin_speculator/runs/rl_speculation/r2egym_tasks_16"]
++  val_data: []
+diff --git a/hpc/skyrl_yaml/tacc/1node_grug_datakit_plain_r2egym_smoke.yaml b/hpc/skyrl_yaml/tacc/1node_grug_datakit_plain_r2egym_smoke.yaml
+new file mode 100644
+index 00000000..57c6f8b7
+--- /dev/null
++++ b/hpc/skyrl_yaml/tacc/1node_grug_datakit_plain_r2egym_smoke.yaml
+@@ -0,0 +1,240 @@
++entrypoint: skyrl_train.entrypoints.terminal_bench
++
++context_budget:
++  request_window_tokens: 32768
++  max_new_tokens_per_turn: 8192
++  max_turns: 999999
++
++terminal_bench:
++  trials_dir: null
++
++  harbor:
++    name: terminus-2
++    enable_summarize: false
++    store_all_messages: true
++    trajectory_config:
++      raw_content: true
++    enable_episode_logging: false
++    record_terminal_session: false
++    enable_pane_logging: false
++
++    strict_json_parser: true
++
++    interleaved_thinking: true
++    extra_body:
++      chat_template_kwargs:
++        enable_thinking: true
++    override_timeout_sec: 1800
++
++    override_cpus: 1
++    override_memory_mb: 2048
++    override_storage_mb: 2048
++
++    auto_snapshot: true
++
++    verifier_override_timeout_sec: 120
++
++    max_retries: 3
++    min_wait_sec: 60.0
++    max_wait_sec: 600.0
++    wait_multiplier: 2.0
++
++    exclude_exceptions:
++      - VerifierTimeoutError
++      - RewardFileNotFoundError
++      - RewardFileEmptyError
++      - VerifierOutputParseError
++      - VerifierRuntimeError
++
++    # Smoke scale: a handful of concurrent trials, not the Jupiter 300.
++    n_concurrent_trials: 4
++
++    log_level: INFO
++
++    enable_reward_shaping: false
++
++    collect_rollout_details: true
++
++    enable_error_classification: true
++    mask_exceptions:
++      - DaytonaError
++      - EnvironmentStartTimeoutError
++      - NetworkError
++      - ConnectionError
++      - RewardFileNotFoundError
++      - RewardFileEmptyError
++      - AgentEnvironmentTimeoutError
++    default_error_treatment: zero
++    passthrough_exceptions:
++      - AgentTimeoutError
++      - ContextLengthExceededError
++
++  model_info:
++
++  archiving:
++    enabled: false
++
++  trace_upload:
++    enabled: false
++    repo_org: DCAgent
++    episodes: last
++    dataset_type: SFT
++    cleanup: true
++
++trainer:
++  strategy: megatron
++  # false: the Megatron worker then clears recompute_*; Megatron-core rejects cpu_offloading together with activation recomputation.
++  gradient_checkpointing: false
++  gradient_checkpointing_use_reentrant: false
++  # skyrl_train's Grug FSDP2 path (model_wrapper.validate_grug_training_options)
++  # unconditionally rejects sample packing for GRUG_MOE_MODEL_TYPE -- ppo_base_config's
++  # default of true crashes on init with "Flash attention 2 should be used for
++  # `use_sample_packing`" before even reaching the Grug-specific check.
++  use_sample_packing: false
++  # ppo_base_config defaults this to false -> resolve_attn_implementation() picks
++  # "eager" attention (attn_backend stays "auto" below). Eager materializes the full
++  # O(seq_len^2) attention score matrix and its own softmax/softmax_backward -- for
++  # real R2E-Gym trajectories up to ~32k tokens this is exactly what OOM'd in
++  # policy_train ("Tried to allocate ~40 GiB" inside structured_softmax_backward_cuda_out).
++  # Verified in isolation on this GB200: eager attention peaks at 50.66 GiB for a
++  # 16k-token sequence vs 0.80 GiB for flash-attention-2 (~63x). GrugMoE supports
++  # flash_attention_2 natively (GRUG_SUPPORTED_ATTENTION_BACKENDS), and the aarch64
++  # flash-attn wheel installed into MarinSkyRL's venv verified working (fwd+bwd) on
++  # this hardware. This is the actual fix -- NOT more GPUs/nodes (FSDP sharding
++  # doesn't touch this at all, since it's a per-example activation cost, not
++  # parameter/optimizer memory).
++  flash_attn: true
++  algorithm:
++    advantage_estimator: rloo_n
++    # No separate reference model needed for a smoke test -- avoids a second
++    # ~134GB Snowball copy that a single 4-GPU node cannot fit alongside the
++    # policy + generator copies.
++    use_kl_loss: false
++    kl_loss_coef: 0.0
++    eps_clip_low: 0.2
++    eps_clip_high: 0.05
++    loss_reduction: sequence_mean
++    off_policy_correction: tis   # token-level truncation at 2.0: the old use_tis / tis_imp_ratio_cap 2.0
++    group_advantage_min_size: 2
++
++  # Smoke: just prove one training step completes without error.
++  epochs: 1
++  max_steps: 1
++  update_epochs_per_batch: 1
++
++  train_batch_size: 4
++  policy_mini_batch_size: 4
++  eval_batch_size: 4
++
++  micro_forward_batch_size_per_gpu: 1
++  micro_train_batch_size_per_gpu: 1
++
++  eval_interval: 999999
++  eval_before_train: false
++  ckpt_interval: 999999
++  resume_mode: null
++  hf_save_interval: 999999
++  hf_hub_repo_id: null
++  hf_hub_private: false
++  hf_hub_revision: main
++
++  enable_db_registration: false
++
++  project_name: OpenThoughts-Agent
++  log_level: INFO
++  tracker_commit_each_step: true
++  logger: console
++
++  run_name: null
++  ckpt_path: null
++  export_path: null
++
++  policy:
++    model:
++      path: /scratch/09749/atutej/marin_speculator/cache/hf/hub/models--open-athena--Grug-67B-A2B-Datakit-SFT-262K-2026.09.21/snapshots/b8c07f7df1df65525abbfdbcd1572318ba11c42f
++    optimizer_config:
++      lr: 8e-6
++      weight_decay: 0.0
++      adam_betas: [0.9, 0.999]
++      max_grad_norm: 0.9
++    # MarinSkyRL main is Megatron-only (bd9a59f2 removed the FSDP trainers). Grug: TP=1; EP=2 divides the 256 experts. The optimizer state of a 67B
++    # model does not fit on 2 GPUs, so it lives in CPU RAM (the node has ~1.6 TB).
++    megatron_config:
++      tensor_model_parallel_size: 1
++      expert_model_parallel_size: 2
++      ddp_config:
++        grad_reduce_in_fp32: false
++      optimizer_config_kwargs:
++        use_precision_aware_optimizer: true
++        optimizer_cpu_offload: true
++        optimizer_offload_fraction: 1.0
++      # Weight offload to CPU (Megatron-core cpu_offloading): the policy does not fit on 2 GPUs otherwise (OOM at 128 GiB allocated per rank). Megatron
++      # rejects cpu_offloading together with activation recomputation, so gradient_checkpointing is false (see trainer above).
++      transformer_config_kwargs:
++        cpu_offloading: true
++        cpu_offloading_weights: true
++        cpu_offloading_activations: true
++        cpu_offloading_num_layers: 25
++
++  placement:
++    # Single GB200 node, 4 GPUs total. colocate_all=true forces policy+generator onto
++    # the SAME GPU(s) regardless of how many are available -- that's what colocation
++    # means, not an adaptive fallback -- which is why this OOM'd on GPU 0 even after
++    # vista_gb200 correctly gave Ray a 4-GPU view. With 4 real GPUs, disaggregate
++    # instead: policy gets 1, generator gets 1 (see num_inference_engines below), on
++    # separate devices, no more memory contention. colocate_policy_ref stays true
++    # since use_kl_loss=false means no separate reference model is instantiated anyway.
++    colocate_all: false
++    colocate_policy_ref: true
++    policy_num_nodes: 1
++    ref_num_nodes: 1
++    # 1 GPU for policy left the whole ~67B-A2B model (weights+grads+optimizer+backward
++    # activations) on a single GPU, which OOM'd during loss.backward(). 3 of the 4
++    # physical GPUs for policy (generator keeps the other 1, per num_inference_engines
++    # below) lets FSDP2 (fsdp_size=-1 above) actually shard the model 3-way.
++    policy_num_gpus_per_node: 2
++    ref_num_gpus_per_node: 1
++    policy_strict_spread_pg: false
++    policy_per_gpu_bundles: true
++    policy_force_cvd_mask: true
++
++generator:
++  backend: vllm
++  timeout_multiplier: 1.0
++  model_dtype: bfloat16
++
++  inference_engine_tensor_parallel_size: 1
++  num_inference_engines: 1
++  inference_engine_data_parallel_size: 2
++  inference_engine_expert_parallel_size: 2
++  inference_engine_mp_backend: true
++
++  n_samples_per_prompt: 2
++  eval_n_samples_per_prompt: 2
++
++  # 0.6 left no room for KV-cache blocks once the ~67B-A2B (all-experts-resident)
++  # weights loaded on a dedicated GPU (disaggregated placement -- see colocate_all
++  # above): "No available memory for the cache blocks." Raised since this GPU is no
++  # longer shared with the policy/ref.
++  gpu_memory_utilization: 0.92
++
++  max_num_seqs: 8
++  max_num_batched_tokens: 8192
++
++  enable_prefix_caching: true
++  enable_chunked_prefill: true
++
++  run_engines_locally: true
++  weight_sync_backend: nccl
++  enable_http_endpoint: true
++  sampling_params:
++    temperature: 1.0
++    top_p: 1.0
++    top_k: -1
++
++  engine_init_kwargs:
++    enable_return_routed_experts: false
++
++data:
++  train_data: ["/scratch/09749/atutej/marin_speculator/runs/rl_speculation/r2egym_tasks_16"]
++  val_data: []
+diff --git a/hpc/skyrl_yaml/tacc/1node_snowball_eagle3_r2egym_smoke.yaml b/hpc/skyrl_yaml/tacc/1node_snowball_eagle3_r2egym_smoke.yaml
+new file mode 100644
+index 00000000..89ea8109
+--- /dev/null
++++ b/hpc/skyrl_yaml/tacc/1node_snowball_eagle3_r2egym_smoke.yaml
+@@ -0,0 +1,249 @@
++entrypoint: skyrl_train.entrypoints.terminal_bench
++
++context_budget:
++  request_window_tokens: 32768
++  max_new_tokens_per_turn: 8192
++  max_turns: 999999
++
++terminal_bench:
++  trials_dir: null
++
++  harbor:
++    name: terminus-2
++    enable_summarize: false
++    store_all_messages: true
++    trajectory_config:
++      raw_content: true
++    enable_episode_logging: false
++    record_terminal_session: false
++    enable_pane_logging: false
++
++    strict_json_parser: true
++
++    interleaved_thinking: true
++    extra_body:
++      chat_template_kwargs:
++        enable_thinking: true
++    override_timeout_sec: 1800
++
++    override_cpus: 1
++    override_memory_mb: 2048
++    override_storage_mb: 2048
++
++    auto_snapshot: true
++
++    verifier_override_timeout_sec: 120
++
++    max_retries: 3
++    min_wait_sec: 60.0
++    max_wait_sec: 600.0
++    wait_multiplier: 2.0
++
++    exclude_exceptions:
++      - VerifierTimeoutError
++      - RewardFileNotFoundError
++      - RewardFileEmptyError
++      - VerifierOutputParseError
++      - VerifierRuntimeError
++
++    # Smoke scale: a handful of concurrent trials, not the Jupiter 300.
++    n_concurrent_trials: 4
++
++    log_level: INFO
++
++    enable_reward_shaping: false
++
++    collect_rollout_details: true
++
++    enable_error_classification: true
++    mask_exceptions:
++      - DaytonaError
++      - EnvironmentStartTimeoutError
++      - NetworkError
++      - ConnectionError
++      - RewardFileNotFoundError
++      - RewardFileEmptyError
++      - AgentEnvironmentTimeoutError
++    default_error_treatment: zero
++    passthrough_exceptions:
++      - AgentTimeoutError
++      - ContextLengthExceededError
++
++  model_info:
++
++  archiving:
++    enabled: false
++
++  trace_upload:
++    enabled: false
++    repo_org: DCAgent
++    episodes: last
++    dataset_type: SFT
++    cleanup: true
++
++trainer:
++  strategy: fsdp2
++  gradient_checkpointing: true
++  gradient_checkpointing_use_reentrant: false
++  # skyrl_train's Grug FSDP2 path (model_wrapper.validate_grug_training_options)
++  # unconditionally rejects sample packing for GRUG_MOE_MODEL_TYPE -- ppo_base_config's
++  # default of true crashes on init with "Flash attention 2 should be used for
++  # `use_sample_packing`" before even reaching the Grug-specific check.
++  use_sample_packing: false
++  # ppo_base_config defaults this to false -> resolve_attn_implementation() picks
++  # "eager" attention (attn_backend stays "auto" below). Eager materializes the full
++  # O(seq_len^2) attention score matrix and its own softmax/softmax_backward -- for
++  # real R2E-Gym trajectories up to ~32k tokens this is exactly what OOM'd in
++  # policy_train ("Tried to allocate ~40 GiB" inside structured_softmax_backward_cuda_out).
++  # Verified in isolation on this GB200: eager attention peaks at 50.66 GiB for a
++  # 16k-token sequence vs 0.80 GiB for flash-attention-2 (~63x). GrugMoE supports
++  # flash_attention_2 natively (GRUG_SUPPORTED_ATTENTION_BACKENDS), and the aarch64
++  # flash-attn wheel installed into MarinSkyRL's venv verified working (fwd+bwd) on
++  # this hardware. This is the actual fix -- NOT more GPUs/nodes (FSDP sharding
++  # doesn't touch this at all, since it's a per-example activation cost, not
++  # parameter/optimizer memory).
++  flash_attn: true
++  algorithm:
++    advantage_estimator: rloo_n
++    # No separate reference model needed for a smoke test -- avoids a second
++    # ~134GB Snowball copy that a single 4-GPU node cannot fit alongside the
++    # policy + generator copies.
++    use_kl_loss: false
++    kl_loss_coef: 0.0
++    eps_clip_low: 0.2
++    eps_clip_high: 0.05
++    loss_reduction: sequence_mean
++    use_tis: true
++    tis_imp_ratio_cap: 2.0
++    group_advantage_min_size: 2
++
++  # Smoke: just prove one training step completes without error.
++  epochs: 1
++  max_steps: 1
++  update_epochs_per_batch: 1
++
++  train_batch_size: 4
++  policy_mini_batch_size: 4
++  eval_batch_size: 4
++
++  micro_forward_batch_size_per_gpu: 1
++  micro_train_batch_size_per_gpu: 1
++
++  eval_interval: 999999
++  eval_before_train: false
++  ckpt_interval: 999999
++  resume_mode: null
++  hf_save_interval: 999999
++  hf_hub_repo_id: null
++  hf_hub_private: false
++  hf_hub_revision: main
++
++  enable_db_registration: false
++
++  project_name: OpenThoughts-Agent
++  log_level: INFO
++  tracker_commit_each_step: true
++  logger: console
++
++  run_name: null
++  ckpt_path: null
++  export_path: null
++
++  policy:
++    model:
++      path: /scratch/09749/atutej/eagle3/models/snowball-67b-a2b-sft-s3-nemotron-terminal-step1888
++    optimizer_config:
++      lr: 8e-6
++      weight_decay: 0.0
++      adam_betas: [0.9, 0.999]
++      max_grad_norm: 0.9
++    fsdp_config:
++      cpu_offload: true
++      reshard_after_forward: true
++      # fsdp_size=1 (with policy_num_gpus_per_node=1 below) gave world_size=1, i.e. no
++      # sharding at all: the entire ~67B-A2B model (weights+grads+optimizer state+
++      # backward activations) had to fit on ONE GPU, which OOM'd in loss.backward()
++      # ("Tried to allocate 43.90 GiB ... 26.93 GiB is free"). -1 means "shard across
++      # the full policy world_size" (see fsdp_utils.create_device_mesh) -- now that
++      # policy gets 3 GPUs (below), this actually shards params/optimizer/grads 3-way.
++      fsdp_size: -1
++      expert_model_parallel_size: 1
++      moe_router_replay: false
++      # Also unconditionally unsupported for Grug ("generic grouped MoE swap") by the
++      # same validate_grug_training_options check -- true would fail right after the
++      # use_sample_packing fix above with "Grug FSDP2 training does not support: ...
++      # generic grouped MoE swap".
++      moe_grouped_gemm: false
++      ep_comm_backend: torch
++
++  placement:
++    # Single GB200 node, 4 GPUs total. colocate_all=true forces policy+generator onto
++    # the SAME GPU(s) regardless of how many are available -- that's what colocation
++    # means, not an adaptive fallback -- which is why this OOM'd on GPU 0 even after
++    # vista_gb200 correctly gave Ray a 4-GPU view. With 4 real GPUs, disaggregate
++    # instead: policy gets 1, generator gets 1 (see num_inference_engines below), on
++    # separate devices, no more memory contention. colocate_policy_ref stays true
++    # since use_kl_loss=false means no separate reference model is instantiated anyway.
++    colocate_all: false
++    colocate_policy_ref: true
++    policy_num_nodes: 1
++    ref_num_nodes: 1
++    # 1 GPU for policy left the whole ~67B-A2B model (weights+grads+optimizer+backward
++    # activations) on a single GPU, which OOM'd during loss.backward(). 3 of the 4
++    # physical GPUs for policy (generator keeps the other 1, per num_inference_engines
++    # below) lets FSDP2 (fsdp_size=-1 above) actually shard the model 3-way.
++    policy_num_gpus_per_node: 3
++    ref_num_gpus_per_node: 1
++    policy_strict_spread_pg: false
++    policy_per_gpu_bundles: true
++    policy_force_cvd_mask: true
++
++generator:
++  backend: vllm
++  timeout_multiplier: 1.0
++  model_dtype: bfloat16
++
++  inference_engine_tensor_parallel_size: 1
++  num_inference_engines: 1
++  inference_engine_expert_parallel_size: 1
++  inference_engine_mp_backend: true
++
++  n_samples_per_prompt: 2
++  eval_n_samples_per_prompt: 2
++
++  # 0.6 left no room for KV-cache blocks once the ~67B-A2B (all-experts-resident)
++  # weights loaded on a dedicated GPU (disaggregated placement -- see colocate_all
++  # above): "No available memory for the cache blocks." Raised since this GPU is no
++  # longer shared with the policy/ref.
++  gpu_memory_utilization: 0.92
++
++  max_num_seqs: 8
++  max_num_batched_tokens: 8192
++
++  enable_prefix_caching: true
++  enable_chunked_prefill: true
++
++  run_engines_locally: true
++  weight_sync_backend: nccl
++  async_engine: true
++  batched: false
++  enable_http_endpoint: true
++  append_eos_token_after_stop_str_in_multi_turn: true
++  sampling_params:
++    temperature: 1.2
++    top_p: 1.0
++    top_k: -1
++
++  engine_init_kwargs:
++    enable_return_routed_experts: false
++    # The eagle3 adapted draft (R2E-Gym), wired via vLLM's native speculative_config
++    # passthrough -- MarinSkyRL splats engine_init_kwargs straight into the vLLM
++    # engine constructor, no framework-side integration needed.
++    speculative_config:
++      method: eagle3
++      model: /scratch/09749/atutej/eagle3/models/snowball-64k-eagle3-draft-r2egym
++      num_speculative_tokens: 3
++
++data:
++  train_data: ["/scratch/09749/atutej/tasks/repo-29-DCAgent%2Fr2egym-patched-full__revision-40-cb071d2678ba02ccc7c591181788546b478bd0ad"]
++  val_data: []
+diff --git a/hpc/skyrl_yaml/tacc/1node_snowball_online_eagle_static_smoke.yaml b/hpc/skyrl_yaml/tacc/1node_snowball_online_eagle_static_smoke.yaml
+new file mode 100644
+index 00000000..d7eb9f43
+--- /dev/null
++++ b/hpc/skyrl_yaml/tacc/1node_snowball_online_eagle_static_smoke.yaml
+@@ -0,0 +1,261 @@
++entrypoint: skyrl_train.entrypoints.terminal_bench
++
++context_budget:
++  request_window_tokens: 32768
++  max_new_tokens_per_turn: 8192
++  max_turns: 999999
++
++terminal_bench:
++  trials_dir: null
++
++  harbor:
++    name: terminus-2
++    enable_summarize: false
++    store_all_messages: true
++    trajectory_config:
++      raw_content: true
++    enable_episode_logging: false
++    record_terminal_session: false
++    enable_pane_logging: false
++
++    strict_json_parser: true
++
++    interleaved_thinking: true
++    extra_body:
++      chat_template_kwargs:
++        enable_thinking: true
++    override_timeout_sec: 1800
++
++    override_cpus: 1
++    override_memory_mb: 2048
++    override_storage_mb: 2048
++
++    auto_snapshot: true
++
++    verifier_override_timeout_sec: 120
++
++    max_retries: 3
++    min_wait_sec: 60.0
++    max_wait_sec: 600.0
++    wait_multiplier: 2.0
++
++    exclude_exceptions:
++      - VerifierTimeoutError
++      - RewardFileNotFoundError
++      - RewardFileEmptyError
++      - VerifierOutputParseError
++      - VerifierRuntimeError
++
++    # Smoke scale: a handful of concurrent trials, not the Jupiter 300.
++    n_concurrent_trials: 4
++
++    log_level: INFO
++
++    enable_reward_shaping: false
++
++    collect_rollout_details: true
++
++    enable_error_classification: true
++    mask_exceptions:
++      - DaytonaError
++      - EnvironmentStartTimeoutError
++      - NetworkError
++      - ConnectionError
++      - RewardFileNotFoundError
++      - RewardFileEmptyError
++      - AgentEnvironmentTimeoutError
++    default_error_treatment: zero
++    passthrough_exceptions:
++      - AgentTimeoutError
++      - ContextLengthExceededError
++
++  model_info:
++
++  archiving:
++    enabled: false
++
++  trace_upload:
++    enabled: false
++    repo_org: DCAgent
++    episodes: last
++    dataset_type: SFT
++    cleanup: true
++
++trainer:
++  strategy: fsdp2
++  gradient_checkpointing: true
++  gradient_checkpointing_use_reentrant: false
++  # skyrl_train's Grug FSDP2 path (model_wrapper.validate_grug_training_options)
++  # unconditionally rejects sample packing for GRUG_MOE_MODEL_TYPE -- ppo_base_config's
++  # default of true crashes on init with "Flash attention 2 should be used for
++  # `use_sample_packing`" before even reaching the Grug-specific check.
++  use_sample_packing: false
++  # ppo_base_config defaults this to false -> resolve_attn_implementation() picks
++  # "eager" attention (attn_backend stays "auto" below). Eager materializes the full
++  # O(seq_len^2) attention score matrix and its own softmax/softmax_backward -- for
++  # real R2E-Gym trajectories up to ~32k tokens this is exactly what OOM'd in
++  # policy_train ("Tried to allocate ~40 GiB" inside structured_softmax_backward_cuda_out).
++  # Verified in isolation on this GB200: eager attention peaks at 50.66 GiB for a
++  # 16k-token sequence vs 0.80 GiB for flash-attention-2 (~63x). GrugMoE supports
++  # flash_attention_2 natively (GRUG_SUPPORTED_ATTENTION_BACKENDS), and the aarch64
++  # flash-attn wheel installed into MarinSkyRL's venv verified working (fwd+bwd) on
++  # this hardware. This is the actual fix -- NOT more GPUs/nodes (FSDP sharding
++  # doesn't touch this at all, since it's a per-example activation cost, not
++  # parameter/optimizer memory).
++  flash_attn: true
++  algorithm:
++    advantage_estimator: rloo_n
++    # No separate reference model needed for a smoke test -- avoids a second
++    # ~134GB Snowball copy that a single 4-GPU node cannot fit alongside the
++    # policy + generator copies.
++    use_kl_loss: false
++    kl_loss_coef: 0.0
++    eps_clip_low: 0.2
++    eps_clip_high: 0.05
++    loss_reduction: sequence_mean
++    use_tis: true
++    tis_imp_ratio_cap: 2.0
++    group_advantage_min_size: 2
++
++  # Smoke: just prove one training step completes without error.
++  epochs: 1
++  max_steps: 1
++  update_epochs_per_batch: 1
++
++  train_batch_size: 4
++  policy_mini_batch_size: 4
++  eval_batch_size: 4
++
++  micro_forward_batch_size_per_gpu: 1
++  micro_train_batch_size_per_gpu: 1
++
++  eval_interval: 999999
++  eval_before_train: false
++  ckpt_interval: 999999
++  resume_mode: null
++  hf_save_interval: 999999
++  hf_hub_repo_id: null
++  hf_hub_private: false
++  hf_hub_revision: main
++
++  enable_db_registration: false
++
++  project_name: OpenThoughts-Agent
++  log_level: INFO
++  tracker_commit_each_step: true
++  logger: console
++
++  run_name: null
++  ckpt_path: null
++  export_path: null
++
++  policy:
++    model:
++      path: /scratch/09749/atutej/eagle3/models/snowball-67b-a2b-sft-s3-nemotron-terminal-step1888
++    optimizer_config:
++      lr: 8e-6
++      weight_decay: 0.0
++      adam_betas: [0.9, 0.999]
++      max_grad_norm: 0.9
++    fsdp_config:
++      cpu_offload: true
++      reshard_after_forward: true
++      # fsdp_size=1 (with policy_num_gpus_per_node=1 below) gave world_size=1, i.e. no
++      # sharding at all: the entire ~67B-A2B model (weights+grads+optimizer state+
++      # backward activations) had to fit on ONE GPU, which OOM'd in loss.backward()
++      # ("Tried to allocate 43.90 GiB ... 26.93 GiB is free"). -1 means "shard across
++      # the full policy world_size" (see fsdp_utils.create_device_mesh) -- now that
++      # policy gets 3 GPUs (below), this actually shards params/optimizer/grads 3-way.
++      fsdp_size: -1
++      expert_model_parallel_size: 1
++      moe_router_replay: false
++      # Also unconditionally unsupported for Grug ("generic grouped MoE swap") by the
++      # same validate_grug_training_options check -- true would fail right after the
++      # use_sample_packing fix above with "Grug FSDP2 training does not support: ...
++      # generic grouped MoE swap".
++      moe_grouped_gemm: false
++      ep_comm_backend: torch
++
++  placement:
++    # Single GB200 node, 4 GPUs total. colocate_all=true forces policy+generator onto
++    # the SAME GPU(s) regardless of how many are available -- that's what colocation
++    # means, not an adaptive fallback -- which is why this OOM'd on GPU 0 even after
++    # vista_gb200 correctly gave Ray a 4-GPU view. With 4 real GPUs, disaggregate
++    # instead: policy gets 1, generator gets 1 (see num_inference_engines below), on
++    # separate devices, no more memory contention. colocate_policy_ref stays true
++    # since use_kl_loss=false means no separate reference model is instantiated anyway.
++    colocate_all: false
++    colocate_policy_ref: true
++    policy_num_nodes: 1
++    ref_num_nodes: 1
++    # 1 GPU for policy left the whole ~67B-A2B model (weights+grads+optimizer+backward
++    # activations) on a single GPU, which OOM'd during loss.backward(). 3 of the 4
++    # physical GPUs for policy (generator keeps the other 1, per num_inference_engines
++    # below) lets FSDP2 (fsdp_size=-1 above) actually shard the model 3-way.
++    policy_num_gpus_per_node: 3
++    ref_num_gpus_per_node: 1
++    policy_strict_spread_pg: false
++    policy_per_gpu_bundles: true
++    policy_force_cvd_mask: true
++
++generator:
++  backend: vllm
++  timeout_multiplier: 1.0
++  model_dtype: bfloat16
++
++  inference_engine_tensor_parallel_size: 1
++  num_inference_engines: 1
++  inference_engine_expert_parallel_size: 1
++  inference_engine_mp_backend: true
++
++  n_samples_per_prompt: 2
++  eval_n_samples_per_prompt: 2
++
++  # 0.6 left no room for KV-cache blocks once the ~67B-A2B (all-experts-resident)
++  # weights loaded on a dedicated GPU (disaggregated placement -- see colocate_all
++  # above): "No available memory for the cache blocks." Raised since this GPU is no
++  # longer shared with the policy/ref.
++  gpu_memory_utilization: 0.92
++
++  max_num_seqs: 8
++  max_num_batched_tokens: 8192
++
++  enable_prefix_caching: true
++  enable_chunked_prefill: true
++
++  run_engines_locally: true
++  weight_sync_backend: nccl
++  async_engine: true
++  batched: false
++  enable_http_endpoint: true
++  append_eos_token_after_stop_str_in_multi_turn: true
++  sampling_params:
++    temperature: 1.2
++    top_p: 1.0
++    top_k: -1
++
++  engine_init_kwargs:
++    enable_return_routed_experts: false
++
++  # Native managed EAGLE serving on the weaver/skyrl-native-speculative-decodin branch
++  # (marinskyrl.speculative_decoding.SpeculativeDecodingConfig), replacing the old
++  # engine_init_kwargs.speculative_config passthrough used against main. Static-only
++  # here (no `training:` block) -- validates the new schema/vLLM pin (marin.5070ae57331b,
++  # which already has native GrugMoE SupportsEagle3, no manual grugmoe.py patch needed)
++  # before attempting the online-retraining path, which needs s3://\gs://\gcs:// storage
++  # for DraftTrainer checkpoint publishing (SpeculatorModelConfig/DraftCheckpoint both
++  # reject local paths outright -- see marinskyrl/speculative_decoding.py and
++  # skyrl_train/draft_trainer.py). model.source_uri must be hf://, s3://, gs://, or
++  # gcs:// (never a local path) with a real 40-char commit SHA for HF sources; reusing
++  # the exact repo+revision from cloud/iris/configs/snowball_megatron_online_eagle.yaml
++  # since it's the same public draft-r2egym model we already validated against main.
++  speculative_decoding:
++    method: eagle3
++    model:
++      source_uri: hf://laion/snowball-64k-eagle3-draft-r2egym
++      source_identity: 4bdb47c08e5b5190bea3c7a93c3e14470230e469
++    num_speculative_tokens: 3
++
++data:
++  train_data: ["/scratch/09749/atutej/tasks/repo-29-DCAgent%2Fr2egym-patched-full__revision-40-cb071d2678ba02ccc7c591181788546b478bd0ad"]
++  val_data: []
+diff --git a/hpc/skyrl_yaml/tacc/1node_snowball_online_eagle_training_smoke.yaml b/hpc/skyrl_yaml/tacc/1node_snowball_online_eagle_training_smoke.yaml
+new file mode 100644
+index 00000000..d989d996
+--- /dev/null
++++ b/hpc/skyrl_yaml/tacc/1node_snowball_online_eagle_training_smoke.yaml
+@@ -0,0 +1,186 @@
++entrypoint: skyrl_train.entrypoints.main_base
++
++context_budget:
++  request_window_tokens: 32768
++  max_new_tokens_per_turn: 8192
++  max_turns: 1
++
++environment:
++  env_class: gsm8k
++
++trainer:
++  strategy: fsdp2
++  gradient_checkpointing: true
++  gradient_checkpointing_use_reentrant: false
++  use_sample_packing: false
++  flash_attn: true
++  algorithm:
++    advantage_estimator: rloo_n
++    use_kl_loss: false
++    kl_loss_coef: 0.0
++    eps_clip_low: 0.2
++    eps_clip_high: 0.05
++    loss_reduction: sequence_mean
++    use_tis: true
++    tis_imp_ratio_cap: 2.0
++    group_advantage_min_size: 2
++
++  # Smoke: just prove one training step (including one online draft update) completes.
++  epochs: 1
++  max_steps: 1
++  update_epochs_per_batch: 1
++
++  train_batch_size: 4
++  policy_mini_batch_size: 4
++  eval_batch_size: 4
++
++  micro_forward_batch_size_per_gpu: 1
++  micro_train_batch_size_per_gpu: 1
++
++  eval_interval: 999999
++  eval_before_train: false
++  ckpt_interval: 999999
++  resume_mode: null
++  hf_save_interval: 999999
++  hf_hub_repo_id: null
++  hf_hub_private: false
++  hf_hub_revision: main
++
++  enable_db_registration: false
++
++  project_name: OpenThoughts-Agent
++  log_level: INFO
++  tracker_commit_each_step: true
++  logger: console
++
++  run_name: null
++  ckpt_path: null
++  export_path: null
++
++  policy:
++    model:
++      path: /scratch/09749/atutej/eagle3/models/snowball-67b-a2b-sft-s3-nemotron-terminal-step1888
++    optimizer_config:
++      lr: 8e-6
++      weight_decay: 0.0
++      adam_betas: [0.9, 0.999]
++      max_grad_norm: 0.9
++    fsdp_config:
++      cpu_offload: true
++      reshard_after_forward: true
++      fsdp_size: -1
++      expert_model_parallel_size: 1
++      moe_router_replay: false
++      moe_grouped_gemm: false
++      ep_comm_backend: torch
++
++  placement:
++    # parse_speculative_decoding_config requires colocate_all=false for any
++    # generator.speculative_decoding block (training or static).
++    colocate_all: false
++    colocate_policy_ref: true
++    policy_num_nodes: 1
++    ref_num_nodes: 1
++    # 3+1 (policy+generator) leaves zero free GPUs for the DraftTrainer's own
++    # ray.remote(num_gpus=1) request on a single 4-GPU node -- it would sit pending
++    # forever. 2+1 leaves exactly 1 free. As more nodes/GPUs get added later, only
++    # policy needs to grow -- the drafter is a fixed 1-GPU actor regardless of scale.
++    policy_num_gpus_per_node: 2
++    ref_num_gpus_per_node: 1
++    policy_strict_spread_pg: false
++    policy_per_gpu_bundles: true
++    policy_force_cvd_mask: true
++
++generator:
++  backend: vllm
++  timeout_multiplier: 1.0
++  model_dtype: bfloat16
++
++  inference_engine_tensor_parallel_size: 1
++  # parse_speculative_decoding_config requires num_inference_engines=1 and
++  # inference_engine_pipeline_parallel_size=1 whenever speculative_decoding.training
++  # is set.
++  num_inference_engines: 1
++  inference_engine_expert_parallel_size: 1
++  inference_engine_mp_backend: true
++
++  n_samples_per_prompt: 2
++  eval_n_samples_per_prompt: 2
++
++  # Lowered from the 0.92 used in the static (no-training) smoke test to leave real
++  # headroom for reserved_gpu_memory_gib below -- the online draft trainer runs on
++  # this same generator GPU, not a separate node/actor, at this PR-550 commit.
++  gpu_memory_utilization: 0.8
++
++  max_num_seqs: 8
++  max_num_batched_tokens: 8192
++
++  enable_prefix_caching: true
++  enable_chunked_prefill: true
++
++  run_engines_locally: true
++  weight_sync_backend: nccl
++  async_engine: true
++  batched: false
++  enable_http_endpoint: true
++  append_eos_token_after_stop_str_in_multi_turn: true
++  sampling_params:
++    # Matches Russell's reference config (cloud/iris/configs/snowball_megatron_online_eagle.yaml).
++    # 1.2 was an unexamined carryover from the earlier agentic/R2E-Gym smoke-test yaml, where high
++    # temperature made sense for exploration -- never re-checked for this math-reasoning smoke test.
++    temperature: 1.0
++    top_p: 1.0
++    top_k: -1
++
++  engine_init_kwargs:
++    enable_return_routed_experts: false
++    served_model_name: snowball-67b-a2b-sft-s3-nemotron-terminal-step1888
++
++  # PR #550 (marinskyrl.speculative_decoding.SpeculativeDecodingConfig) -- unlike the
++  # static-only smoke test, this exercises the real online DraftTrainer update path.
++  # entrypoint above MUST be main_base (parse_speculative_decoding_config rejects
++  # .training under any other entrypoint, e.g. terminal_bench).
++  speculative_decoding:
++    method: eagle3
++    model:
++      source_uri: hf://laion/snowball-64k-eagle3-draft-r2egym
++      source_identity: 4bdb47c08e5b5190bea3c7a93c3e14470230e469
++    num_speculative_tokens: 3
++    training:
++      # Update after this one step so the smoke test actually exercises a real
++      # online draft update, not just static serving.
++      interval_steps: 1
++      # Matches Russell's reference config (cloud/iris/configs/snowball_megatron_online_eagle.yaml),
++      # which shares our max_new_tokens_per_turn=8192 -- max_window_tokens=16384 is 2x that cap,
++      # giving headroom for one full-length response plus its prompt context in a single window.
++      # 4096 was silently discarding every response longer than 4096 tokens as "oversized" in
++      # merge_online_eagle_captures, which is most of them now that lowering temperature (1.2->1.0)
++      # gives us properly long, coherent step-by-step reasoning instead of short garbled output.
++      max_tokens_per_update: 131072
++      max_window_tokens: 16384
++      max_tokens_per_micro_batch: 8192
++      max_sequences_per_prompt_group: 2
++      # min_train_sequences=6/min_holdout_sequences=3 (Russell's reference) is a floor of 9 --
++      # unreachable for us regardless of window-size fixes, since our ceiling is
++      # max_sequences_per_prompt_group(2) x 4 prompt groups (train_batch_size=4) = 8 windows max.
++      # Unlike the token/window-size settings above, this floor doesn't scale with response length,
++      # it scales with batch size -- so it stays at our own smoke-test floor, not Russell's.
++      min_train_sequences: 1
++      holdout_fraction: 0.25
++      min_holdout_sequences: 1
++      epochs_per_update: 1
++      learning_rate: 5.0e-5
++      max_validation_loss_increase: 0.05
++      max_validation_agreement_decrease: 0.01
++      reserved_gpu_memory_gib: 12
++      # Our own patch: the storage-destination checks across draft_trainer.py,
++      # trainer.py, and vllm_engine.py now accept any absolute path (not just
++      # s3://gs://gcs://). TACC's /scratch is one Lustre/NFS filesystem visible from
++      # every node in this Ray cluster, so a plain local trainer.ckpt_path is exactly
++      # as valid a hand-off point as cloud storage here. No config flag needed --
++      # Iris/cloud deployments always configure trainer.ckpt_path as a cloud URI
++      # anyway, so this is a no-op there.
++
++data:
++  train_data: ["/scratch/09749/atutej/eagle3/data/gsm8k/train.parquet"]
++  val_data: ["/scratch/09749/atutej/eagle3/data/gsm8k/validation.parquet"]
+diff --git a/hpc/skyrl_yaml/tacc/2node_grug_datakit_dspark_r2egym_rl.yaml b/hpc/skyrl_yaml/tacc/2node_grug_datakit_dspark_r2egym_rl.yaml
+new file mode 100644
+index 00000000..3801f648
+--- /dev/null
++++ b/hpc/skyrl_yaml/tacc/2node_grug_datakit_dspark_r2egym_rl.yaml
+@@ -0,0 +1,239 @@
++entrypoint: skyrl_train.entrypoints.terminal_bench
++
++context_budget:
++  request_window_tokens: 32768
++  max_new_tokens_per_turn: 8192
++  max_turns: 999999
++
++terminal_bench:
++  trials_dir: null
++
++  harbor:
++    name: terminus-2
++    enable_summarize: false
++    store_all_messages: true
++    trajectory_config:
++      raw_content: true
++    enable_episode_logging: false
++    record_terminal_session: false
++    enable_pane_logging: false
++
++    strict_json_parser: true
++
++    interleaved_thinking: true
++    extra_body:
++      chat_template_kwargs:
++        enable_thinking: true
++    override_timeout_sec: 1800
++
++    override_cpus: 1
++    override_memory_mb: 2048
++    override_storage_mb: 2048
++
++    auto_snapshot: true
++
++    verifier_override_timeout_sec: 120
++
++    max_retries: 3
++    min_wait_sec: 60.0
++    max_wait_sec: 600.0
++    wait_multiplier: 2.0
++
++    exclude_exceptions:
++      - VerifierTimeoutError
++      - RewardFileNotFoundError
++      - RewardFileEmptyError
++      - VerifierOutputParseError
++      - VerifierRuntimeError
++
++    # Smoke scale: a handful of concurrent trials, not the Jupiter 300.
++    n_concurrent_trials: 64
++
++    log_level: INFO
++
++    enable_reward_shaping: false
++
++    collect_rollout_details: true
++
++    enable_error_classification: true
++    mask_exceptions:
++      - DaytonaError
++      - EnvironmentStartTimeoutError
++      - NetworkError
++      - ConnectionError
++      - RewardFileNotFoundError
++      - RewardFileEmptyError
++      - AgentEnvironmentTimeoutError
++    default_error_treatment: zero
++    passthrough_exceptions:
++      - AgentTimeoutError
++      - ContextLengthExceededError
++
++  model_info:
++
++  archiving:
++    enabled: false
++
++  trace_upload:
++    enabled: false
++    repo_org: DCAgent
++    episodes: last
++    dataset_type: SFT
++    cleanup: true
++
++trainer:
++  strategy: megatron
++  # false: the Megatron worker then clears recompute_*; Megatron-core rejects cpu_offloading together with activation recomputation.
++  gradient_checkpointing: true
++  gradient_checkpointing_use_reentrant: false
++  # skyrl_train's Grug FSDP2 path (model_wrapper.validate_grug_training_options)
++  # unconditionally rejects sample packing for GRUG_MOE_MODEL_TYPE -- ppo_base_config's
++  # default of true crashes on init with "Flash attention 2 should be used for
++  # `use_sample_packing`" before even reaching the Grug-specific check.
++  use_sample_packing: false
++  # ppo_base_config defaults this to false -> resolve_attn_implementation() picks
++  # "eager" attention (attn_backend stays "auto" below). Eager materializes the full
++  # O(seq_len^2) attention score matrix and its own softmax/softmax_backward -- for
++  # real R2E-Gym trajectories up to ~32k tokens this is exactly what OOM'd in
++  # policy_train ("Tried to allocate ~40 GiB" inside structured_softmax_backward_cuda_out).
++  # Verified in isolation on this GB200: eager attention peaks at 50.66 GiB for a
++  # 16k-token sequence vs 0.80 GiB for flash-attention-2 (~63x). GrugMoE supports
++  # flash_attention_2 natively (GRUG_SUPPORTED_ATTENTION_BACKENDS), and the aarch64
++  # flash-attn wheel installed into MarinSkyRL's venv verified working (fwd+bwd) on
++  # this hardware. This is the actual fix -- NOT more GPUs/nodes (FSDP sharding
++  # doesn't touch this at all, since it's a per-example activation cost, not
++  # parameter/optimizer memory).
++  flash_attn: true
++  algorithm:
++    advantage_estimator: rloo_n
++    # No separate reference model needed for a smoke test -- avoids a second
++    # ~134GB Snowball copy that a single 4-GPU node cannot fit alongside the
++    # policy + generator copies.
++    use_kl_loss: false
++    kl_loss_coef: 0.0
++    eps_clip_low: 0.2
++    eps_clip_high: 0.05
++    loss_reduction: sequence_mean
++    off_policy_correction: tis   # token-level truncation at 2.0: the old use_tis / tis_imp_ratio_cap 2.0
++    group_advantage_min_size: 2
++
++  # Smoke: just prove one training step completes without error.
++  epochs: 1
++  max_steps: 3
++  update_epochs_per_batch: 1
++
++  train_batch_size: 16
++  policy_mini_batch_size: 16
++  eval_batch_size: 16
++
++  micro_forward_batch_size_per_gpu: 1
++  micro_train_batch_size_per_gpu: 1
++
++  eval_interval: 999999
++  eval_before_train: false
++  ckpt_interval: 999999
++  resume_mode: null
++  hf_save_interval: 999999
++  hf_hub_repo_id: null
++  hf_hub_private: false
++  hf_hub_revision: main
++
++  enable_db_registration: false
++
++  project_name: OpenThoughts-Agent
++  log_level: INFO
++  tracker_commit_each_step: true
++  logger: console
++
++  run_name: null
++  ckpt_path: null
++  export_path: null
++
++  policy:
++    model:
++      path: /scratch/09749/atutej/marin_speculator/cache/hf/hub/models--open-athena--Grug-67B-A2B-Datakit-SFT-262K-2026.09.21/snapshots/b8c07f7df1df65525abbfdbcd1572318ba11c42f
++    optimizer_config:
++      lr: 8e-6
++      weight_decay: 0.0
++      adam_betas: [0.9, 0.999]
++      max_grad_norm: 0.9
++    # MarinSkyRL main is Megatron-only (bd9a59f2 removed the FSDP trainers). Grug: TP=1; EP=4 divides the 256 experts (about 33 GiB of bf16 weights per rank).
++    # The optimizer state of a 67B model lives in CPU RAM (the node has ~1.6 TB).
++    megatron_config:
++      tensor_model_parallel_size: 1
++      expert_model_parallel_size: 4
++      ddp_config:
++        grad_reduce_in_fp32: false
++      optimizer_config_kwargs:
++        use_precision_aware_optimizer: true
++        optimizer_cpu_offload: true
++        optimizer_offload_fraction: 1.0
++
++  placement:
++    # Single GB200 node, 4 GPUs total. colocate_all=true forces policy+generator onto
++    # the SAME GPU(s) regardless of how many are available -- that's what colocation
++    # means, not an adaptive fallback -- which is why this OOM'd on GPU 0 even after
++    # vista_gb200 correctly gave Ray a 4-GPU view. With 4 real GPUs, disaggregate
++    # instead: policy gets 1, generator gets 1 (see num_inference_engines below), on
++    # separate devices, no more memory contention. colocate_policy_ref stays true
++    # since use_kl_loss=false means no separate reference model is instantiated anyway.
++    colocate_all: false
++    colocate_policy_ref: true
++    policy_num_nodes: 1
++    ref_num_nodes: 1
++    # 1 GPU for policy left the whole ~67B-A2B model (weights+grads+optimizer+backward
++    # activations) on a single GPU, which OOM'd during loss.backward(). 3 of the 4
++    # physical GPUs for policy (generator keeps the other 1, per num_inference_engines
++    # below) lets FSDP2 (fsdp_size=-1 above) actually shard the model 3-way.
++    policy_num_gpus_per_node: 4
++    ref_num_gpus_per_node: 1
++    policy_strict_spread_pg: false
++    policy_per_gpu_bundles: true
++    policy_force_cvd_mask: true
++
++generator:
++  backend: vllm
++  timeout_multiplier: 1.0
++  model_dtype: bfloat16
++
++  inference_engine_tensor_parallel_size: 1
++  num_inference_engines: 1
++  inference_engine_data_parallel_size: 4
++  inference_engine_expert_parallel_size: 4
++  inference_engine_mp_backend: true
++
++  n_samples_per_prompt: 4
++  eval_n_samples_per_prompt: 4
++
++  # 0.6 left no room for KV-cache blocks once the ~67B-A2B (all-experts-resident)
++  # weights loaded on a dedicated GPU (disaggregated placement -- see colocate_all
++  # above): "No available memory for the cache blocks." Raised since this GPU is no
++  # longer shared with the policy/ref.
++  gpu_memory_utilization: 0.92
++
++  max_num_seqs: 64
++  max_num_batched_tokens: 16384
++
++  enable_prefix_caching: true
++  enable_chunked_prefill: true
++
++  run_engines_locally: true
++  weight_sync_backend: nccl
++  enable_http_endpoint: true
++  sampling_params:
++    temperature: 1.0
++    top_p: 1.0
++    top_k: -1
++
++  engine_init_kwargs:
++    enable_return_routed_experts: false
++    # Our DSpark drafter (speculators format; trained offline on a Datakit sample, no R2E-Gym adaptation) through vLLM's native
++    # speculative_config passthrough. num_speculative_tokens = the drafter's block size (8).
++    speculative_config:
++      method: dspark
++      model: /scratch/09749/atutej/marin_speculator/runs/grug_dspark_100k/checkpoints/0
++      num_speculative_tokens: 8
++
++data:
++  train_data: ["/scratch/09749/atutej/tasks/repo-29-DCAgent%2Fr2egym-patched-full__revision-40-cb071d2678ba02ccc7c591181788546b478bd0ad"]
++  val_data: []
+diff --git a/hpc/skyrl_yaml/tacc/2node_grug_datakit_plain_r2egym_rl.yaml b/hpc/skyrl_yaml/tacc/2node_grug_datakit_plain_r2egym_rl.yaml
+new file mode 100644
+index 00000000..42327795
+--- /dev/null
++++ b/hpc/skyrl_yaml/tacc/2node_grug_datakit_plain_r2egym_rl.yaml
+@@ -0,0 +1,233 @@
++entrypoint: skyrl_train.entrypoints.terminal_bench
++
++context_budget:
++  request_window_tokens: 32768
++  max_new_tokens_per_turn: 8192
++  max_turns: 999999
++
++terminal_bench:
++  trials_dir: null
++
++  harbor:
++    name: terminus-2
++    enable_summarize: false
++    store_all_messages: true
++    trajectory_config:
++      raw_content: true
++    enable_episode_logging: false
++    record_terminal_session: false
++    enable_pane_logging: false
++
++    strict_json_parser: true
++
++    interleaved_thinking: true
++    extra_body:
++      chat_template_kwargs:
++        enable_thinking: true
++    override_timeout_sec: 1800
++
++    override_cpus: 1
++    override_memory_mb: 2048
++    override_storage_mb: 2048
++
++    auto_snapshot: true
++
++    verifier_override_timeout_sec: 120
++
++    max_retries: 3
++    min_wait_sec: 60.0
++    max_wait_sec: 600.0
++    wait_multiplier: 2.0
++
++    exclude_exceptions:
++      - VerifierTimeoutError
++      - RewardFileNotFoundError
++      - RewardFileEmptyError
++      - VerifierOutputParseError
++      - VerifierRuntimeError
++
++    # Smoke scale: a handful of concurrent trials, not the Jupiter 300.
++    n_concurrent_trials: 64
++
++    log_level: INFO
++
++    enable_reward_shaping: false
++
++    collect_rollout_details: true
++
++    enable_error_classification: true
++    mask_exceptions:
++      - DaytonaError
++      - EnvironmentStartTimeoutError
++      - NetworkError
++      - ConnectionError
++      - RewardFileNotFoundError
++      - RewardFileEmptyError
++      - AgentEnvironmentTimeoutError
++    default_error_treatment: zero
++    passthrough_exceptions:
++      - AgentTimeoutError
++      - ContextLengthExceededError
++
++  model_info:
++
++  archiving:
++    enabled: false
++
++  trace_upload:
++    enabled: false
++    repo_org: DCAgent
++    episodes: last
++    dataset_type: SFT
++    cleanup: true
++
++trainer:
++  strategy: megatron
++  # false: the Megatron worker then clears recompute_*; Megatron-core rejects cpu_offloading together with activation recomputation.
++  gradient_checkpointing: true
++  gradient_checkpointing_use_reentrant: false
++  # skyrl_train's Grug FSDP2 path (model_wrapper.validate_grug_training_options)
++  # unconditionally rejects sample packing for GRUG_MOE_MODEL_TYPE -- ppo_base_config's
++  # default of true crashes on init with "Flash attention 2 should be used for
++  # `use_sample_packing`" before even reaching the Grug-specific check.
++  use_sample_packing: false
++  # ppo_base_config defaults this to false -> resolve_attn_implementation() picks
++  # "eager" attention (attn_backend stays "auto" below). Eager materializes the full
++  # O(seq_len^2) attention score matrix and its own softmax/softmax_backward -- for
++  # real R2E-Gym trajectories up to ~32k tokens this is exactly what OOM'd in
++  # policy_train ("Tried to allocate ~40 GiB" inside structured_softmax_backward_cuda_out).
++  # Verified in isolation on this GB200: eager attention peaks at 50.66 GiB for a
++  # 16k-token sequence vs 0.80 GiB for flash-attention-2 (~63x). GrugMoE supports
++  # flash_attention_2 natively (GRUG_SUPPORTED_ATTENTION_BACKENDS), and the aarch64
++  # flash-attn wheel installed into MarinSkyRL's venv verified working (fwd+bwd) on
++  # this hardware. This is the actual fix -- NOT more GPUs/nodes (FSDP sharding
++  # doesn't touch this at all, since it's a per-example activation cost, not
++  # parameter/optimizer memory).
++  flash_attn: true
++  algorithm:
++    advantage_estimator: rloo_n
++    # No separate reference model needed for a smoke test -- avoids a second
++    # ~134GB Snowball copy that a single 4-GPU node cannot fit alongside the
++    # policy + generator copies.
++    use_kl_loss: false
++    kl_loss_coef: 0.0
++    eps_clip_low: 0.2
++    eps_clip_high: 0.05
++    loss_reduction: sequence_mean
++    off_policy_correction: tis   # token-level truncation at 2.0: the old use_tis / tis_imp_ratio_cap 2.0
++    group_advantage_min_size: 2
++
++  # Smoke: just prove one training step completes without error.
++  epochs: 1
++  max_steps: 3
++  update_epochs_per_batch: 1
++
++  train_batch_size: 16
++  policy_mini_batch_size: 16
++  eval_batch_size: 16
++
++  micro_forward_batch_size_per_gpu: 1
++  micro_train_batch_size_per_gpu: 1
++
++  eval_interval: 999999
++  eval_before_train: false
++  ckpt_interval: 999999
++  resume_mode: null
++  hf_save_interval: 999999
++  hf_hub_repo_id: null
++  hf_hub_private: false
++  hf_hub_revision: main
++
++  enable_db_registration: false
++
++  project_name: OpenThoughts-Agent
++  log_level: INFO
++  tracker_commit_each_step: true
++  logger: console
++
++  run_name: null
++  ckpt_path: null
++  export_path: null
++
++  policy:
++    model:
++      path: /scratch/09749/atutej/marin_speculator/cache/hf/hub/models--open-athena--Grug-67B-A2B-Datakit-SFT-262K-2026.09.21/snapshots/b8c07f7df1df65525abbfdbcd1572318ba11c42f
++    optimizer_config:
++      lr: 8e-6
++      weight_decay: 0.0
++      adam_betas: [0.9, 0.999]
++      max_grad_norm: 0.9
++    # MarinSkyRL main is Megatron-only (bd9a59f2 removed the FSDP trainers). Grug: TP=1; EP=4 divides the 256 experts (about 33 GiB of bf16 weights per rank).
++    # The optimizer state of a 67B model lives in CPU RAM (the node has ~1.6 TB).
++    megatron_config:
++      tensor_model_parallel_size: 1
++      expert_model_parallel_size: 4
++      ddp_config:
++        grad_reduce_in_fp32: false
++      optimizer_config_kwargs:
++        use_precision_aware_optimizer: true
++        optimizer_cpu_offload: true
++        optimizer_offload_fraction: 1.0
++
++  placement:
++    # Single GB200 node, 4 GPUs total. colocate_all=true forces policy+generator onto
++    # the SAME GPU(s) regardless of how many are available -- that's what colocation
++    # means, not an adaptive fallback -- which is why this OOM'd on GPU 0 even after
++    # vista_gb200 correctly gave Ray a 4-GPU view. With 4 real GPUs, disaggregate
++    # instead: policy gets 1, generator gets 1 (see num_inference_engines below), on
++    # separate devices, no more memory contention. colocate_policy_ref stays true
++    # since use_kl_loss=false means no separate reference model is instantiated anyway.
++    colocate_all: false
++    colocate_policy_ref: true
++    policy_num_nodes: 1
++    ref_num_nodes: 1
++    # 1 GPU for policy left the whole ~67B-A2B model (weights+grads+optimizer+backward
++    # activations) on a single GPU, which OOM'd during loss.backward(). 3 of the 4
++    # physical GPUs for policy (generator keeps the other 1, per num_inference_engines
++    # below) lets FSDP2 (fsdp_size=-1 above) actually shard the model 3-way.
++    policy_num_gpus_per_node: 4
++    ref_num_gpus_per_node: 1
++    policy_strict_spread_pg: false
++    policy_per_gpu_bundles: true
++    policy_force_cvd_mask: true
++
++generator:
++  backend: vllm
++  timeout_multiplier: 1.0
++  model_dtype: bfloat16
++
++  inference_engine_tensor_parallel_size: 1
++  num_inference_engines: 1
++  inference_engine_data_parallel_size: 4
++  inference_engine_expert_parallel_size: 4
++  inference_engine_mp_backend: true
++
++  n_samples_per_prompt: 4
++  eval_n_samples_per_prompt: 4
++
++  # 0.6 left no room for KV-cache blocks once the ~67B-A2B (all-experts-resident)
++  # weights loaded on a dedicated GPU (disaggregated placement -- see colocate_all
++  # above): "No available memory for the cache blocks." Raised since this GPU is no
++  # longer shared with the policy/ref.
++  gpu_memory_utilization: 0.92
++
++  max_num_seqs: 64
++  max_num_batched_tokens: 16384
++
++  enable_prefix_caching: true
++  enable_chunked_prefill: true
++
++  run_engines_locally: true
++  weight_sync_backend: nccl
++  enable_http_endpoint: true
++  sampling_params:
++    temperature: 1.0
++    top_p: 1.0
++    top_k: -1
++
++  engine_init_kwargs:
++    enable_return_routed_experts: false
++
++data:
++  train_data: ["/scratch/09749/atutej/tasks/repo-29-DCAgent%2Fr2egym-patched-full__revision-40-cb071d2678ba02ccc7c591181788546b478bd0ad"]
++  val_data: []

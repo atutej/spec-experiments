@@ -1,0 +1,67 @@
+method,checkpoint_step,benchmark,acceptance_length,tokens_per_s,source_eval_folder
+Datakit original 12h,37917,datakit,3.1794,4252.0,eval_matrix_g6t5-step37917-speedup
+Datakit original 12h,37917,bigmix,2.7999,3596.4,eval_matrix_g6t5-step37917-speedup
+Datakit original 12h,37917,gsm8k,3.6029,4984.8,eval_matrix_g6t5-paper
+Datakit original 12h,37917,math500,3.9916,5725.0,eval_matrix_g6t5-paper
+Datakit original 12h,37917,humaneval,3.136,4387.2,eval_matrix_g6t5-paper
+Datakit original 12h,37917,mbpp,3.2585,4573.3,eval_matrix_g6t5-paper
+Datakit original 12h,37917,mtbench,2.7589,3346.9,eval_matrix_g6t5-paper
+Datakit original 12h,37917,speedbench,2.7,4702.1,eval_matrix_g6t5-step37917-speedup
+Datakit original 24h,75834,datakit,3.2893,4406.0,eval_matrix_g6t5-step75834
+Datakit original 24h,75834,datakit_full,3.3316,4077.2,eval_matrix_datakit-full-4way
+Datakit original 24h,75834,finance,4.1927,3804.2,eval_matrix_finance-datakitorig-bigmixtg
+Datakit original 24h,75834,bigmix,2.9015,3748.9,eval_matrix_g6t5-step75834
+Datakit original 24h,75834,gsm8k,3.7471,5187.4,eval_matrix_g6t5-step75834
+Datakit original 24h,75834,math500,4.1224,5922.5,eval_matrix_g6t5-step75834
+Datakit original 24h,75834,humaneval,3.2587,4611.4,eval_matrix_g6t5-step75834
+Datakit original 24h,75834,mbpp,3.4117,4791.4,eval_matrix_g6t5-step75834
+Datakit original 24h,75834,mtbench,2.907,3450.0,eval_matrix_g6t5-step75834
+Datakit original 24h,75834,speedbench,2.83,4677.3,eval_matrix_g6t5-step75834
+NoFin original 6h,17986,datakit,3.066,4056.6,eval_matrix_datakit-nofinance-6h
+NoFin original 6h,17986,datakit_full,3.0832,3511.3,eval_matrix_datakit-nofinance-6h
+NoFin original 6h,17986,finance,3.1305,3029.0,eval_matrix_datakit-nofinance-6h
+NoFin original 6h,17986,bigmix,2.7367,3503.7,eval_matrix_datakit-nofinance-6h
+NoFin original 6h,17986,gsm8k,3.5153,4857.9,eval_matrix_datakit-nofinance-6h
+NoFin original 6h,17986,math500,3.8849,5559.8,eval_matrix_datakit-nofinance-6h
+NoFin original 6h,17986,humaneval,3.0727,4299.1,eval_matrix_datakit-nofinance-6h
+NoFin original 6h,17986,mbpp,3.1992,4477.7,eval_matrix_datakit-nofinance-6h
+NoFin original 6h,17986,mtbench,2.73,3282.4,eval_matrix_datakit-nofinance-6h
+NoFin original 6h,17986,speedbench,2.64,4453.3,eval_matrix_datakit-nofinance-6h
+NoFin original 14h,45747,datakit,3.3334,4421.6,eval_matrix_datakit-nofinance-step45747
+NoFin original 14h,45747,datakit_full,3.3149,2515.6,eval_matrix_datakit-nofinance-step45747
+NoFin original 14h,45747,finance,3.3549,3233.3,eval_matrix_datakit-nofinance-step45747
+NoFin original 14h,45747,bigmix,2.8914,3723.6,eval_matrix_datakit-nofinance-step45747
+NoFin original 14h,45747,gsm8k,3.7483,5157.6,eval_matrix_datakit-nofinance-step45747
+NoFin original 14h,45747,math500,4.1612,5912.3,eval_matrix_datakit-nofinance-step45747
+NoFin original 14h,45747,humaneval,3.2672,4528.7,eval_matrix_datakit-nofinance-step45747
+NoFin original 14h,45747,mbpp,3.4175,4719.1,eval_matrix_datakit-nofinance-step45747
+NoFin original 14h,45747,mtbench,2.8675,3441.4,eval_matrix_datakit-nofinance-step45747
+NoFin original 14h,45747,speedbench,2.81,4566.3,eval_matrix_datakit-nofinance-step45747
+BigMix original 24h,95146,datakit,2.9934,4035.3,eval_matrix_bigmix6-12h-24h
+BigMix original 24h,95146,datakit_full,3.0026,3840.7,eval_matrix_datakit-full-4way
+BigMix original 24h,95146,bigmix,2.8291,3610.0,eval_matrix_bigmix6-12h-24h
+BigMix original 24h,95146,gsm8k,3.6572,5080.8,eval_matrix_bigmix6-12h-24h
+BigMix original 24h,95146,math500,3.84,5535.7,eval_matrix_bigmix6-12h-24h
+BigMix original 24h,95146,humaneval,2.906,4073.0,eval_matrix_bigmix6-12h-24h
+BigMix original 24h,95146,mbpp,3.0699,4283.7,eval_matrix_bigmix6-12h-24h
+BigMix original 24h,95146,mtbench,2.6713,3168.8,eval_matrix_bigmix6-12h-24h
+BigMix original 24h,95146,speedbench,2.64,4621.7,eval_matrix_bigmix6-12h-24h
+BigMix targetgen,27081,datakit,3.0946,4276.0,eval_matrix_bigmix6-targetgen-24h
+BigMix targetgen,27081,datakit_full,3.099,3872.1,eval_matrix_datakit-full-4way
+BigMix targetgen,27081,finance,3.3717,3274.0,eval_matrix_finance-datakitorig-bigmixtg
+BigMix targetgen,27081,bigmix,2.9519,3812.8,eval_matrix_bigmix6-targetgen-24h
+BigMix targetgen,27081,gsm8k,3.9942,5508.0,eval_matrix_bigmix6-targetgen-24h
+BigMix targetgen,27081,math500,4.2004,6001.8,eval_matrix_bigmix6-targetgen-24h
+BigMix targetgen,27081,humaneval,3.4194,4747.1,eval_matrix_bigmix6-targetgen-24h
+BigMix targetgen,27081,mbpp,3.4719,4830.3,eval_matrix_bigmix6-targetgen-24h
+BigMix targetgen,27081,mtbench,2.9912,3646.5,eval_matrix_bigmix6-targetgen-24h
+BigMix targetgen,27081,speedbench,2.89,5121.0,eval_matrix_bigmix6-targetgen-24h
+Datakit targetgen,22472,datakit,3.1139,4185.4,eval_matrix_datakit6-targetgen-24h
+Datakit targetgen,22472,datakit_full,3.1282,3941.6,eval_matrix_datakit-full-4way
+Datakit targetgen,22472,bigmix,2.7427,3563.1,eval_matrix_datakit6-targetgen-24h
+Datakit targetgen,22472,gsm8k,3.5084,4873.5,eval_matrix_datakit6-targetgen-24h
+Datakit targetgen,22472,math500,3.9012,5608.2,eval_matrix_datakit6-targetgen-24h
+Datakit targetgen,22472,humaneval,3.0533,4301.6,eval_matrix_datakit6-targetgen-24h
+Datakit targetgen,22472,mbpp,3.1407,4349.1,eval_matrix_datakit6-targetgen-24h
+Datakit targetgen,22472,mtbench,2.7293,3310.3,eval_matrix_datakit6-targetgen-24h
+Datakit targetgen,22472,speedbench,2.64,4606.9,eval_matrix_datakit6-targetgen-24h

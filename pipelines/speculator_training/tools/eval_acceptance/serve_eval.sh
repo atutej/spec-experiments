@@ -32,7 +32,7 @@ run_arm() {  # run_arm <label> <drafter dir, empty for the no-draft arm>
     if [[ "$draft" == *@* ]]; then   # <drafter dir>@<method>@<speculative tokens>, e.g. /path/to/eagle3-draft@eagle3@3 (SPEC_EXTRA is DSpark-only: kept for dspark arms, dropped for the others)
         IFS=@ read -r draft method ntok <<< "$draft"; [[ "$method" == dspark ]] || extra=""
     fi
-    use_env vllm
+    use_env "${VLLM_ENV:-vllm}"   # VLLM_ENV=vllm_fork serves from the fork-built env (no overlay needed)
     local spec_args=() client_args=()
     if [[ -n "$draft" ]]; then
         spec_args=(--speculative-config "$(printf '{"model": "%s", "num_speculative_tokens": %s, "method": "%s"%s}' "$draft" "$ntok" "$method" "$extra")")

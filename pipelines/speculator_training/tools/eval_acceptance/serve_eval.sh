@@ -44,7 +44,7 @@ run_arm() {  # run_arm <label> <drafter dir, empty for the no-draft arm>
     until curl -sf "http://127.0.0.1:$PORT/health" >/dev/null 2>&1; do
         kill -0 "$PGID" 2>/dev/null || { echo "[$name] server exited; tail of $d/server.log:" >&2; tail -30 "$d/server.log" >&2; return 1; }; sleep 10; done
     echo "[$name] ready after ${SECONDS}s"
-    use_env speculators
+    use_env "${CLIENT_ENV:-speculators}"   # client (run_eval.py: stdlib + speculators/scripts/evaluate/perf_utils); Horizon has no `speculators` env: CLIENT_ENV=vllm_fork + PYTHONPATH not needed (run_eval.py adds the path itself)
     # one pass at concurrency 16 by default; CONCURRENCIES="4 16 64" runs each level against this one server, results in $d/c<level>/
     # (PROMPTS_MULT x level prompts, at least PROMPTS_MIN, so a higher level still gets enough requests; without them MAX_PROMPTS applies)
     # PROMPT_SETS="name=<prompts dir>:<max tokens>:<subsets, comma separated>[:<max prompts>] ..." serves the arm ONCE and runs every set at every level (results in $d/<name>/c<level>/); unset: PROMPTS_DIR as before

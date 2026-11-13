@@ -4,7 +4,7 @@
 # Add a dependency: put the install step in env_build of every machine it applies to, make
 # env_check (here) verify it, then run `setup/setup.sh --freeze`.
 
-ENV_NAME=vllm
+ENV_NAME=${VLLM_ENV_NAME:-vllm}   # VLLM_ENV_NAME builds a second env (e.g. one from the fork) next to the pinned one
 
 env_check() {
     conda_env_exists "$ENV_NAME" || { echo "env $ENV_NAME does not exist"; return 1; }

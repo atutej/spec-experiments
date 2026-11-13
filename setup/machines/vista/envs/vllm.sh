@@ -29,7 +29,8 @@ env_build() {
     # Run via setup/machines/vista/slurm/build_vllm_env.sbatch: a full gg node, hours. The wheel is
     # kept in $VLLM_WHEEL_DIR (on $WORK, not purged) and reused, so a $SCRATCH purge only
     # costs an install. Delete the wheel to force a rebuild.
-    local src=$PROJECT_ROOT/vllm sha=39e62869693c
+    # VLLM_SRC and VLLM_SHA build another commit (a fork branch) into its own env and wheel; the defaults are the pinned Marin release.
+    local src=${VLLM_SRC:-$PROJECT_ROOT/vllm} sha=${VLLM_SHA:-39e62869693c}
     local cons=$src/infra/release/gpu-constraints.txt
     local cu=https://download.pytorch.org/whl/cu132
     : "${VLLM_WHEEL_DIR:=$WORK/wheels}"
@@ -38,9 +39,16 @@ env_build() {
     conda_env_exists "$ENV_NAME" || conda create -y -n "$ENV_NAME" python=3.12 || return 1
     conda activate "$ENV_NAME" || return 1
     module load gcc/14.2.0 || return 1              # host compiler for nvcc
+    # torch, torchvision and the CUDA toolkit are taken from the checkout's own constraints file (Marin moves them between releases: the pinned release has torch 2.13.0 / toolkit 13.2.1,
+    # main later 2.14.1 / 13.2.2); the literals are the pinned release's, used only if a line is missing.
+    local torch_pin tv_pin ctk_ver
+    torch_pin=$(sed -nE 's/^(torch==[^ ;#\\]*).*/\1/p' "$cons" | head -1);        torch_pin=${torch_pin:-torch==2.13.0+cu132}
+    tv_pin=$(sed -nE 's/^(torchvision==[^ ;#\\]*).*/\1/p' "$cons" | head -1);     tv_pin=${tv_pin:-torchvision==0.28.0+cu132}
+    ctk_ver=$(sed -nE 's/^cuda-toolkit==([^ ;#\\]*).*/\1/p' "$cons" | head -1);  ctk_ver=${ctk_ver:-13.2.1}
+    echo "toolchain from $cons: $torch_pin $tv_pin cuda-toolkit==$ctk_ver"
     pip install -c "$cons" --extra-index-url $cu \
-        "torch==2.13.0+cu132" "torchvision==0.28.0+cu132" \
-        "cuda-toolkit[nvcc,cccl,cuobjdump]==13.2.1" || return 1   # nvcc 13.2.1 = Marin's
+        "$torch_pin" "$tv_pin" \
+        "cuda-toolkit[nvcc,cccl,cuobjdump]==$ctk_ver" || return 1   # nvcc = Marin's (13.2.1 for the pinned release)
     # The toolkit comes from pip, not a Vista module (its 13.1/13.3 differ from Marin's 13.2.1).
     local cuda_home
     cuda_home=$(dirname "$(dirname "$(find "$CONDA_PREFIX/lib" -path '*/nvidia/*/bin/nvcc' | head -1)")")

@@ -2,14 +2,14 @@
 # Submit one agentic eval (run_agentic_eval.sbatch). Run from a LOGIN node.
 #
 #   ARM=nofin24h DRAFTER=atutej/dspark_grug-layers6-taps5-grug-67b-a2b-datakit-sft-dr-doom_datakit-sft-filtered_itw-20261112 BENCH=ot-tblite \
-#       HARBOR_EXTRA="--n-tasks 3 --n-attempts 1" TIME=02:00:00 bash submit_agentic_eval.sh
+#       HARBOR_EXTRA="--dataset openthoughts-tblite@2.0 --n-tasks 3 --n-attempts 1" TIME=02:00:00 bash submit_agentic_eval.sh
 #   ARM=plain BENCH=ot-tblite bash submit_agentic_eval.sh          # no DRAFTER: plain decoding
 #   DRY=1 ...                                                       # print the sbatch command and stop
 #
 #   ARM          label of this run (letters, digits, _ . -); the result dir is $RESULTS/$BENCH/$ARM and must not exist yet
-#   BENCH        ot-tblite | tb2 (Marin eval policy Harbor configs, Terminus-2 on Daytona)
+#   BENCH        ot-tblite | tb2 | swebench (swebench = SWE-bench Verified@1.0 with Terminus-2; others: Marin eval policy Harbor configs, Terminus-2 on Daytona)
 #   DRAFTER      DSpark checkpoint: a directory with config.json, or a Hugging Face repo id; empty = plain decoding
-#   HARBOR_EXTRA extra flags for `harbor run` (the policy config has 16 concurrent trials and 3 attempts per task; --n-tasks / --n-attempts override)
+#   HARBOR_EXTRA extra flags for `harbor run` (the policy config has 16 concurrent trials and 3 attempts per task; --n-tasks needs --dataset <name>@<version> next to it (openthoughts-tblite@2.0 for ot-tblite): alone, harbor rejects it; --n-tasks / --n-attempts override)
 #   Machine settings (defaults are Vista gb):
 #     PARTITION (gb), ACCOUNT (none: the login's only project), TIME (08:00:00), GPUS (GPUs per node, 4), RESERVATION (unset: the Vista CGAI-gb one if it exists;
 #     empty: none; a name: that one), VLLM_ENV (conda env with vLLM, default vllm), VLLM_OVERLAY (only for a vLLM without Grug DSpark support),
@@ -21,7 +21,7 @@ ROOT=${ROOT:-$(cd "$HERE/../../../../.." && pwd)}   # <ROOT>/spec-experiments/pi
 die() { echo "ERROR: $*" >&2; exit 1; }
 : "${ARM:?set ARM}" "${BENCH:?set BENCH (ot-tblite | tb2)}"
 [[ "$ARM" =~ ^[A-Za-z0-9_.-]+$ ]] || die "ARM must be letters, digits, _ . -"
-[[ "$BENCH" == ot-tblite || "$BENCH" == tb2 ]] || die "BENCH must be ot-tblite or tb2"
+[[ "$BENCH" == ot-tblite || "$BENCH" == tb2 || "$BENCH" == swebench ]] || die "BENCH must be ot-tblite, tb2 or swebench"
 DRAFTER=${DRAFTER:-}
 if [[ -n "$DRAFTER" && ! -f "$DRAFTER/config.json" && ! "$DRAFTER" =~ ^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$ ]]; then die "DRAFTER $DRAFTER is neither a directory with config.json nor a Hugging Face repo id"; fi
 RESULTS=${RESULTS:-$ROOT/runs/agentic_eval_20261113/results}

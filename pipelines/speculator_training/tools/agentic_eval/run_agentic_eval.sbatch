@@ -39,7 +39,10 @@ if [[ ! -d "$PIN" ]]; then
         | tar -xz -C "$AGENTIC_DIR/marin_pin" --strip-components=1 --wildcards "*/experiments/evaluation/*" "*/lib/marin/src/marin/external_dependencies.py" \
         || { echo "could not fetch the policy pin $POLICY_SHA"; exit 1; }
 fi
-CFG=$PIN/harbor-configs/$( [[ $BENCH == tb2 ]] && echo tb2-recovery || echo ot-tblite-recovery ).yaml
+# swebench = SWE-bench Verified with Terminus-2 (not the policy's mini-swe-agent, which runs inside the sandbox and would need a public endpoint): the ot-tblite Terminus-2 config
+# with its dataset replaced by the policy's swebench-verified one.
+CFG=$PIN/harbor-configs/$( case $BENCH in tb2) echo tb2-recovery;; *) echo ot-tblite-recovery;; esac ).yaml
+SWE_CFG=$PIN/harbor-configs/swebench-verified.yaml
 [[ -f "$CFG" ]] || { echo "no Harbor config $CFG"; exit 1; }
 
 # Daytona key: read only this variable from the secrets file, never print it.
@@ -78,9 +81,28 @@ done
 echo "[$ARM] server ready after ${SECONDS}s"
 curl -s http://127.0.0.1:8000/metrics > "$OUT/metrics_before.prom"
 
+# Harbor's `--model` only applies together with `--agent` (which would replace the policy's agent block and drop its timeouts and model_info), so with a --config
+# file it is silently ignored and Terminus-2 fails with "model_name is required". Stage a copy of the policy config with the model filled in instead.
+STAGED_CFG=$OUT/harbor_config.yaml
+"$HARBOR_VENV/bin/python" - "$CFG" "$STAGED_CFG" "hosted_vllm/$MODEL" "$BENCH" "$SWE_CFG" <<'PY' || { echo "could not stage the Harbor config"; exit 1; }
+import sys, yaml
+src, dst, model, bench, swe_cfg = sys.argv[1:6]
+cfg = yaml.safe_load(open(src))
+if bench == "swebench":
+    cfg["datasets"] = yaml.safe_load(open(swe_cfg))["datasets"]   # swebench-verified@1.0 with the pinned registry_url
+# hosted_vllm needs a complete model_info. Marin resolves it as Harbor's defaults < the served model's limits < the policy's own model_info (marin.evaluation.harbor.agent_context.
+# reconciled_model_info); the Dr. Doom model config sets no generation.max_gen_toks, so max_output_tokens stays at the default, and the policy's max_input_tokens (32768) wins.
+DEFAULTS = {"max_input_tokens": 32768, "max_output_tokens": 8192, "input_cost_per_token": 0.0, "output_cost_per_token": 0.0}
+for agent in cfg["agents"]:
+    agent["model_name"] = model
+    kw = agent.setdefault("kwargs", {})
+    kw["model_info"] = {**DEFAULTS, **(kw.get("model_info") or {})}
+yaml.safe_dump(cfg, open(dst, "w"), sort_keys=False)
+PY
+
 # Harbor run (the policy invocation: staged config, hosted_vllm model, api_base to this node).
 echo "[$ARM] harbor $BENCH start $(date +%T)"
-"$HARBOR_VENV/bin/harbor" run --config "$CFG" --model "hosted_vllm/$MODEL" --ak "api_base=http://127.0.0.1:8000/v1" --ae "OPENAI_API_KEY=EMPTY" \
+"$HARBOR_VENV/bin/harbor" run --config "$STAGED_CFG" --ak "api_base=http://127.0.0.1:8000/v1" --ae "OPENAI_API_KEY=EMPTY" \
     --jobs-dir "$OUT/harbor_jobs" --job-name "$ARM" --yes $HARBOR_EXTRA > "$OUT/harbor.log" 2>&1
 echo "[$ARM] harbor exit $? at $(date +%T), elapsed ${SECONDS}s"
 

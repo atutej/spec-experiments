@@ -38,6 +38,7 @@ def main():
     ap.add_argument("--model", default="open-athena/Grug-67B-A2B-Datakit-SFT-262K-2026.09.21-dr-doom", help="target: its tokenizer and chat template render the prompts")
     ap.add_argument("--datasets", nargs="*", default=list(DATASETS))
     ap.add_argument("--seed", type=int, default=42)
+    ap.add_argument("--no-think", action="store_true", help="render with chat_template_kwargs enable_thinking=false (the template's `Reasoning: /nothink` header) instead of the default /think")
     ap.add_argument("--max-prompt-tokens", type=int, default=28000, help="drop longer prompts (none of these datasets comes close)")
     a = ap.parse_args()
     from datasets import load_dataset
@@ -58,7 +59,7 @@ def main():
         rows, skipped = [], 0
         for i in order:
             text = cfg["format"](data[i])
-            ids = tok.apply_chat_template([{"role": "user", "content": text}], tokenize=True, add_generation_prompt=True)
+            ids = tok.apply_chat_template([{"role": "user", "content": text}], tokenize=True, add_generation_prompt=True, **({"enable_thinking": False} if a.no_think else {}))
             if hasattr(ids, "input_ids"):
                 ids = ids["input_ids"]
             if len(ids) > a.max_prompt_tokens:
@@ -73,7 +74,7 @@ def main():
                     "source": {"dataset": args[0], "config": args[1] if len(args) > 1 else None, "split": kw["split"], "size": len(data)},
                     "template": cfg["template"], "reference": "z-lab/dflash dflash/benchmark.py DATASETS (read 2026-11-07)",
                     "seed": a.seed, "shuffle": "random.Random(seed).shuffle(range(n)), all rows, no repeats",
-                    "chat_template": "target default (Reasoning: /think), one user message, no system prompt; add_generation_prompt=True",
+                    "chat_template": ("enable_thinking=false (Reasoning: /nothink)" if a.no_think else "target default (Reasoning: /think)") + ", one user message, no system prompt; add_generation_prompt=True",
                     "model": a.model, "skipped_over_max_prompt_tokens": skipped,
                     "prompt_tokens": {"min": min(r["prompt_tokens"] for r in rows), "max": max(r["prompt_tokens"] for r in rows),
                                       "mean": round(sum(r["prompt_tokens"] for r in rows) / len(rows), 1)}}

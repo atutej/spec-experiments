@@ -24,7 +24,7 @@ From a login node:
 
 ```
 # smoke: 3 tasks, one attempt
-ARM=smoke BENCH=ot-tblite HARBOR_EXTRA="--n-tasks 3 --n-attempts 1" TIME=02:00:00 \
+ARM=smoke BENCH=ot-tblite HARBOR_EXTRA="--dataset openthoughts-tblite@2.0 --n-tasks 3 --n-attempts 1" TIME=02:00:00 \
   DRAFTER=atutej/dspark_grug-layers6-taps5-grug-67b-a2b-datakit-sft-dr-doom_datakit-sft-filtered_itw-20261112 \
   VLLM_ENV=vllm_fork KEYS_ENV=/path/to/keys.env bash submit_agentic_eval.sh
 

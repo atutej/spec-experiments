@@ -1,0 +1,18 @@
+{
+  "datakit_sft_1005": {
+    "marin_commit": "ce7c77abcb0ada792cd6d76ba3d80db74c33a859",
+    "mix_file": "datakit_sft_1005.json",
+    "hf_release": "open-athena/Grug-67B-A2B-Datakit-SFT-262K-2026.10.05",
+    "hf_revision": "ac60d9401820953943f5a56e06f36e13c86b12d6",
+    "allocation_unit": "packed_positions",
+    "selection": "whole"
+  },
+  "datakit_sft_0921": {
+    "marin_commit": "82620ad62bbe23b9b12a89d656c24e6f80aff91a",
+    "mix_file": "datakit_sft_0921.json",
+    "hf_release": "open-athena/Grug-67B-A2B-Datakit-SFT-262K-2026.09.21",
+    "hf_revision": null,
+    "allocation_unit": "tokens",
+    "selection": "allocation"
+  }
+}

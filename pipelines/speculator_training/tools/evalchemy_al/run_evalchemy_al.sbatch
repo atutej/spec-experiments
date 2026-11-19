@@ -7,7 +7,7 @@
 # env (exported by the submit script): ROOT (workspace), ARM (label), OUT (fresh result dir), DRAFTER (checkpoint dir or Hugging Face repo id; empty = plain decoding),
 #   TASKS (space-separated policy task files, default below), SEEDS (default "policy 43"), TEMPERATURE (default empty = sampling exactly as the policy sets it; a number overrides every task),
 #   MODEL, GPUS (default 4), VLLM_ENV (default vllm_fork), EVAL_ENV_DIR (default $ROOT/envs/evalchemy_pin), POLICY_DIR (policy evalchemy-configs; fetched if absent),
-#   SERVER_EXTRA, VLLM_OVERLAY, LIMIT (items per task; smoke tests only)
+#   SERVER_EXTRA, VLLM_OVERLAY, LIMIT (items per task; smoke tests only), KEEP_OUTPUT=1 (keep each task's Evalchemy output and log under $OUT/seed*/<task>/evalchemy, unread; default: delete)
 #SBATCH -N 1
 #SBATCH --exclusive
 set -uo pipefail
@@ -60,6 +60,7 @@ EP="$EVAL_ENV_DIR/bin/python"
 for SEED in $SEEDS; do
   for T in $TASKS; do
     R=$OUT/seed$SEED/$T; W=$OUT/.work_${SEED}_$T
+    [[ "${KEEP_OUTPUT:-0}" == 1 ]] && W=$R/evalchemy   # kept output is written where it stays (its manifests record absolute paths)
     mkdir -p "$R" "$W"
     targs=(--policy-dir "$POLICY_DIR" --task "$T" --model "$MODEL" --out-path "$W/out")
     [[ "$SEED" == policy ]] || targs+=(--seed "$SEED")
@@ -78,7 +79,11 @@ for SEED in $SEEDS; do
     echo "exit=$rc" > "$R/status"
     [[ $rc == 0 ]] || grep -E 'Traceback|Error|Exception' "$W/run.log" | cut -c1-300 | head -15 > "$R/errors.txt"
     python3 "$TOOLS/agentic_eval/spec_metrics.py" "$R/metrics_before.prom" "$R/metrics_after.prom" --out "$R/spec_metrics.json" > /dev/null
-    rm -rf "$W"
+    if [[ "${KEEP_OUTPUT:-0}" == 1 ]]; then   # keep Evalchemy's output (scores, samples) and log unread, for later; owner-only
+        chmod -R go-rwx "$W"
+    else
+        rm -rf "$W"
+    fi
     echo "[$ARM] seed $SEED task $T exit $rc at $(date +%T), elapsed ${SECONDS}s"
   done
 done

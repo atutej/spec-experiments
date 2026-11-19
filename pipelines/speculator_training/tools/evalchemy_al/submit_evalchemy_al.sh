@@ -21,5 +21,5 @@ cmd+=("$HERE/run_evalchemy_al.sbatch")   # no --export: Slurm exports the submit
 echo "arm $ARM | drafter ${DRAFTER:-none} | tasks ${TASKS:-default} | seeds ${SEEDS:-policy 43} | out $OUT"
 if [[ "${DRY:-0}" == 1 ]]; then echo "${cmd[*]}"; exit 0; fi
 mkdir -p "$logdir" "$RESULTS"
-id=$( export ROOT ARM OUT DRAFTER TASKS SEEDS TEMPERATURE LIMIT GPUS VLLM_ENV; "${cmd[@]}" 2>&1 | tail -1 ) || die "sbatch failed"
+id=$( export ROOT ARM OUT DRAFTER TASKS SEEDS TEMPERATURE LIMIT KEEP_OUTPUT GPUS VLLM_ENV; "${cmd[@]}" 2>&1 | tail -1 ) || die "sbatch failed"
 echo "job $id"

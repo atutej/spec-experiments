@@ -8,7 +8,7 @@ export CONDA_ROOT=${CONDA_ROOT:-$SCRATCH/miniconda3}   # $WORK is not available 
 export CONDA_ENVS_PATH=$PROJECT_ROOT/envs
 export PIP_CACHE_DIR=$PROJECT_ROOT/cache/pip
 export REQUIRED_CUDA_ARCHS="sm_100"   # GB200 only
-# NODE_KIND: left empty, the root env.sh derives it from nvidia-smi (gpu / cpu / login). Partitions here are `debug` (GB nodes, all 4 GPUs) for now, not gpu*/cpu*.
+# NODE_KIND: left empty, the root env.sh derives it from nvidia-smi (gpu / cpu / login). Partitions here are `gpu`, `gpu-large`, `gpu-dev` (GB nodes, all 4 GPUs); `debug` was removed by 2026-11-24.
 NODE_KIND=""
 export CC=gcc CXX=g++   # as on Vista: an nvc default breaks torch inductor and FlashInfer builds
 export SPEC_TMPDIR=/tmp

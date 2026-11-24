@@ -3,7 +3,7 @@
 Verified on the machine on 2026-11-13 (first run: vLLM fork env build, GSM8K parity with marin-community/vllm#128). Earlier draft text came from the docs without access.
 
 - **Nodes:** GB nodes (`c1xx-xxx`, e.g. `c128-005`): `aarch64`, 144 Grace cores, ~1.7 TB RAM, 4x GB200 (189 GB, sm_100, driver 610.57). `uname -m` was only checked on a compute node (the session was an interactive job); a login node was not checked.
-- **Queues:** the partition is `debug` for now (not `gpu`/`gpu-dev`): 1000 GB nodes, `MaxTime=UNLIMITED`, `MaxNodes=UNLIMITED`, QoS `qdebug`. `debug-shared` is down. `qlimits` does not exist. Accounts: `ccr24067` and `default`; a job without `-A` ran under CCR24067.
+- **Queues:** as of 2026-11-24 the partitions are `gpu` (1008 GB nodes), `gpu-large` (same nodes) and `gpu-dev` (40 nodes); `debug` no longer exists (sbatch says "User's group not permitted to use this partition"). `MaxTime=UNLIMITED`, `MaxNodes=UNLIMITED`. A bare `srun` inside a job needs `-p` and `-t`. A job without `-A` runs under the default allocation. Earlier notes below that say `debug` predate this.
 - **Submitting:** `sbatch` is refused on compute nodes ("sbatch not available on compute nodes"): submit from a login node. `--gres`, `--gpus-per-task` are rejected and `--export` is discouraged. An interactive (idev) job cannot have its time limit raised by the user (`scontrol update` denied).
 - **Network:** compute nodes have outbound internet (app.daytona.io, github.com, codeload.github.com, huggingface.co, pypi.org, repo.anaconda.com, download.pytorch.org all reachable).
 - **Modules:** `cuda/12.9, 13.1, 13.2, 13.3` (13.3 loaded by default with `nvidia/26.9`), `gcc/15.3.0, 16.1.0, 16.2.0`; the system `/usr/bin/gcc` is 14.3.1 and is what the vLLM build uses. There is no gcc 14.2.0 and no python/conda/uv module (system python 3.12.14). Vista's `gcc/14.2.0` and `cuda/13.1` loads do not work here.
@@ -15,3 +15,15 @@ Verified on the machine on 2026-11-13 (first run: vLLM fork env build, GSM8K par
 - **Running the serving evals (`tools/eval_acceptance/serve_eval.sh`):** it needs `VLLM_ENV=vllm_fork CLIENT_ENV=vllm_fork` (there is no `speculators` env here); prompts for GSM8K come from `build_paper_prompts.py`, which needs `datasets`+`transformers`+`jinja2` (a small venv, not the vLLM env).
 
 Not verified: `uname -m` on a login node; the agentic eval (`tools/agentic_eval`, Harbor + Daytona) has not been run here; `$WORK` and `idev` options.
+
+## Findings from Snowball RL on Horizon (2026-11-24; `pipelines/marin_rl_horizon`)
+
+Measured on 10-node jobs of the Slurm launcher backend; each is a symptom seen and the fix that held, except where marked.
+
+- **`/scratch` is one NFS server** (`192.168.240.0:/hzn/scratch`, NFSv3, hard mounts), shared by every node and job. Compile caches kept there gave `Errno 116 Stale file handle` in Inductor autotuning with eight engines compiling at once; node-local `/tmp` caches fixed it. Several nodes copying one input directory onto itself (uri == local_path) raced the same way; give each node its own `local_path` under `/tmp`.
+- **Concurrent big reads are slow and uneven.** Two 10-node jobs started together took about 20-23 min to get engines ready (about 5 in a solo run); one node took 10+ min to unpack the 17.5 GB runtime archive (others about 2 min) and in one job four engines on that node sat in disk wait for 22 min. Contention versus a bad node was not isolated. Mitigations added to the launcher (tested only against fake Slurm commands when these runs were made): `sbcast` of the archive, `preflight_files`, a 1800 s engine init timeout.
+- **Default `srun` steps are bound to one core** (`TaskPluginParam=cores`): everything in the job shared a single core and was slow without any error. `--cpu-bind=none` fixes it.
+- **Per-user thread limit 16384** (`ulimit -u`). Ray starts one idle worker per visible CPU (144 here, about 14.6k threads), which left NCCL init without threads; `ray.num_cpus: 64` keeps it under the limit.
+- **GB200 nodes have 4 GPUs**, so layouts written for eight-GPU nodes need translating (P40's 4 x 8 H100 policy nodes become 8 x 4; the DP8/EP8 engine spans two nodes).
+- **Python is a Red Hat build** with `lib64` site-packages; a venv's `lib64` links to `lib`, so Marin's CUDA-root lookup counted the same directory twice and refused to start. Fixed in the marin fork (`environment_contract.py`).
+- **Not measured:** the real speed of `sbcast` on this network; whether the preflight read catches the stall seen above.

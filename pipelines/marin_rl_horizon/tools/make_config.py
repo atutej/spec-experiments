@@ -101,7 +101,7 @@ def main() -> None:
     parser.add_argument("--exclude-node", action="append", default=[], help="Slurm node to avoid; repeatable")
     parser.add_argument("--wandb-entity")
     parser.add_argument("--wandb-project")
-    parser.add_argument("--attempt-id", default=f"attempt-{time.strftime('%Y%m%d-%H%M%S')}")
+    parser.add_argument("--attempt-id", help="default: <run name>-<timestamp>; it is also the W&B run id, so it must differ between runs")
     parser.add_argument("--out", type=Path)
     args = parser.parse_args()
     if bool(args.wandb_entity) != bool(args.wandb_project):
@@ -117,6 +117,8 @@ def main() -> None:
         args.drafter_path, args.drafter_identity = hf_ref.resolve(args.drafter, "--drafter", real_files=True)
         tags.append(args.drafter_identity[:8])
     args.name = args.name or "-".join([args.name_prefix, *tags])
+    # The attempt id is the W&B run id in the project, so two runs started in the same second must not share it.
+    args.attempt_id = args.attempt_id or f"{args.name}-{time.strftime('%Y%m%d-%H%M%S')}"
     args.out = args.out or paths.RUNS / args.name
     args.out.mkdir(parents=True, exist_ok=True)
     for submission, name in (("prepare", "launch.prepare.yaml"), ("wait", "launch.yaml")):

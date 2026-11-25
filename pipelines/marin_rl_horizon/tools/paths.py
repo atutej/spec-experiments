@@ -29,5 +29,7 @@ CACHE = _path("MARIN_RL_CACHE", PROJECT_ROOT / "cache" / "marin_rl_horizon")
 MODELS = _path("MODELS_DIR", PROJECT_ROOT / "models")  # local model folders (the Qwen3-0.6B smoke test); Hub models resolve through HF_HOME
 STANDIN_TASKS = DATA / "standin-tasks"
 HF_HOME = _path("HF_HOME", PROJECT_ROOT / "cache" / "hf")  # model references resolve through the Hub cache here
-# The initializer the Snowball presets name (snowball_rl.MODEL_ID / MODEL_REVISION); used when --policy is not given.
-PRESET_POLICY = "open-athena/Grug-67B-A2B-Datakit-SFT-262K-2026.09.21@fe666478454e79fe6027a0bab0388d9abd68f51a"
+# What the launchers run when --policy / --drafter are not given: the Dr. Doom policy (the 09.21 initializer after Dr. Doom training) and the
+# 6-layer Grug DSpark drafter trained on it (layer_type grug, taps 2/7/12/17/22, block 8). Both are pinned to a commit.
+DEFAULT_POLICY = "open-athena/Grug-67B-A2B-Datakit-SFT-262K-2026.09.21-dr-doom@fd4a272b78d4c224851aaeae7f51987c5d19649c"
+DEFAULT_DRAFTER = "atutej/dspark_grug-layers6-taps5-grug-67b-a2b-datakit-sft-dr-doom_datakit-sft-mix_itw-20261108@06501b01b28657f570229f387605c870df6a871a"

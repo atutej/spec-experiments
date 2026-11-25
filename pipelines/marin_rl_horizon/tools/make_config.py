@@ -29,13 +29,6 @@ def data_source(file: str) -> dict:
             "local_path": f"{hc.NODE_DATA}/standin-tasks", "relative_path": file}
 
 
-def recipe_draft_ref(recipe: dict) -> str:
-    """The drafter the recipe names, as ORG/REPO@COMMIT."""
-    model = recipe["generator"]["speculative_decoding"]["model"]
-    assert model["source_uri"].startswith("hf://"), model
-    return f"{model['source_uri'].removeprefix('hf://')}@{model['source_identity']}"
-
-
 def build(args: argparse.Namespace, attempt_id: str) -> dict:
     recipe = yaml.safe_load(args.recipe.read_text())
     placement = recipe["trainer"]["placement"]
@@ -96,11 +89,12 @@ def main() -> None:
     parser.add_argument("--recipe", type=Path, required=True)
     parser.add_argument("--name", help="run id, also the Slurm job name and the folder under runs/")
     parser.add_argument("--name-prefix", help="without --name: the run id is <prefix>-<policy commit>[-<drafter commit>] (first 8 hex)")
-    parser.add_argument("--policy", default=paths.PRESET_POLICY,
-                        help="the model RL starts from, ORG/REPO@<40-hex commit> or an absolute folder (default: the preset's initializer)")
+    parser.add_argument("--policy", default=paths.DEFAULT_POLICY,
+                        help="the model RL starts from, ORG/REPO@<40-hex commit> or an absolute folder (default: the Dr. Doom policy)")
     parser.add_argument("--draft", choices=("keep", "none"), default="keep",
-                        help="keep the recipe's speculative decoding block or remove it (the control arm)")
-    parser.add_argument("--drafter", help="with --draft keep: ORG/REPO@<40-hex commit> or an absolute folder instead of the drafter the recipe names")
+                        help="keep the recipe's speculative decoding block, with --drafter as its drafter, or remove it (the control arm)")
+    parser.add_argument("--drafter", default=paths.DEFAULT_DRAFTER,
+                        help="with --draft keep: ORG/REPO@<40-hex commit> or an absolute folder (default: the 6-layer Grug drafter)")
     parser.add_argument("--proposals", type=int, help="speculative tokens per round; default keeps the recipe's")
     parser.add_argument("--time-limit", default="02:00:00")
     parser.add_argument("--partition", default="gpu")
@@ -114,13 +108,13 @@ def main() -> None:
         parser.error("--wandb-entity and --wandb-project go together")
     if bool(args.name) == bool(args.name_prefix):
         parser.error("give exactly one of --name and --name-prefix")
-    if args.draft == "none" and (args.drafter or args.proposals):
+    if args.draft == "none" and (args.drafter != paths.DEFAULT_DRAFTER or args.proposals):
         parser.error("--drafter and --proposals need --draft keep")
     recipe = yaml.safe_load(args.recipe.read_text())
     args.policy_path, args.policy_identity = hf_ref.resolve(args.policy, "--policy")
     tags = [args.policy_identity[:8]]
     if args.draft == "keep":
-        args.drafter_path, args.drafter_identity = hf_ref.resolve(args.drafter or recipe_draft_ref(recipe), "--drafter", real_files=True)
+        args.drafter_path, args.drafter_identity = hf_ref.resolve(args.drafter, "--drafter", real_files=True)
         tags.append(args.drafter_identity[:8])
     args.name = args.name or "-".join([args.name_prefix, *tags])
     args.out = args.out or paths.RUNS / args.name

@@ -4,7 +4,7 @@
 #   ./launch.sh [--policy ORG/REPO@COMMIT] [--name RUN] [--time-limit HH:MM:SS] [--validate]
 #
 # 10 RL updates with every reply forced to 4096 tokens (a throughput benchmark; rewards are meaningless); stand-in prompts. recipe.yaml is tools/dump_recipe.py --preset speed-medium.
-# --policy: the model RL starts from, a Hugging Face model pinned to a full 40-hex commit or an absolute folder (default: the preset's 09.21 initializer).
+# --policy: the model RL starts from, a Hugging Face model pinned to a full 40-hex commit or an absolute folder (default: the Dr. Doom policy).
 # Hub models resolve through the Hub cache ($HF_HOME, default $PROJECT_ROOT/cache/hf) and are downloaded once if missing, so the first run needs a login node with network.
 # Needs PROJECT_ROOT exported (the workspace root); also RUNTIME_NAME and MARIN_REPO if the runtime and the marin checkout are not named as in the pipeline README.
 # Logs to Weights & Biases only when WANDB_ENTITY and WANDB_PROJECT are exported (WANDB_API_KEY comes from your login profile). --validate writes the config and checks it; nothing is submitted.

@@ -53,7 +53,7 @@ A Weights & Biases key is needed only for runs with `--wandb-*`: export `WANDB_A
 
 ## Run
 
-Each launcher folder under `launchers/` is self-contained (`launch.sh` and its `recipe.yaml`): `launchers/<preset>-plain/launch.sh` is the control, `launchers/<preset>-draft/launch.sh [--drafter ORG/REPO@COMMIT]` adds a drafter (the preset's own without `--drafter`). `--policy ORG/REPO@COMMIT` picks the model RL starts from (default: the preset's 09.21 initializer, 134 GB, downloaded on first use). Add `--validate` to check a config without submitting. The commands below are what a launcher does, for running a new recipe.
+Each launcher folder under `launchers/` is self-contained (`launch.sh` and its `recipe.yaml`): `launchers/<preset>-plain/launch.sh` is the control, `launchers/<preset>-draft/launch.sh [--drafter ORG/REPO@COMMIT]` adds a drafter (the 6-layer Grug drafter without `--drafter`). `--policy ORG/REPO@COMMIT` picks the model RL starts from (default: the Dr. Doom policy, 134 GB, downloaded on first use). The defaults are the Dr. Doom pair; the 09.21 pair needs the two explicit references below. Add `--validate` to check a config without submitting. The commands below are what a launcher does, for running a new recipe.
 
 ```bash
 export PROJECT_ROOT=<workspace>            # the root env.sh exports it too
@@ -72,6 +72,14 @@ $PY make_config.py --recipe <recipe.yaml> --name-prefix my-run [--policy ORG/REP
 W&B is off unless both `--wandb-*` flags are given, and the entity is always explicit: Marin's own Iris launcher defaults
 `WANDB_ENTITY` to another account. `WANDB_API_KEY` must be exported in the login profile (`launch.sh` uses a login shell); it is forwarded
 to the nodes by name and never written to disk.
+
+The 09.21 pair of the results (the Qwen3-based 3-layer drafter on the 09.21 policy, the preset's own) is the same launchers with the references given:
+
+```bash
+launchers/learning-medium-plain/launch.sh --policy open-athena/Grug-67B-A2B-Datakit-SFT-262K-2026.09.21@fe666478454e79fe6027a0bab0388d9abd68f51a
+launchers/learning-medium-draft/launch.sh --policy open-athena/Grug-67B-A2B-Datakit-SFT-262K-2026.09.21@fe666478454e79fe6027a0bab0388d9abd68f51a \
+    --drafter atutej/dspark_grug-67b-a2b-datakit-sft-dr-doom_datakit-sft-mix_targetgen-warm80k-20261020@d22f4f21ce5cc0968dfd8e2c0d06aaf4adacbbf2
+```
 
 ## Tools
 

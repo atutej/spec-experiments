@@ -5,8 +5,8 @@
 #                  [--drafter ORG/REPO@COMMIT | /path/to/drafter] [--proposals N]
 #
 # 25 RL updates, replies stop naturally, no evaluations, no checkpoints; stand-in prompts. recipe.yaml is tools/dump_recipe.py --preset learning-medium.
-# --policy: the model RL starts from, a Hugging Face model pinned to a full 40-hex commit or an absolute folder (default: the preset's 09.21 initializer).
-# --drafter: the speculative drafter, in the same forms (default: the drafter the preset names, marin-community/marin#11975); --proposals defaults to the recipe's 4.
+# --policy: the model RL starts from, a Hugging Face model pinned to a full 40-hex commit or an absolute folder (default: the Dr. Doom policy).
+# --drafter: the speculative drafter, in the same forms (default: the 6-layer Grug drafter trained on Dr. Doom); --proposals defaults to the recipe's 4.
 # Hub models resolve through the Hub cache ($HF_HOME, default $PROJECT_ROOT/cache/hf) and are downloaded once if missing, so the first run needs a login node with network.
 # Needs PROJECT_ROOT exported (the workspace root); also RUNTIME_NAME and MARIN_REPO if the runtime and the marin checkout are not named as in the pipeline README.
 # Logs to Weights & Biases only when WANDB_ENTITY and WANDB_PROJECT are exported (WANDB_API_KEY comes from your login profile). --validate writes the config and checks it; nothing is submitted.

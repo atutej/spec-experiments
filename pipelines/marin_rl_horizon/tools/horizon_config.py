@@ -44,6 +44,7 @@ def slurm_section(
         "run_dir": str(run_dir), "time_limit": time_limit, "runtime_env": str(paths.RUNTIME_ENV),
         "activation_file": str(paths.ACTIVATION), "runtime_archive": str(paths.RUNTIME_ARCHIVE), "node_local_dir": NODE_LOCAL,
         "partition": partition, "poll_interval": 15, "env": env,
+        "broadcast_runtime_archive": False,  # direct reads: sbcast of the 17 GB archive to 10 nodes took 11 min, direct staging under 1
     }
     if preflight_files:
         section["preflight_files"] = preflight_files

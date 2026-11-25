@@ -32,8 +32,8 @@ Rewards are on the stand-in prompts and not comparable to Marin's.
 
 **Startup was slow and uneven** in both arms (about 20 and 23 minutes to engines ready, against about 5 in a solo run), because two 10-node jobs read the 17.5 GB runtime archive
 and the 67B weights from the shared NFS `/scratch` at once. Slowest weight load seen: about 116 s (plain) vs about 857 s (DSpark). A first DSpark attempt (job 105243) hung for 22
-minutes with four engines on one node in disk wait and was cancelled; the cause (contention or that node) was not isolated. Fixes since: `sbcast` of the archive, a per-node
-read preflight and a 1800 s engine init timeout (`setup/machines/horizon/NOTES.md`). They passed the backend's tests but had not run in a real job at the time of these runs.
+minutes with four engines on one node in disk wait and was cancelled; the cause (contention or that node) was not isolated. Added since: a per-node read preflight and a 1800 s engine init timeout, and an
+optional `sbcast` of the archive, which a later 10-node run found slower than direct reads (11 min against under 1; `setup/machines/horizon/NOTES.md`), so it is off.
 
 **Not covered:** one run per arm, so the exact ratio is uncertain; one concurrency range; the stand-in prompts; no evaluation of the resulting policy.
 

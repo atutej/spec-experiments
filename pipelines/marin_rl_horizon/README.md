@@ -81,7 +81,8 @@ to the nodes by name and never written to disk.
 | `make_config.py` | recipe -> `launch.yaml` / `launch.prepare.yaml`; `--policy` and `--drafter` take `ORG/REPO@COMMIT` or a folder; `--draft none` makes the control arm; the Horizon-specific changes are listed in its docstring |
 | `horizon_config.py`, `paths.py` | the shared Slurm/Ray/artifact sections and the workspace paths |
 | `hf_ref.py` | resolves `ORG/REPO@COMMIT` to a local folder through the Hub cache, downloading once if it is missing |
-| `launch.sh` | submit a run folder's config through a login shell, or `--validate` |
+| `launch.sh` | submit a run folder's config through a login shell, or `--validate`; first runs `prepare_graders.py` |
+| `prepare_graders.py` | checks that the grader lock files the tasks name exist and builds the graders' Python environments once, before the job starts, so the nodes do not all build them at the same time (`--check` only checks) |
 | `build_standin_tasks.py` | samples the stand-in prompts from the task_curation driver's output (`python -m experiments.post_training.task_curation.driver --mode quick --source openscience --run --cache-dir C --output-root O`, then the same for `reasoning_gym_generated`) |
 | `make_smoke_config.py`, `make_smoke_data.py` | one-node Qwen3-0.6B smoke test of the launcher, the cheapest check after a change |
 | `run_backend_tests.sbatch` | the Slurm backend's tests on a compute node (login nodes cannot run them) |

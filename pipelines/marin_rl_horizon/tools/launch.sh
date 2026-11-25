@@ -10,10 +10,15 @@ set -euo pipefail
 run_dir=$(cd "$1" && pwd)
 mode=${2:-}
 tools=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
-launcher=$(python3 -c "import sys; sys.path.insert(0, '$tools'); import paths; print(paths.RUNTIME_ENV)")/bin/marinskyrl
+runtime=$(python3 -c "import sys; sys.path.insert(0, '$tools'); import paths; print(paths.RUNTIME_ENV)")
+launcher=$runtime/bin/marinskyrl
+# The tasks' graders run in Python environments built from locks; check the locks exist (validate), or build the environments once
+# here (submit) so the nodes do not all build them at the same time on the shared home filesystem. See prepare_graders.py.
 if [[ "$mode" == "--validate" ]]; then
+    (cd "$tools" && "$runtime/bin/python" prepare_graders.py "$run_dir" --check)
     exec bash -lc "cd '$run_dir' && '$launcher' slurm launch --config '$run_dir/launch.prepare.yaml'"
 fi
+(cd "$tools" && "$runtime/bin/python" prepare_graders.py "$run_dir")
 bash -lc "cd '$run_dir' && nohup '$launcher' slurm launch --config '$run_dir/launch.yaml' > launch.json 2> launch.err &"
 sleep 20
 tail -n 2 "$run_dir/launch.err" | cut -c1-240

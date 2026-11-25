@@ -5,10 +5,12 @@
 #SBATCH -N 1
 #SBATCH -n 1
 #SBATCH -c 32
-#SBATCH -t 01:00:00
+#SBATCH -t 02:00:00
 # Settings (environment variables, all optional):
 #   MARIN_REPO    marin checkout to build from (default $PROJECT_ROOT/marin). The environment's editable installs record this path, so use a checkout that stays where it is.
 #   RUNTIME_NAME  name of the runtime under $PROJECT_ROOT/marin_env (default skyrl-megatron); a new name builds beside an existing runtime instead of replacing it.
+#   ARCHIVE_ONLY  set to 1 to skip the build and only write the archive of an environment that is already built (the archive step reads about 200,000 files from /scratch
+#                 and has taken from 6 minutes to over an hour depending on what else the filesystem was doing; a build that ran out of time during it can be finished this way).
 # Produces $PROJECT_ROOT/marin_env/<RUNTIME_NAME> (the environment), <RUNTIME_NAME>.runtime.env and <RUNTIME_NAME>-site-packages.tar (what slurm.runtime_archive names).
 # Build Marin's frozen SkyRL runtime (megatron profile: --extra megatron --extra vllm --extra telemetry) on aarch64/GB200
 # with the repo's own vendor/skyrl/cloud/iris/bootstrap_runtime.sh. Env and uv cache live on /scratch (home quota is small).
@@ -21,6 +23,7 @@ step(){ echo; echo "=== [$(date +%T)] $*"; }
 step "0. node / tools (before cleaning env)"; hostname; uname -m; ls -l /usr/bin/python3.12; /usr/bin/python3.12 --version; git --version
 (nvidia-smi --query-gpu=name,driver_version,memory.total --format=csv,noheader 2>&1 || echo "nvidia-smi: not on PATH") | head -4
 df -h /tmp $P | tail -2; echo "repo HEAD: $(git -C $REPO log -1 --format='%h %s' | cut -c1-80)"; cat $ROOT/.uv-version
+if [ "${ARCHIVE_ONLY:-0}" != 1 ]; then
 step "1. bootstrap_runtime.sh (clean environment, like the Iris container: no CUDA modules on PATH)"
 mkdir -p $UV_CACHE_DIR
 t0=$(date +%s)
@@ -44,6 +47,7 @@ import vllm; print('vllm', vllm.__version__)
 import transformer_engine; print('transformer_engine', getattr(transformer_engine,'__version__','?'))
 import ray; print('ray', ray.__version__)
 PY" 2>&1 | tail -20
+fi
 step "4. archive for slurm.runtime_archive (dereferenced lib/, including the linker names bootstrap_runtime.sh adds beside site-packages)"
 t1=$(date +%s); tar -chf $ARCHIVE.partial -C $ENVDIR lib && mv $ARCHIVE.partial $ARCHIVE
 echo "archive: $(du -h $ARCHIVE | cut -f1), $(tar -tf $ARCHIVE | wc -l) entries, $(tar -tf $ARCHIVE | grep -c 'libcudart.so$') libcudart.so link(s), $(( $(date +%s)-t1 )) s"

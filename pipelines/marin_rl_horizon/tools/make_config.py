@@ -25,7 +25,7 @@ SEED = 20261019
 
 
 def data_source(file: str) -> dict:
-    return {"kind": "directory", "uri": str(paths.STANDIN_TASKS), "identity": "snowball-standin-v1",
+    return {"kind": "directory", "uri": str(paths.STANDIN_TASKS), "identity": "snowball-standin-v2",
             "local_path": f"{hc.NODE_DATA}/standin-tasks", "relative_path": file}
 
 
@@ -120,7 +120,7 @@ def main() -> None:
     args.policy_path, args.policy_identity = hf_ref.resolve(args.policy, "--policy")
     tags = [args.policy_identity[:8]]
     if args.draft == "keep":
-        args.drafter_path, args.drafter_identity = hf_ref.resolve(args.drafter or recipe_draft_ref(recipe), "--drafter")
+        args.drafter_path, args.drafter_identity = hf_ref.resolve(args.drafter or recipe_draft_ref(recipe), "--drafter", real_files=True)
         tags.append(args.drafter_identity[:8])
     args.name = args.name or "-".join([args.name_prefix, *tags])
     args.out = args.out or paths.RUNS / args.name

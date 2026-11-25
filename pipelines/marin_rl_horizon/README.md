@@ -37,6 +37,15 @@ for source in openscience reasoning_gym_generated; do
   PYTHONPATH=. $PROJECT_ROOT/marin_env/marin-plan/bin/python -m experiments.post_training.task_curation.driver \
       --mode quick --source $source --run --cache-dir $PROJECT_ROOT/data/marin_rl_horizon/curation/cache --output-root $PROJECT_ROOT/data/marin_rl_horizon/curation/out
 done
+
+# the Reasoning Gym graders run in their own Python environment, built from a hash lock that the tasks name by absolute path.
+# The driver only plans that path; this builds it (the identity is in the task specs: images/env-<identity>). Horizon's login
+# shell exports CC=nvc, which cannot build the source-only packages, so build with the system gcc.
+IDENTITY=$(grep -aho 'images/env-[0-9a-f]*' -r $PROJECT_ROOT/data/marin_rl_horizon/curation/out/reasoning_gym_generated/normalize | sort -u | head -1 | sed 's#.*env-##')
+cd $PROJECT_ROOT/marin && CC=gcc CXX=g++ MARIN_PREFIX=$PROJECT_ROOT/data/marin_rl_horizon/curation/cache PYTHONPATH=. \
+  $PROJECT_ROOT/marin_env/marin-plan/bin/python -m experiments.post_training.task_curation.images --identity $IDENTITY
+
+# build_standin_tasks.py refuses to write tasks whose grader files do not exist
 cd $PROJECT_ROOT/spec-experiments/pipelines/marin_rl_horizon/tools && $PROJECT_ROOT/marin_env/${RUNTIME_NAME:-skyrl-megatron}/bin/python build_standin_tasks.py 4096
 ```
 

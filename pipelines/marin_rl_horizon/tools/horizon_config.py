@@ -34,6 +34,9 @@ def slurm_section(
         "NCCL_DEBUG": "INFO", "NCCL_DEBUG_SUBSYS": "INIT",
         "OMP_NUM_THREADS": "8", "MKL_NUM_THREADS": "8", "OPENBLAS_NUM_THREADS": "8", "NUMEXPR_NUM_THREADS": "8",
         "TOKENIZERS_PARALLELISM": "false",
+        # The grader environments compile a few source-only packages (pycosat); Horizon's login shell exports CC=nvc,
+        # which rejects the flags Python's build passes, so the jobs build with the system gcc.
+        "CC": "gcc", "CXX": "g++",
         "XDG_CACHE_HOME": str(paths.CACHE),
         "TRITON_CACHE_DIR": f"{NODE_CACHE}/triton",
         "TORCHINDUCTOR_CACHE_DIR": f"{NODE_CACHE}/inductor",

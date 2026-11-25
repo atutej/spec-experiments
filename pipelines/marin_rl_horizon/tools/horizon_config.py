@@ -15,6 +15,7 @@ GPUS_PER_NODE = 4
 TIMEOUT = 7200  # collective and placement-group deadlines; startup on a cold node is long
 ENGINE_INIT_TIMEOUT = 1800  # startup takes minutes; a hung node should fail the job, not hold it for hours
 RAY_NUM_CPUS = 64  # Ray starts one idle worker per CPU; 144 of them exceeded the per-user thread limit
+RAY_LOG_SYNC_INTERVAL_S = 1800  # default 300: each pass re-uploads the Ray logs that grew, and /scratch is slow for small files
 NODE_LOCAL = "/tmp"
 NODE_DATA = f"{NODE_LOCAL}/skyrl-{USER}-data"  # each node copies its inputs here
 NODE_CACHE = f"{NODE_LOCAL}/skyrl-{USER}-cache"  # compile caches on shared /scratch stalled with stale file handles
@@ -37,6 +38,7 @@ def slurm_section(
         "TRITON_CACHE_DIR": f"{NODE_CACHE}/triton",
         "TORCHINDUCTOR_CACHE_DIR": f"{NODE_CACHE}/inductor",
         "FLASHINFER_WORKSPACE_BASE": str(paths.CACHE / "flashinfer"),
+        "OT_AGENT_RAY_LOG_SYNC_INTERVAL_S": str(RAY_LOG_SYNC_INTERVAL_S),
     }
     section = {
         "run_dir": str(run_dir), "time_limit": time_limit, "runtime_env": str(paths.RUNTIME_ENV),
